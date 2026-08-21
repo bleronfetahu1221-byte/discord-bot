@@ -42,14 +42,14 @@
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar) - Required for Registration</label>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar) - Optional</label>
                     <input type="file" id="auth-avatar-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                 </div>
                 <div id="auth-error" class="text-xs text-brand-red text-center font-medium min-h-[16px]"></div>
                 
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="handleAuth('signin')" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold py-3 rounded-lg text-sm transition-all shadow-lg shadow-brand-blue/20">Sign In</button>
-                    <button onclick="handleAuth('signup')" class="w-full bg-dark-700 hover:bg-dark-600 text-slate-100 font-bold py-3 rounded-lg text-sm transition-all border border-dark-600">Register</button>
+                    <button type="button" onclick="handleAuth('signin')" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold py-3 rounded-lg text-sm transition-all shadow-lg shadow-brand-blue/20">Sign In</button>
+                    <button type="button" onclick="handleAuth('signup')" class="w-full bg-dark-700 hover:bg-dark-600 text-slate-100 font-bold py-3 rounded-lg text-sm transition-all border border-dark-600">Register</button>
                 </div>
             </div>
         </div>
@@ -323,10 +323,13 @@
 
         // AUTHENTICATION CONTROLLER
         function handleAuth(type) {
-            const email = document.getElementById('auth-email').value.trim().toLowerCase();
-            const password = document.getElementById('auth-password').value;
+            const emailElem = document.getElementById('auth-email');
+            const passwordElem = document.getElementById('auth-password');
             const avatarInput = document.getElementById('auth-avatar-file');
             const errorBox = document.getElementById('auth-error');
+
+            const email = emailElem.value.trim().toLowerCase();
+            const password = passwordElem.value;
 
             errorBox.innerText = "";
 
@@ -347,7 +350,6 @@
                     return;
                 }
 
-                // Fallback avatar generator if no file uploaded, preventing blocking issues
                 if (!avatarInput.files || !avatarInput.files[0]) {
                     let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>";
                     finalizeRegistration(email, password, defaultAvatar, state);
