@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LootHUB Enterprise - Complete Standoff 2 Platform</title>
-    <!-- Tailwind CSS for robust styling -->
+    <title>LootHUB Enterprise - Standoff 2 Marketplace Platform</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -144,21 +143,21 @@
             <section id="panel-topup" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Instant Gold Top-Up Protocol</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">List a marketplace item matched automatically for system ingestion.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Purchase gold by buying the administrator's global G22 listing on the marketplace.</p>
                     
                     <div class="space-y-4">
+                        <div class="p-4 bg-dark-900 border border-dark-600 rounded-xl mb-4">
+                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Active Administrator G22 Listings</h4>
+                            <div id="client-admin-listings-view" class="space-y-2">
+                                <p class="text-xs text-slate-500">Loading active admin G22 listings...</p>
+                            </div>
+                        </div>
+
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Desired Gold Purchase Amount</label>
-                            <input type="number" id="topup-amount-input" placeholder="100" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Upload Confirmation Screenshot (Purchase Proof)</label>
+                            <input type="file" id="topup-screenshot-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
-                        <button onclick="generateTopupTask()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Generate Verification Ticket</button>
-                        
-                        <div id="topup-ticket-container" class="hidden mt-4 p-4 bg-dark-900 border border-brand-gold/40 rounded-xl space-y-3">
-                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider">Active Listing Target Task</h4>
-                            <p class="text-xs text-slate-300">1. List any inventory item on the in-game market for exact price: <b id="ticket-price" class="text-brand-green text-sm">0 G</b></p>
-                            <p class="text-xs text-slate-300">2. Include pattern identification tag: <b id="ticket-pattern" class="text-brand-blue text-sm">000</b></p>
-                            <button onclick="submitTopupProof()" class="w-full bg-dark-700 hover:bg-dark-600 text-slate-100 border border-dark-600 font-bold py-2.5 rounded-lg text-xs mt-2">I Have Listed Item - Request Audit</button>
-                        </div>
+                        <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Submit Purchase Proof for Verification</button>
                         <div id="topup-status-msg" class="text-center text-xs font-bold mt-2"></div>
                     </div>
                 </div>
@@ -168,18 +167,22 @@
             <section id="panel-withdraw" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Gold Payout Withdrawal Portal</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Convert your virtual gold holdings directly into Standoff 2 skin payouts.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Convert your virtual gold holdings directly into Standoff 2 G22 skin payouts with randomized pricing.</p>
                     
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Gold Amount (Min 50)</label>
-                            <input type="number" id="withdraw-gold-input" placeholder="50" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Gold Amount to Withdraw (Min 50)</label>
+                            <input type="number" id="withdraw-gold-input" placeholder="200" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Target Skin Asset Title</label>
-                            <input type="text" id="withdraw-skin-input" placeholder="AKr | Starlight" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Standoff 2 Profile Link / ID</label>
+                            <input type="text" id="withdraw-profile-input" placeholder="https://link.standoff2.com/en/... or ID: 12345678" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                         </div>
-                        <button onclick="dispatchWithdrawal()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Initiate Payout Instruction</button>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">G22 Item Pattern Number (e.g., Sticker/Float ID)</label>
+                            <input type="text" id="withdraw-pattern-input" placeholder="482" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                        </div>
+                        <button onclick="dispatchRandomizedWithdrawal()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Generate Randomized Payout Ticket</button>
                         <div id="withdraw-output-box" class="mt-4"></div>
                     </div>
                 </div>
@@ -187,9 +190,9 @@
 
             <!-- ADMIN TAB -->
             <section id="panel-admin" class="tab-panel hidden space-y-6">
-                <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-2xl mx-auto">
+                <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-3xl mx-auto">
                     <h2 class="text-xl font-black text-brand-gold mb-1 text-center">Restricted Admin Control Center</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Manage client queues, system reserves, and verification approvals.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Manage global G22 listings, client queues, and verification approvals.</p>
                     
                     <div id="admin-login-box" class="space-y-4 max-w-md mx-auto">
                         <div>
@@ -200,7 +203,7 @@
                     </div>
 
                     <div id="admin-dashboard-area" class="hidden space-y-6">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div class="bg-dark-900 border border-dark-600 p-4 rounded-xl text-center">
                                 <div class="text-xs text-slate-400">Total Users</div>
                                 <div id="admin-stat-users" class="text-lg font-black text-brand-blue mt-1">0</div>
@@ -209,11 +212,40 @@
                                 <div class="text-xs text-slate-400">Pending Top-Ups</div>
                                 <div id="admin-stat-pending" class="text-lg font-black text-brand-gold mt-1">0</div>
                             </div>
+                            <div class="bg-dark-900 border border-dark-600 p-4 rounded-xl text-center">
+                                <div class="text-xs text-slate-400">Pending Withdrawals</div>
+                                <div id="admin-stat-withdrawals" class="text-lg font-black text-brand-green mt-1">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Admin G22 Global Publisher Tool -->
+                        <div class="bg-dark-900 border border-dark-600 p-4 rounded-xl space-y-3">
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-brand-gold">Publish Global G22 Listing for Users to Buy</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">G22 Skin Name</label>
+                                    <input type="text" id="admin-g22-name" placeholder="G22 | Carbon" value="G22 | Carbon" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Price (Gold)</label>
+                                    <input type="number" id="admin-g22-price" placeholder="100" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Specific Pattern Code</label>
+                                    <input type="text" id="admin-g22-pattern" placeholder="777" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-xs">
+                                </div>
+                            </div>
+                            <button onclick="adminPublishG22()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold py-2.5 rounded-lg text-xs transition-all uppercase">Publish Global Listing to Platform</button>
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue</h3>
-                            <div id="admin-queue-container" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue (Screenshots)</h3>
+                            <div id="admin-queue-container" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Withdrawal Verification Queue (Randomized Price & Profile)</h3>
+                            <div id="admin-withdraw-queue-container" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
                         </div>
                     </div>
                 </div>
@@ -223,14 +255,13 @@
 
         <!-- FOOTER -->
         <footer class="mt-8 pt-4 border-t border-dark-600 text-center text-xs text-slate-500">
-            LootHUB Client-Driven Architecture &bull; Secured LocalStorage Node Engine
+            LootHUB Enterprise Architecture &bull; Secured LocalStorage Node Engine
         </footer>
     </div>
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        // Database Core State Initializer
-        const DB_KEY = "loothub_enterprise_state_v2";
+        const DB_KEY = "loothub_enterprise_state_v3";
         
         function getSystemState() {
             let state = localStorage.getItem(DB_KEY);
@@ -238,7 +269,10 @@
                 const initialState = {
                     users: {},
                     topupRequests: [],
-                    withdrawals: []
+                    withdrawals: [],
+                    adminListings: [
+                        { id: 'LIST_DEFAULT', skinName: 'G22 | Carbon', price: 100, pattern: '542' }
+                    ]
                 };
                 localStorage.setItem(DB_KEY, JSON.stringify(initialState));
                 return initialState;
@@ -297,6 +331,7 @@
             document.getElementById('app-wrapper').classList.remove('hidden');
             document.getElementById('nav-user-email').innerText = sessionUserEmail;
             refreshUserBalanceUI();
+            renderClientAdminListings();
         }
 
         function logoutSession() {
@@ -324,6 +359,10 @@
             document.getElementById('panel-' + tabId).classList.remove('hidden');
             let activeBtn = document.getElementById('tabbtn-' + tabId);
             activeBtn.className = "nav-tab py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-brand-blue text-dark-900 transition-all text-center shadow-md";
+            
+            if (tabId === 'topup') {
+                renderClientAdminListings();
+            }
         }
 
         // CASE OPENING MODULE
@@ -355,7 +394,6 @@
                 {name: "AKr | Starlight", value: 450}, {name: "Gloves | Punisher", value: 900}
             ];
 
-            // Build roller track nodes
             const track = document.getElementById('roller-track');
             track.style.transition = 'none';
             track.style.left = '0px';
@@ -371,7 +409,7 @@
                 track.appendChild(card);
             }
 
-            let winningItem = sequenceNodes[18]; // Target alignment index
+            let winningItem = sequenceNodes[18];
             user.balance += winningItem.value;
             saveSystemState(state);
 
@@ -416,72 +454,118 @@
             refreshUserBalanceUI();
         }
 
-        // TOP-UP MODULE
-        let activeTicketId = null;
+        // TOP-UP MODULE (WITH SCREENSHOT PROOF)
+        function renderClientAdminListings() {
+            let state = getSystemState();
+            let container = document.getElementById('client-admin-listings-view');
+            if (!container) return;
 
-        function generateTopupTask() {
-            let amount = parseFloat(document.getElementById('topup-amount-input').value);
-            let statusMsg = document.getElementById('topup-status-msg');
-
-            if (!amount || amount <= 0) {
-                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
-                statusMsg.innerText = "Enter a valid gold amount to purchase.";
+            container.innerHTML = "";
+            if (!state.adminListings || state.adminListings.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500">No active admin G22 listings available right now.</p>`;
                 return;
             }
 
-            let patternCode = Math.floor(Math.random() * 900) + 100;
-            activeTicketId = 'TOPUP_' + Date.now();
-
-            let state = getSystemState();
-            state.topupRequests.push({
-                id: activeTicketId,
-                email: sessionUserEmail,
-                amount: amount,
-                pattern: patternCode,
-                status: 'pending_audit'
+            state.adminListings.forEach(item => {
+                let div = document.createElement('div');
+                div.className = "flex items-center justify-between bg-dark-800 p-3 rounded-lg border border-dark-600 text-xs";
+                div.innerHTML = `
+                    <div>
+                        <span class="font-bold text-brand-blue">${item.skinName}</span>
+                        <div class="text-slate-400 mt-0.5">Price: <b class="text-brand-gold">${item.price} Gold</b> | Pattern Tag: <b class="text-brand-green">${item.pattern}</b></div>
+                    </div>
+                    <span class="text-[10px] bg-brand-blue/20 text-brand-blue px-2 py-1 rounded font-semibold">Ready to Buy</span>
+                `;
+                container.appendChild(div);
             });
-            saveSystemState(state);
-
-            document.getElementById('ticket-price').innerText = amount + " G";
-            document.getElementById('ticket-pattern').innerText = patternCode;
-            document.getElementById('topup-ticket-container').classList.remove('hidden');
-            statusMsg.innerText = "";
         }
 
-        function submitTopupProof() {
+        function submitTopupProofWithScreenshot() {
+            let fileInput = document.getElementById('topup-screenshot-file');
             let statusMsg = document.getElementById('topup-status-msg');
-            statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
-            statusMsg.innerText = "Verification task submitted successfully! Awaiting automated marketplace audit & admin clearance.";
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
+                statusMsg.innerText = "Please attach a confirmation screenshot showing you bought the listed G22!";
+                return;
+            }
+
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let screenshotDataUrl = e.target.result;
+                let state = getSystemState();
+                
+                let reqId = 'TOPUP_' + Date.now();
+                let defaultListing = state.adminListings[0] || { price: 100, pattern: '542' };
+
+                state.topupRequests.push({
+                    id: reqId,
+                    email: sessionUserEmail,
+                    amount: defaultListing.price,
+                    pattern: defaultListing.pattern,
+                    screenshot: screenshotDataUrl,
+                    status: 'pending_audit'
+                });
+
+                saveSystemState(state);
+
+                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
+                statusMsg.innerText = "Confirmation screenshot and top-up order submitted successfully! Awaiting admin review.";
+                fileInput.value = "";
+            };
+            reader.readAsDataURL(fileInput.files[0]);
         }
 
-        // WITHDRAWAL MODULE
-        function dispatchWithdrawal() {
-            let amount = parseFloat(document.getElementById('withdraw-gold-input').value);
-            let skin = document.getElementById('withdraw-skin-input').value.trim();
+        // WITHDRAWAL MODULE (RANDOMIZED PRICING & PROFILE/PATTERN SUBMISSION)
+        function dispatchRandomizedWithdrawal() {
+            let amountInput = parseFloat(document.getElementById('withdraw-gold-input').value);
+            let profileInput = document.getElementById('withdraw-profile-input').value.trim();
+            let patternInput = document.getElementById('withdraw-pattern-input').value.trim();
             let outputBox = document.getElementById('withdraw-output-box');
 
             let state = getSystemState();
             let user = state.users[sessionUserEmail];
 
-            if (!amount || amount < 50 || amount > user.balance) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Minimum withdrawal is 50 🪙 and must not exceed current balance.</div>`;
+            if (!amountInput || amountInput < 50 || amountInput > user.balance) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Minimum withdrawal is 50 🪙 and must not exceed current vault balance.</div>`;
                 return;
             }
-            if (!skin) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Specify a valid skin target asset.</div>`;
+            if (!profileInput) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please input your Standoff 2 profile link or ID.</div>`;
+                return;
+            }
+            if (!patternInput) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please provide your G22 item pattern number.</div>`;
                 return;
             }
 
-            user.balance -= amount;
+            // Generate randomized decimal price between amountInput.01 to amountInput.99
+            let randomCents = (Math.random() * 0.98 + 0.01).toFixed(2);
+            let randomizedPrice = parseFloat((Math.floor(amountInput) + parseFloat(randomCents)).toFixed(2));
+
+            user.balance -= amountInput;
+            
+            let withdrawId = 'WITHDRAW_' + Date.now();
+            state.withdrawals.push({
+                id: withdrawId,
+                email: sessionUserEmail,
+                baseAmount: amountInput,
+                randomizedPrice: randomizedPrice,
+                profile: profileInput,
+                pattern: patternInput,
+                status: 'pending_fulfillment'
+            });
+
             saveSystemState(state);
             refreshUserBalanceUI();
 
             outputBox.innerHTML = `
                 <div class="p-4 bg-dark-900 border border-brand-green/40 rounded-xl space-y-2">
-                    <div class="text-xs font-bold text-brand-green uppercase">Instruction Dispatched Successfully</div>
-                    <div class="text-xs text-slate-300">Target Asset: <b>${skin}</b></div>
-                    <div class="text-xs text-slate-300">Exact Listing Evaluation: <b>${amount} Gold</b></div>
-                    <div class="text-xs text-slate-400 mt-1">Bot dispatch sequence active. Expect trade delivery within 5-10 minutes.</div>
+                    <div class="text-xs font-bold text-brand-green uppercase">Randomized Withdrawal Ticket Generated</div>
+                    <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
+                    <div class="text-xs text-slate-300">Instruction: List your G22 on the marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
+                    <div class="text-xs text-slate-300">Profile Logged: <b>${profileInput}</b> | Pattern: <b>${patternInput}</b></div>
+                    <div class="text-xs text-slate-400 mt-1">Admin bot will locate your specific listing matching price ${randomizedPrice} and pattern ${patternInput} for fulfillment.</div>
                 </div>
             `;
         }
@@ -499,37 +583,91 @@
             loadAdminQueueData();
         }
 
+        function adminPublishG22() {
+            let name = document.getElementById('admin-g22-name').value.trim() || "G22 | Carbon";
+            let price = parseFloat(document.getElementById('admin-g22-price').value);
+            let pattern = document.getElementById('admin-g22-pattern').value.trim() || "777";
+
+            if (!price || price <= 0) {
+                alert("Enter a valid price for the global G22 listing.");
+                return;
+            }
+
+            let state = getSystemState();
+            state.adminListings = [{
+                id: 'LIST_' + Date.now(),
+                skinName: name,
+                price: price,
+                pattern: pattern
+            }];
+
+            saveSystemState(state);
+            alert("Global G22 listing published successfully for all clients to purchase!");
+        }
+
         function loadAdminQueueData() {
             let state = getSystemState();
             let usersCount = Object.keys(state.users).length;
             let pendingRequests = state.topupRequests.filter(r => r.status === 'pending_audit');
+            let pendingWithdrawals = state.withdrawals.filter(w => w.status === 'pending_fulfillment');
 
             document.getElementById('admin-stat-users').innerText = usersCount;
             document.getElementById('admin-stat-pending').innerText = pendingRequests.length;
+            document.getElementById('admin-stat-withdrawals').innerText = pendingWithdrawals.length;
 
+            // Topup Queue Render
             let container = document.getElementById('admin-queue-container');
             container.innerHTML = "";
 
             if (pendingRequests.length === 0) {
-                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-4 bg-dark-900 rounded-xl border border-dark-600">No pending verification items found in queue.</div>`;
-                return;
+                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending top-up screenshot proofs.</div>`;
+            } else {
+                pendingRequests.forEach(req => {
+                    let div = document.createElement('div');
+                    div.className = "bg-dark-900 border border-dark-600 p-4 rounded-xl space-y-3";
+                    div.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-bold text-brand-blue">${req.email}</div>
+                                <div class="text-xs text-slate-300 mt-0.5">Target Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="processAdminAction('${req.id}', 'approved')" class="bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Verify & Credit</button>
+                                <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all border border-brand-red/30">Decline</button>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Attached Proof Screenshot:</span>
+                            <img src="${req.screenshot}" alt="Purchase Proof" class="max-h-40 rounded-lg border border-dark-600 object-contain bg-dark-950">
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
             }
 
-            pendingRequests.forEach(req => {
-                let div = document.createElement('div');
-                div.className = "bg-dark-900 border border-dark-600 p-4 rounded-xl flex items-center justify-between gap-4";
-                div.innerHTML = `
-                    <div>
-                        <div class="text-xs font-bold text-brand-blue">${req.email}</div>
-                        <div class="text-xs text-slate-300 mt-0.5">Target Purchase: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button onclick="processAdminAction('${req.id}', 'approved')" class="bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Verify</button>
-                        <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all border border-brand-red/30">Decline</button>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
+            // Withdrawal Queue Render
+            let withdrawContainer = document.getElementById('admin-withdraw-queue-container');
+            withdrawContainer.innerHTML = "";
+
+            if (pendingWithdrawals.length === 0) {
+                withdrawContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending withdrawal requests.</div>`;
+            } else {
+                pendingWithdrawals.forEach(w => {
+                    let div = document.createElement('div');
+                    div.className = "bg-dark-900 border border-dark-600 p-4 rounded-xl flex items-center justify-between gap-4";
+                    div.innerHTML = `
+                        <div>
+                            <div class="text-xs font-bold text-brand-blue">${w.email}</div>
+                            <div class="text-xs text-slate-300 mt-0.5">Base Gold: <b class="text-brand-gold">${w.baseAmount} 🪙</b> | Randomized Price: <b class="text-brand-green">${w.randomizedPrice} Gold</b></div>
+                            <div class="text-xs text-slate-400 mt-1">Profile: <b>${w.profile}</b> | G22 Pattern: <b class="text-brand-purple">${w.pattern}</b></div>
+                        </div>
+                        <div>
+                            <button onclick="processAdminWithdrawal('${w.id}', 'completed')" class="bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all uppercase">Fulfill Payout</button>
+                        </div>
+                    `;
+                    withdrawContainer.appendChild(div);
+                });
+            }
         }
 
         function processAdminAction(ticketId, decision) {
@@ -544,6 +682,17 @@
                 saveSystemState(state);
                 loadAdminQueueData();
                 refreshUserBalanceUI();
+            }
+        }
+
+        function processAdminWithdrawal(withdrawId, decision) {
+            let state = getSystemState();
+            let w = state.withdrawals.find(item => item.id === withdrawId);
+
+            if (w && w.status === 'pending_fulfillment') {
+                w.status = decision;
+                saveSystemState(state);
+                loadAdminQueueData();
             }
         }
     </script>
