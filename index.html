@@ -152,8 +152,8 @@
                     
                     <div class="space-y-4">
                         <div class="p-4 bg-dark-900 border border-dark-600 rounded-xl mb-4">
-                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Active Administrator G22 Listings</h4>
-                            <div id="client-admin-listings-view" class="space-y-2">
+                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Select Admin G22 Listing to Buy</h4>
+                            <div id="client-admin-listings-view" class="space-y-2 max-h-48 overflow-y-auto pr-1">
                                 <p class="text-xs text-slate-500">Loading active admin G22 listings...</p>
                             </div>
                         </div>
@@ -248,7 +248,12 @@
                                     <input type="text" id="admin-g22-pattern" placeholder="777" class="w-full bg-dark-800 border border-dark-600 rounded-lg px-3 py-2 text-xs">
                                 </div>
                             </div>
-                            <button onclick="adminPublishG22()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold py-2.5 rounded-lg text-xs transition-all uppercase">Publish Global Listing to Platform</button>
+                            <button onclick="adminPublishG22()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold py-2.5 rounded-lg text-xs transition-all uppercase">Add Listing to Platform Queue</button>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Published Admin Listings</h3>
+                            <div id="admin-published-listings-container" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
 
                         <div>
@@ -279,8 +284,9 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v5";
+        const DB_KEY = "loothub_enterprise_state_v6";
         const SESSION_KEY = "loothub_session_user";
+        let selectedAdminListingId = null;
         
         function getSystemState() {
             let state = localStorage.getItem(DB_KEY);
@@ -290,7 +296,8 @@
                     topupRequests: [],
                     withdrawals: [],
                     adminListings: [
-                        { id: 'LIST_DEFAULT', skinName: 'G22 | Carbon', price: 100, pattern: '542' }
+                        { id: 'LIST_DEFAULT_1', skinName: 'G22 | Carbon', price: 100, pattern: '542' },
+                        { id: 'LIST_DEFAULT_2', skinName: 'G22 | Starlight', price: 277, pattern: '277' }
                     ]
                 };
                 localStorage.setItem(DB_KEY, JSON.stringify(initialState));
@@ -306,7 +313,6 @@
         let sessionUserEmail = null;
         let selectedCase = 'starter';
 
-        // Auto-login check on window load
         window.addEventListener('DOMContentLoaded', () => {
             let savedSession = localStorage.getItem(SESSION_KEY);
             if (savedSession) {
@@ -321,7 +327,6 @@
             document.getElementById('app-wrapper').classList.add('hidden');
         });
 
-        // AUTHENTICATION CONTROLLER (Mobile Safe Version)
         function handleAuth(type) {
             const emailElem = document.getElementById('auth-email');
             const passwordElem = document.getElementById('auth-password');
@@ -350,7 +355,7 @@
                     return;
                 }
 
-                let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>";
+                let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>";
 
                 if (!avatarInput.files || !avatarInput.files[0]) {
                     finalizeRegistration(email, password, defaultAvatar, state);
@@ -358,32 +363,28 @@
                 }
 
                 let reader = new FileReader();
-                let readerFinished = false;
-
+                let finished = false;
                 reader.onload = function(e) {
-                    if (readerFinished) return;
-                    readerFinished = true;
+                    if (finished) return;
+                    finished = true;
                     finalizeRegistration(email, password, e.target.result, state);
                 };
-                
                 reader.onerror = function() {
-                    if (readerFinished) return;
-                    readerFinished = true;
+                    if (finished) return;
+                    finished = true;
                     finalizeRegistration(email, password, defaultAvatar, state);
                 };
-
                 try {
                     reader.readAsDataURL(avatarInput.files[0]);
                     setTimeout(() => {
-                        if (!readerFinished) {
-                            readerFinished = true;
+                        if (!finished) {
+                            finished = true;
                             finalizeRegistration(email, password, defaultAvatar, state);
                         }
-                    }, 1200);
-                } catch (err) {
+                    }, 1000);
+                } catch(e) {
                     finalizeRegistration(email, password, defaultAvatar, state);
                 }
-
             } else {
                 if (!state.users[email] || state.users[email].password !== password) {
                     errorBox.innerText = "Invalid credentials or account does not exist.";
@@ -440,7 +441,6 @@
             }
         }
 
-        // TABS NAVIGATION CONTROLLER
         function switchTab(tabId) {
             ['cases', 'upgrader', 'topup', 'withdraw', 'admin'].forEach(t => {
                 document.getElementById('panel-' + t).classList.add('hidden');
@@ -456,7 +456,6 @@
             }
         }
 
-        // CASE OPENING MODULE
         function selectCaseType(type) {
             selectedCase = type;
             document.getElementById('case-box-starter').className = "case-selector cursor-pointer bg-dark-900 border-2 " + (type === 'starter' ? "border-brand-blue" : "border-dark-600") + " rounded-xl p-4 text-center transition-all";
@@ -469,7 +468,7 @@
             let user = state.users[sessionUserEmail];
 
             if (user.balance < cost) {
-                document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red">Insufficient vault reserve balance! Top up first. Contact loothubsup@gmail.com for assistance.</span>`;
+                document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red">Insufficient vault balance! Top up first. Contact loothubsup@gmail.com</span>`;
                 return;
             }
 
@@ -478,11 +477,9 @@
             refreshUserBalanceUI();
 
             const skinPool = selectedCase === 'starter' ? [
-                {name: "Trash | Common Spray", value: 0}, {name: "Trash | Common Sticker", value: 0},
-                {name: "Trash | Defective Pin", value: 0}, {name: "G22 | Carbon", value: 5}
+                {name: "Trash | Spray", value: 0}, {name: "Trash | Sticker", value: 0}, {name: "G22 | Carbon", value: 5}
             ] : [
-                {name: "Trash | Epic Spray", value: 0}, {name: "Trash | Legendary Scrap", value: 0},
-                {name: "Trash | Broken Charm", value: 0}, {name: "AWM | Sport", value: 20}
+                {name: "Trash | Charm", value: 0}, {name: "Trash | Scrap", value: 0}, {name: "AWM | Sport", value: 20}
             ];
 
             const track = document.getElementById('roller-track');
@@ -514,17 +511,15 @@
                 if (winningItem.value > 0) {
                     document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-green text-base">🎉 Won Asset: ${winningItem.name} valued at ${winningItem.value} 🪙!</span>`;
                 } else {
-                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red text-base">❌ Case yielded trash item (${winningItem.name}). Better luck next time!</span>`;
+                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red text-base">❌ Case yielded trash item (${winningItem.name}). Try again!</span>`;
                 }
             }, 4600);
         }
 
-        // UPGRADER MODULE
         function executeUpgrader() {
             let stake = parseFloat(document.getElementById('upgrader-stake').value);
             let multiplier = parseFloat(document.getElementById('upgrader-multiplier').value);
             let feedback = document.getElementById('upgrader-feedback');
-
             let state = getSystemState();
             let user = state.users[sessionUserEmail];
 
@@ -534,23 +529,19 @@
             }
 
             user.balance -= stake;
-            
             let winChance = multiplier === 2 ? 0.10 : (multiplier === 3 ? 0.05 : (multiplier === 5 ? 0.02 : 0.005));
-            let rollOutcome = Math.random();
-
-            if (rollOutcome <= winChance) {
+            if (Math.random() <= winChance) {
                 let winnings = stake * multiplier;
                 user.balance += winnings;
-                feedback.innerHTML = `<span class="text-brand-green">🔥 Challenge SUCCESS! Added +${winnings.toFixed(2)} 🪙 to vault.</span>`;
+                feedback.innerHTML = `<span class="text-brand-green">🔥 Challenge SUCCESS! Added +${winnings.toFixed(2)} 🪙.</span>`;
             } else {
-                feedback.innerHTML = `<span class="text-brand-red">❌ Challenge FAILED. Stake of ${stake} 🪙 forfeited. House wins.</span>`;
+                feedback.innerHTML = `<span class="text-brand-red">❌ Challenge FAILED. Stake forfeited.</span>`;
             }
-
             saveSystemState(state);
             refreshUserBalanceUI();
         }
 
-        // TOP-UP MODULE (MOBILE SAFE FIXED VERSION)
+        // RENDER ALL AVAILABLE ADMIN LISTINGS ON TOP-UP TAB
         function renderClientAdminListings() {
             let state = getSystemState();
             let container = document.getElementById('client-admin-listings-view');
@@ -558,24 +549,35 @@
 
             container.innerHTML = "";
             if (!state.adminListings || state.adminListings.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">No active admin G22 listings available right now. Contact loothubsup@gmail.com.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500">No active admin G22 listings available right now. Contact loothubsup@gmail.com</p>`;
                 return;
             }
 
+            // Default selection to first item if none selected
+            if (!selectedAdminListingId && state.adminListings.length > 0) {
+                selectedAdminListingId = state.adminListings[0].id;
+            }
+
             state.adminListings.forEach(item => {
+                let isSelected = (selectedAdminListingId === item.id);
                 let div = document.createElement('div');
-                div.className = "flex items-center justify-between bg-dark-800 p-3 rounded-lg border border-dark-600 text-xs";
+                div.className = `flex items-center justify-between p-3 rounded-lg border text-xs cursor-pointer transition-all ${isSelected ? 'bg-dark-800 border-brand-blue shadow-md' : 'bg-dark-900 border-dark-600 opacity-80 hover:opacity-100'}`;
+                div.onclick = () => {
+                    selectedAdminListingId = item.id;
+                    renderClientAdminListings();
+                };
                 div.innerHTML = `
                     <div>
                         <span class="font-bold text-brand-blue">${item.skinName}</span>
                         <div class="text-slate-400 mt-0.5">Price: <b class="text-brand-gold">${item.price} Gold</b> | Pattern Tag: <b class="text-brand-green">${item.pattern}</b></div>
                     </div>
-                    <span class="text-[10px] bg-brand-blue/20 text-brand-blue px-2 py-1 rounded font-semibold">Send to Admin</span>
+                    <span class="text-[10px] ${isSelected ? 'bg-brand-blue text-dark-900 font-bold' : 'bg-dark-700 text-slate-300'} px-2.5 py-1.5 rounded-lg transition-all">${isSelected ? 'Selected ✓' : 'Select Offer'}</span>
                 `;
                 container.appendChild(div);
             });
         }
 
+        // ROBUST MOBILE-SAFE SUBMISSION HANDLER
         function submitTopupProofWithScreenshot() {
             let fileInput = document.getElementById('topup-screenshot-file');
             let profilePicInput = document.getElementById('topup-profile-pic-file');
@@ -585,7 +587,7 @@
 
             if (!fileInput.files || fileInput.files.length === 0) {
                 statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
-                statusMsg.innerText = "Please attach a confirmation screenshot showing purchase!";
+                statusMsg.innerText = "Please attach confirmation screenshot purchase proof!";
                 return;
             }
             if (!profilePicInput.files || profilePicInput.files.length === 0) {
@@ -607,89 +609,71 @@
 
             let reader1 = new FileReader();
             let reader2 = new FileReader();
+            let completedCount = 0;
+            let hasFinalized = false;
 
-            let finishedCount = 0;
+            function finalizeSubmission() {
+                if (hasFinalized) return;
+                hasFinalized = true;
 
-            function checkAndSaveTicket() {
-                finishedCount++;
-                if (finishedCount >= 2) {
-                    let state = getSystemState();
-                    let reqId = 'TOPUP_' + Date.now();
-                    let defaultListing = state.adminListings[0] || { price: 100, pattern: '542' };
+                let state = getSystemState();
+                let chosenListing = state.adminListings.find(l => l.id === selectedAdminListingId) || state.adminListings[0] || { price: 100, pattern: '542' };
+                let reqId = 'TOPUP_' + Date.now();
 
-                    state.topupRequests.push({
-                        id: reqId,
-                        email: sessionUserEmail,
-                        amount: defaultListing.price,
-                        pattern: defaultListing.pattern,
-                        screenshot: screenshotDataUrl,
-                        profilePic: profilePicDataUrl,
-                        status: 'pending_audit',
-                        timestamp: Date.now()
-                    });
+                state.topupRequests.push({
+                    id: reqId,
+                    email: sessionUserEmail,
+                    amount: chosenListing.price,
+                    pattern: chosenListing.pattern,
+                    screenshot: screenshotDataUrl,
+                    profilePic: profilePicDataUrl,
+                    status: 'pending_audit',
+                    timestamp: Date.now()
+                });
 
-                    saveSystemState(state);
+                saveSystemState(state);
 
-                    statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
-                    statusMsg.innerText = "Success! Proof sent directly to admin dashboard queue.";
-                    fileInput.value = "";
-                    profilePicInput.value = "";
-                }
+                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
+                statusMsg.innerText = "Success! Proof sent directly to admin dashboard queue.";
+                fileInput.value = "";
+                profilePicInput.value = "";
             }
 
-            // Read screenshot with fallback timeout
-            let r1Done = false;
             reader1.onload = function(e1) {
-                if (r1Done) return;
-                r1Done = true;
-                if (e1 && e1.target && e1.target.result) {
-                    screenshotDataUrl = e1.target.result;
-                }
-                checkAndSaveTicket();
+                if (e1 && e1.target && e1.target.result) screenshotDataUrl = e1.target.result;
+                completedCount++;
+                if (completedCount >= 2) finalizeSubmission();
             };
             reader1.onerror = function() {
-                if (r1Done) return;
-                r1Done = true;
-                checkAndSaveTicket();
+                completedCount++;
+                if (completedCount >= 2) finalizeSubmission();
             };
 
-            // Read profile pic with fallback timeout
-            let r2Done = false;
             reader2.onload = function(e2) {
-                if (r2Done) return;
-                r2Done = true;
-                if (e2 && e2.target && e2.target.result) {
-                    profilePicDataUrl = e2.target.result;
-                }
-                checkAndSaveTicket();
+                if (e2 && e2.target && e2.target.result) profilePicDataUrl = e2.target.result;
+                completedCount++;
+                if (completedCount >= 2) finalizeSubmission();
             };
             reader2.onerror = function() {
-                if (r2Done) return;
-                r2Done = true;
-                checkAndSaveTicket();
+                completedCount++;
+                if (completedCount >= 2) finalizeSubmission();
             };
 
             try {
                 reader1.readAsDataURL(file1);
                 reader2.readAsDataURL(file2);
 
-                // Mobile safeguard timeout so it never hangs indefinitely
+                // Force timeout safeguard for mobile webviews to prevent infinite hanging
                 setTimeout(() => {
-                    if (!r1Done) {
-                        r1Done = true;
-                        checkAndSaveTicket();
+                    if (!hasFinalized) {
+                        finalizeSubmission();
                     }
-                    if (!r2Done) {
-                        r2Done = true;
-                        checkAndSaveTicket();
-                    }
-                }, 2000);
+                }, 1200);
             } catch (err) {
-                checkAndSaveTicket();
+                finalizeSubmission();
             }
         }
 
-        // WITHDRAWAL MODULE
         function dispatchRandomizedWithdrawal() {
             let amountInput = parseFloat(document.getElementById('withdraw-gold-input').value);
             let profileInput = document.getElementById('withdraw-profile-input').value.trim();
@@ -701,41 +685,24 @@
             let user = state.users[sessionUserEmail];
 
             let threeDaysInMillis = 3 * 24 * 60 * 60 * 1000;
-            let now = Date.now();
-            if (!user.lastTopupTimestamp || (now - user.lastTopupTimestamp) > threeDaysInMillis) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Withdrawal Blocked: You must have a top-up approved within the last 3 days to withdraw. Support: loothubsup@gmail.com</div>`;
+            if (!user.lastTopupTimestamp || (Date.now() - user.lastTopupTimestamp) > threeDaysInMillis) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Withdrawal Blocked: Must have an approved top-up within the last 3 days.</div>`;
                 return;
             }
 
-            if (!amountInput || amountInput < 50 || amountInput > user.balance) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Minimum withdrawal is 50 🪙 and must not exceed vault balance.</div>`;
-                return;
-            }
-            if (!profileInput) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please input your Standoff 2 profile link or ID.</div>`;
-                return;
-            }
-            if (!patternInput) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please provide your G22 item pattern number.</div>`;
-                return;
-            }
-            if (!profilePicInput.files || profilePicInput.files.length === 0) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Profile picture is required for withdrawal requests.</div>`;
+            if (!amountInput || amountInput < 50 || amountInput > user.balance || !profileInput || !patternInput || !profilePicInput.files || profilePicInput.files.length === 0) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please fill out all fields and attach profile picture correctly.</div>`;
                 return;
             }
 
             let reader = new FileReader();
             reader.onload = function(e) {
                 let profilePicDataUrl = e.target.result;
-
-                let randomCents = (Math.random() * 0.98 + 0.01).toFixed(2);
-                let randomizedPrice = parseFloat((Math.floor(amountInput) + parseFloat(randomCents)).toFixed(2));
+                let randomizedPrice = parseFloat((Math.floor(amountInput) + (Math.random() * 0.98 + 0.01)).toFixed(2));
 
                 user.balance -= amountInput;
-                
-                let withdrawId = 'WITHDRAW_' + Date.now();
                 state.withdrawals.push({
-                    id: withdrawId,
+                    id: 'WITHDRAW_' + Date.now(),
                     email: sessionUserEmail,
                     baseAmount: amountInput,
                     randomizedPrice: randomizedPrice,
@@ -752,23 +719,19 @@
                     <div class="p-4 bg-dark-900 border border-brand-green/40 rounded-xl space-y-2">
                         <div class="text-xs font-bold text-brand-green uppercase">Randomized Withdrawal Ticket Generated</div>
                         <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
-                        <div class="text-xs text-slate-300">Instruction: List your G22 on the marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
-                        <div class="text-xs text-slate-300">Profile Logged: <b>${profileInput}</b> | Pattern: <b>${patternInput}</b></div>
-                        <div class="text-xs text-slate-400 mt-1">Admin will verify your profile picture and fulfill payout. Support: loothubsup@gmail.com</div>
+                        <div class="text-xs text-slate-300">List G22 on marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
                     </div>
                 `;
             };
             reader.readAsDataURL(profilePicInput.files[0]);
         }
 
-        // ADMIN MODULE CONSOLE
         function unlockAdminPanel() {
             let passcode = document.getElementById('admin-passcode-input').value;
             if (passcode !== "100200100") {
-                alert("Incorrect Security Passcode! Contact loothubsup@gmail.com.");
+                alert("Incorrect Security Passcode!");
                 return;
             }
-
             document.getElementById('admin-login-box').classList.add('hidden');
             document.getElementById('admin-dashboard-area').classList.remove('hidden');
             loadAdminQueueData();
@@ -780,37 +743,59 @@
             let pattern = document.getElementById('admin-g22-pattern').value.trim() || "777";
 
             if (!price || price <= 0) {
-                alert("Enter a valid price for the global G22 listing.");
+                alert("Enter a valid price.");
                 return;
             }
 
             let state = getSystemState();
-            state.adminListings = [{
+            state.adminListings.push({
                 id: 'LIST_' + Date.now(),
                 skinName: name,
                 price: price,
                 pattern: pattern
-            }];
+            });
 
             saveSystemState(state);
-            alert("Global G22 listing published successfully!");
+            alert("New G22 listing added to platform queue successfully!");
+            loadAdminQueueData();
+        }
+
+        function adminDeleteListing(id) {
+            let state = getSystemState();
+            state.adminListings = state.adminListings.filter(l => l.id !== id);
+            saveSystemState(state);
+            loadAdminQueueData();
         }
 
         function loadAdminQueueData() {
             let state = getSystemState();
-            let usersCount = Object.keys(state.users).length;
-            let pendingRequests = state.topupRequests.filter(r => r.status === 'pending_audit');
-            let pendingWithdrawals = state.withdrawals.filter(w => w.status === 'pending_fulfillment');
+            document.getElementById('admin-stat-users').innerText = Object.keys(state.users).length;
+            document.getElementById('admin-stat-pending').innerText = state.topupRequests.filter(r => r.status === 'pending_audit').length;
+            document.getElementById('admin-stat-withdrawals').innerText = state.withdrawals.filter(w => w.status === 'pending_fulfillment').length;
 
-            document.getElementById('admin-stat-users').innerText = usersCount;
-            document.getElementById('admin-stat-pending').innerText = pendingRequests.length;
-            document.getElementById('admin-stat-withdrawals').innerText = pendingWithdrawals.length;
+            // Render Published Listings Manager for Admin
+            let pubContainer = document.getElementById('admin-published-listings-container');
+            pubContainer.innerHTML = "";
+            if (!state.adminListings || state.adminListings.length === 0) {
+                pubContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-2 bg-dark-900 rounded-xl border border-dark-600">No active listings published.</div>`;
+            } else {
+                state.adminListings.forEach(l => {
+                    let d = document.createElement('div');
+                    d.className = "flex items-center justify-between bg-dark-900 p-3 rounded-xl border border-dark-600 text-xs";
+                    d.innerHTML = `
+                        <div><b class="text-brand-blue">${l.skinName}</b> — Price: <span class="text-brand-gold">${l.price} Gold</span> | Pattern: <span class="text-brand-green">${l.pattern}</span></div>
+                        <button onclick="adminDeleteListing('${l.id}')" class="bg-brand-red/20 text-brand-red px-2 py-1 rounded font-bold hover:bg-brand-red hover:text-dark-900 transition-all">Remove</button>
+                    `;
+                    pubContainer.appendChild(d);
+                });
+            }
 
+            // Topup Queue
             let container = document.getElementById('admin-queue-container');
             container.innerHTML = "";
-
+            let pendingRequests = state.topupRequests.filter(r => r.status === 'pending_audit');
             if (pendingRequests.length === 0) {
-                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending top-up proofs from users.</div>`;
+                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending top-up proofs.</div>`;
             } else {
                 pendingRequests.forEach(req => {
                     let div = document.createElement('div');
@@ -819,31 +804,26 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-xs font-bold text-brand-blue">User: ${req.email}</div>
-                                <div class="text-xs text-slate-300 mt-0.5">Top-Up Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
+                                <div class="text-xs text-slate-300 mt-0.5">Top-Up Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern: <b class="text-brand-green">${req.pattern}</b></div>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="processAdminAction('${req.id}', 'approved')" class="bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Verify & Credit</button>
-                                <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all border border-brand-red/30">Decline</button>
+                                <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Decline</button>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-3 pt-2 border-t border-dark-600">
-                            <div>
-                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Purchase Proof:</span>
-                                <img src="${req.screenshot}" alt="Purchase Proof" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full">
-                            </div>
-                            <div>
-                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Profile Picture:</span>
-                                <img src="${req.profilePic}" alt="Profile Picture" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full">
-                            </div>
+                            <div><span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Purchase Proof:</span><img src="${req.screenshot}" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full"></div>
+                            <div><span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Profile Picture:</span><img src="${req.profilePic}" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full"></div>
                         </div>
                     `;
                     container.appendChild(div);
                 });
             }
 
+            // Withdrawal Queue
             let withdrawContainer = document.getElementById('admin-withdraw-queue-container');
             withdrawContainer.innerHTML = "";
-
+            let pendingWithdrawals = state.withdrawals.filter(w => w.status === 'pending_fulfillment');
             if (pendingWithdrawals.length === 0) {
                 withdrawContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending withdrawal requests.</div>`;
             } else {
@@ -855,52 +835,33 @@
                             <div>
                                 <div class="text-xs font-bold text-brand-blue">${w.email}</div>
                                 <div class="text-xs text-slate-300 mt-0.5">Base Gold: <b class="text-brand-gold">${w.baseAmount} 🪙</b> | Randomized Price: <b class="text-brand-green">${w.randomizedPrice} Gold</b></div>
-                                <div class="text-xs text-slate-400 mt-1">Profile: <b>${w.profile}</b> | G22 Pattern: <b class="text-brand-purple">${w.pattern}</b></div>
+                                <div class="text-xs text-slate-400 mt-1">Profile: <b>${w.profile}</b> | Pattern: <b>${w.pattern}</b></div>
                             </div>
-                            <div>
-                                <button onclick="processAdminWithdrawal('${w.id}', 'completed')" class="bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all uppercase">Fulfill Payout</button>
-                            </div>
+                            <button onclick="processAdminWithdrawal('${w.id}', 'completed')" class="bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all uppercase">Fulfill</button>
                         </div>
-                        <div class="pt-2 border-t border-dark-600">
-                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Withdrawal Profile Picture Verification:</span>
-                            <img src="${w.profilePic}" alt="Profile Picture" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950">
-                        </div>
+                        <div class="pt-2 border-t border-dark-600"><span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Profile Picture:</span><img src="${w.profilePic}" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950"></div>
                     `;
                     withdrawContainer.appendChild(div);
                 });
             }
 
+            // Users Directory
             let usersContainer = document.getElementById('admin-users-list-container');
             usersContainer.innerHTML = "";
-            let allUsers = Object.values(state.users);
-
-            if (allUsers.length === 0) {
-                usersContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No registered users.</div>`;
-            } else {
-                allUsers.forEach(u => {
-                    let uDiv = document.createElement('div');
-                    uDiv.className = "flex items-center justify-between bg-dark-900 p-3 rounded-xl border border-dark-600 text-xs";
-                    uDiv.innerHTML = `
-                        <div class="flex items-center gap-3">
-                            <img src="${u.avatar}" class="w-8 h-8 rounded-lg object-cover border border-dark-600">
-                            <div>
-                                <div class="font-bold text-slate-200">${u.email}</div>
-                                <div class="text-[10px] text-slate-400">Password: <span class="text-brand-red font-semibold">[INVISIBLE TO ADMIN]</span></div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <span class="font-black text-brand-green">${u.balance.toFixed(2)} 🪙</span>
-                        </div>
-                    `;
-                    usersContainer.appendChild(uDiv);
-                });
-            }
+            Object.values(state.users).forEach(u => {
+                let uDiv = document.createElement('div');
+                uDiv.className = "flex items-center justify-between bg-dark-900 p-3 rounded-xl border border-dark-600 text-xs";
+                uDiv.innerHTML = `
+                    <div class="flex items-center gap-3"><img src="${u.avatar}" class="w-8 h-8 rounded-lg object-cover border border-dark-600"><div class="font-bold text-slate-200">${u.email}</div></div>
+                    <div class="text-right"><span class="font-black text-brand-green">${u.balance.toFixed(2)} 🪙</span></div>
+                `;
+                usersContainer.appendChild(uDiv);
+            });
         }
 
         function processAdminAction(ticketId, decision) {
             let state = getSystemState();
             let req = state.topupRequests.find(r => r.id === ticketId);
-
             if (req && req.status === 'pending_audit') {
                 req.status = decision;
                 if (decision === 'approved' && state.users[req.email]) {
@@ -916,7 +877,6 @@
         function processAdminWithdrawal(withdrawId, decision) {
             let state = getSystemState();
             let w = state.withdrawals.find(item => item.id === withdrawId);
-
             if (w && w.status === 'pending_fulfillment') {
                 w.status = decision;
                 saveSystemState(state);
