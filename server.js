@@ -333,3 +333,15 @@ app.listen(PORT, () => {
     console.log(`[LootHUB Engine] Enterprise server active and listening on port ${PORT}`);
 });
 
+
+
+
+
+
+
+// Add this route in your server.js (before app.listen)
+app.get('/:palermo', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
+
+
