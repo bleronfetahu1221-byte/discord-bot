@@ -40,6 +40,10 @@
                     <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar)</label>
+                    <input type="file" id="auth-avatar-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
+                </div>
                 <div id="auth-error" class="text-xs text-brand-red text-center font-medium min-h-[16px]"></div>
                 
                 <div class="grid grid-cols-2 gap-3 pt-2">
@@ -56,7 +60,7 @@
         <!-- HEADER STATUSBAR -->
         <header class="bg-dark-800 border border-dark-600 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-lg">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-blue/10 border border-brand-blue/30 flex items-center justify-center font-black text-brand-blue">LH</div>
+                <img id="nav-user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-xl object-cover border border-brand-blue/30 bg-dark-900">
                 <div>
                     <div id="nav-user-email" class="text-xs text-slate-400 font-medium">user@gmail.com</div>
                     <div class="text-sm font-bold text-slate-100">Verified Operator</div>
@@ -157,6 +161,10 @@
                             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Upload Confirmation Screenshot (Purchase Proof)</label>
                             <input type="file" id="topup-screenshot-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (In-Game Screenshot / Avatar Verification)</label>
+                            <input type="file" id="topup-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
+                        </div>
                         <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Submit Purchase Proof for Verification</button>
                         <div id="topup-status-msg" class="text-center text-xs font-bold mt-2"></div>
                     </div>
@@ -182,6 +190,10 @@
                             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">G22 Item Pattern Number (e.g., Sticker/Float ID)</label>
                             <input type="text" id="withdraw-pattern-input" placeholder="482" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                         </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (In-Game Screenshot / Avatar Verification)</label>
+                            <input type="file" id="withdraw-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
+                        </div>
                         <button onclick="dispatchRandomizedWithdrawal()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Generate Randomized Payout Ticket</button>
                         <div id="withdraw-output-box" class="mt-4"></div>
                     </div>
@@ -197,7 +209,7 @@
                     <div id="admin-login-box" class="space-y-4 max-w-md mx-auto">
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Admin Security Passcode</label>
-                            <input type="password" id="admin-passcode-input" placeholder="100200100" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-gold">
+                            <input type="password" id="admin-passcode-input" placeholder="••••••••" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-gold">
                         </div>
                         <button onclick="unlockAdminPanel()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-3 rounded-lg text-sm transition-all uppercase">Unlock Operations Console</button>
                     </div>
@@ -239,7 +251,7 @@
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue (Screenshots)</h3>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue (Screenshots & Profiles)</h3>
                             <div id="admin-queue-container" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
                         </div>
 
@@ -261,7 +273,7 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v3";
+        const DB_KEY = "loothub_enterprise_state_v4";
         
         function getSystemState() {
             let state = localStorage.getItem(DB_KEY);
@@ -291,6 +303,7 @@
         function handleAuth(type) {
             const email = document.getElementById('auth-email').value.trim().toLowerCase();
             const password = document.getElementById('auth-password').value;
+            const avatarInput = document.getElementById('auth-avatar-file');
             const errorBox = document.getElementById('auth-error');
 
             if (!email || !password) {
@@ -309,19 +322,36 @@
                     errorBox.innerText = "Account already registered. Please sign in.";
                     return;
                 }
-                state.users[email] = {
-                    email: email,
-                    password: password,
-                    balance: 200.00 // Welcome Bonus
-                };
-                saveSystemState(state);
+
+                if (avatarInput.files && avatarInput.files[0]) {
+                    let reader = new FileReader();
+                    reader.onload = function(e) {
+                        finalizeRegistration(email, password, e.target.result, state);
+                    };
+                    reader.readAsDataURL(avatarInput.files[0]);
+                } else {
+                    // Default fallback avatar placeholder
+                    finalizeRegistration(email, password, "https://api.dicebear.com/7.x/bottts/svg?seed=" + email, state);
+                }
             } else {
                 if (!state.users[email] || state.users[email].password !== password) {
                     errorBox.innerText = "Invalid credentials or account does not exist.";
                     return;
                 }
+                sessionUserEmail = email;
+                bootApplicationSession();
             }
+        }
 
+        function finalizeRegistration(email, password, avatarDataUrl, state) {
+            state.users[email] = {
+                email: email,
+                password: password,
+                avatar: avatarDataUrl,
+                balance: 0.00, // Starting balance is 0
+                lastTopupTimestamp: 0
+            };
+            saveSystemState(state);
             sessionUserEmail = email;
             bootApplicationSession();
         }
@@ -330,6 +360,13 @@
             document.getElementById('auth-overlay').classList.add('hidden');
             document.getElementById('app-wrapper').classList.remove('hidden');
             document.getElementById('nav-user-email').innerText = sessionUserEmail;
+            
+            let state = getSystemState();
+            let user = state.users[sessionUserEmail];
+            if (user && user.avatar) {
+                document.getElementById('nav-user-avatar').src = user.avatar;
+            }
+
             refreshUserBalanceUI();
             renderClientAdminListings();
         }
@@ -454,7 +491,7 @@
             refreshUserBalanceUI();
         }
 
-        // TOP-UP MODULE (WITH SCREENSHOT PROOF)
+        // TOP-UP MODULE (WITH SCREENSHOT PROOF & PROFILE PIC)
         function renderClientAdminListings() {
             let state = getSystemState();
             let container = document.getElementById('client-admin-listings-view');
@@ -482,6 +519,7 @@
 
         function submitTopupProofWithScreenshot() {
             let fileInput = document.getElementById('topup-screenshot-file');
+            let profilePicInput = document.getElementById('topup-profile-pic-file');
             let statusMsg = document.getElementById('topup-status-msg');
 
             if (!fileInput.files || fileInput.files.length === 0) {
@@ -489,42 +527,64 @@
                 statusMsg.innerText = "Please attach a confirmation screenshot showing you bought the listed G22!";
                 return;
             }
+            if (!profilePicInput.files || profilePicInput.files.length === 0) {
+                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
+                statusMsg.innerText = "Please attach your profile picture verification!";
+                return;
+            }
 
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let screenshotDataUrl = e.target.result;
-                let state = getSystemState();
-                
-                let reqId = 'TOPUP_' + Date.now();
-                let defaultListing = state.adminListings[0] || { price: 100, pattern: '542' };
+            let reader1 = new FileReader();
+            reader1.onload = function(e1) {
+                let screenshotDataUrl = e1.target.result;
 
-                state.topupRequests.push({
-                    id: reqId,
-                    email: sessionUserEmail,
-                    amount: defaultListing.price,
-                    pattern: defaultListing.pattern,
-                    screenshot: screenshotDataUrl,
-                    status: 'pending_audit'
-                });
+                let reader2 = new FileReader();
+                reader2.onload = function(e2) {
+                    let profilePicDataUrl = e2.target.result;
+                    let state = getSystemState();
+                    
+                    let reqId = 'TOPUP_' + Date.now();
+                    let defaultListing = state.adminListings[0] || { price: 100, pattern: '542' };
 
-                saveSystemState(state);
+                    state.topupRequests.push({
+                        id: reqId,
+                        email: sessionUserEmail,
+                        amount: defaultListing.price,
+                        pattern: defaultListing.pattern,
+                        screenshot: screenshotDataUrl,
+                        profilePic: profilePicDataUrl,
+                        status: 'pending_audit'
+                    });
 
-                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
-                statusMsg.innerText = "Confirmation screenshot and top-up order submitted successfully! Awaiting admin review.";
-                fileInput.value = "";
+                    saveSystemState(state);
+
+                    statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
+                    statusMsg.innerText = "Confirmation screenshot and profile picture submitted successfully! Awaiting admin review.";
+                    fileInput.value = "";
+                    profilePicInput.value = "";
+                };
+                reader2.readAsDataURL(profilePicInput.files[0]);
             };
-            reader.readAsDataURL(fileInput.files[0]);
+            reader1.readAsDataURL(fileInput.files[0]);
         }
 
-        // WITHDRAWAL MODULE (RANDOMIZED PRICING & PROFILE/PATTERN SUBMISSION)
+        // WITHDRAWAL MODULE (CHECKS 3-DAY TOPUP CONDITION)
         function dispatchRandomizedWithdrawal() {
             let amountInput = parseFloat(document.getElementById('withdraw-gold-input').value);
             let profileInput = document.getElementById('withdraw-profile-input').value.trim();
             let patternInput = document.getElementById('withdraw-pattern-input').value.trim();
+            let profilePicInput = document.getElementById('withdraw-profile-pic-file');
             let outputBox = document.getElementById('withdraw-output-box');
 
             let state = getSystemState();
             let user = state.users[sessionUserEmail];
+
+            // Verify if user topped up in the last 3 days (72 hours)
+            let threeDaysInMillis = 3 * 24 * 60 * 60 * 1000;
+            let now = Date.now();
+            if (!user.lastTopupTimestamp || (now - user.lastTopupTimestamp) > threeDaysInMillis) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Withdrawal Blocked: You must have completed an approved top-up within the last 3 days to request a payout.</div>`;
+                return;
+            }
 
             if (!amountInput || amountInput < 50 || amountInput > user.balance) {
                 outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Minimum withdrawal is 50 🪙 and must not exceed current vault balance.</div>`;
@@ -538,36 +598,47 @@
                 outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please provide your G22 item pattern number.</div>`;
                 return;
             }
+            if (!profilePicInput.files || profilePicInput.files.length === 0) {
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please attach your profile picture verification for withdrawal.</div>`;
+                return;
+            }
 
-            // Generate randomized decimal price between amountInput.01 to amountInput.99
-            let randomCents = (Math.random() * 0.98 + 0.01).toFixed(2);
-            let randomizedPrice = parseFloat((Math.floor(amountInput) + parseFloat(randomCents)).toFixed(2));
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let profilePicDataUrl = e.target.result;
 
-            user.balance -= amountInput;
-            
-            let withdrawId = 'WITHDRAW_' + Date.now();
-            state.withdrawals.push({
-                id: withdrawId,
-                email: sessionUserEmail,
-                baseAmount: amountInput,
-                randomizedPrice: randomizedPrice,
-                profile: profileInput,
-                pattern: patternInput,
-                status: 'pending_fulfillment'
-            });
+                // Generate randomized decimal price between amountInput.01 to amountInput.99
+                let randomCents = (Math.random() * 0.98 + 0.01).toFixed(2);
+                let randomizedPrice = parseFloat((Math.floor(amountInput) + parseFloat(randomCents)).toFixed(2));
 
-            saveSystemState(state);
-            refreshUserBalanceUI();
+                user.balance -= amountInput;
+                
+                let withdrawId = 'WITHDRAW_' + Date.now();
+                state.withdrawals.push({
+                    id: withdrawId,
+                    email: sessionUserEmail,
+                    baseAmount: amountInput,
+                    randomizedPrice: randomizedPrice,
+                    profile: profileInput,
+                    pattern: patternInput,
+                    profilePic: profilePicDataUrl,
+                    status: 'pending_fulfillment'
+                });
 
-            outputBox.innerHTML = `
-                <div class="p-4 bg-dark-900 border border-brand-green/40 rounded-xl space-y-2">
-                    <div class="text-xs font-bold text-brand-green uppercase">Randomized Withdrawal Ticket Generated</div>
-                    <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
-                    <div class="text-xs text-slate-300">Instruction: List your G22 on the marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
-                    <div class="text-xs text-slate-300">Profile Logged: <b>${profileInput}</b> | Pattern: <b>${patternInput}</b></div>
-                    <div class="text-xs text-slate-400 mt-1">Admin bot will locate your specific listing matching price ${randomizedPrice} and pattern ${patternInput} for fulfillment.</div>
-                </div>
-            `;
+                saveSystemState(state);
+                refreshUserBalanceUI();
+
+                outputBox.innerHTML = `
+                    <div class="p-4 bg-dark-900 border border-brand-green/40 rounded-xl space-y-2">
+                        <div class="text-xs font-bold text-brand-green uppercase">Randomized Withdrawal Ticket Generated</div>
+                        <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
+                        <div class="text-xs text-slate-300">Instruction: List your G22 on the marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
+                        <div class="text-xs text-slate-300">Profile Logged: <b>${profileInput}</b> | Pattern: <b>${patternInput}</b></div>
+                        <div class="text-xs text-slate-400 mt-1">Admin bot will locate your specific listing matching price ${randomizedPrice} and pattern ${patternInput} for fulfillment.</div>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(profilePicInput.files[0]);
         }
 
         // ADMIN MODULE CONSOLE
@@ -636,9 +707,15 @@
                                 <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all border border-brand-red/30">Decline</button>
                             </div>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Attached Proof Screenshot:</span>
-                            <img src="${req.screenshot}" alt="Purchase Proof" class="max-h-40 rounded-lg border border-dark-600 object-contain bg-dark-950">
+                        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-dark-600">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Purchase Proof Screenshot:</span>
+                                <img src="${req.screenshot}" alt="Purchase Proof" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full">
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">User Profile Picture:</span>
+                                <img src="${req.profilePic}" alt="Profile Picture" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full">
+                            </div>
                         </div>
                     `;
                     container.appendChild(div);
@@ -654,15 +731,21 @@
             } else {
                 pendingWithdrawals.forEach(w => {
                     let div = document.createElement('div');
-                    div.className = "bg-dark-900 border border-dark-600 p-4 rounded-xl flex items-center justify-between gap-4";
+                    div.className = "bg-dark-900 border border-dark-600 p-4 rounded-xl space-y-3";
                     div.innerHTML = `
-                        <div>
-                            <div class="text-xs font-bold text-brand-blue">${w.email}</div>
-                            <div class="text-xs text-slate-300 mt-0.5">Base Gold: <b class="text-brand-gold">${w.baseAmount} 🪙</b> | Randomized Price: <b class="text-brand-green">${w.randomizedPrice} Gold</b></div>
-                            <div class="text-xs text-slate-400 mt-1">Profile: <b>${w.profile}</b> | G22 Pattern: <b class="text-brand-purple">${w.pattern}</b></div>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-bold text-brand-blue">${w.email}</div>
+                                <div class="text-xs text-slate-300 mt-0.5">Base Gold: <b class="text-brand-gold">${w.baseAmount} 🪙</b> | Randomized Price: <b class="text-brand-green">${w.randomizedPrice} Gold</b></div>
+                                <div class="text-xs text-slate-400 mt-1">Profile: <b>${w.profile}</b> | G22 Pattern: <b class="text-brand-purple">${w.pattern}</b></div>
+                            </div>
+                            <div>
+                                <button onclick="processAdminWithdrawal('${w.id}', 'completed')" class="bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all uppercase">Fulfill Payout</button>
+                            </div>
                         </div>
-                        <div>
-                            <button onclick="processAdminWithdrawal('${w.id}', 'completed')" class="bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all uppercase">Fulfill Payout</button>
+                        <div class="pt-2 border-t border-dark-600">
+                            <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Withdrawal Profile Picture Verification:</span>
+                            <img src="${w.profilePic}" alt="Profile Picture" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950">
                         </div>
                     `;
                     withdrawContainer.appendChild(div);
@@ -678,6 +761,7 @@
                 req.status = decision;
                 if (decision === 'approved' && state.users[req.email]) {
                     state.users[req.email].balance += req.amount;
+                    state.users[req.email].lastTopupTimestamp = Date.now(); // Record topup timestamp for 3-day withdrawal rule
                 }
                 saveSystemState(state);
                 loadAdminQueueData();
