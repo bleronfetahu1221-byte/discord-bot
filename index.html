@@ -34,7 +34,7 @@
 
     <!-- AUTHENTICATION OVERLAY -->
     <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-dark-950/95 backdrop-blur-md hidden">
-        <div class="bg-dark-800 border border-dark-600 p-8 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden">
+        <div class="bg-dark-800 border border-dark-600 p-8 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto">
             <div class="absolute -top-12 -right-12 w-32 h-32 bg-brand-blue/10 rounded-full blur-2xl"></div>
             <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-brand-gold/10 rounded-full blur-2xl"></div>
             
@@ -52,6 +52,10 @@
                 <div>
                     <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password (Invisible to Admin)</label>
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Standoff 2 ID (Required for Registration)</label>
+                    <input type="text" id="auth-standoff-id" placeholder="e.g. 12345678" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar) - Optional</label>
@@ -76,7 +80,7 @@
                 <img id="nav-user-avatar" src="" alt="Avatar" class="w-10 h-10 rounded-xl object-cover border border-brand-blue/30 bg-dark-900">
                 <div>
                     <div id="nav-user-email" class="text-xs text-slate-400 font-medium">user@gmail.com</div>
-                    <div class="text-sm font-bold text-slate-100">Verified Operator</div>
+                    <div id="nav-user-so2-id" class="text-xs text-brand-blue font-bold">ID: 00000000</div>
                 </div>
             </div>
             
@@ -277,7 +281,7 @@
 
                         <div>
                             <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue (Direct Admin Inbound)</h3>
-                            <div id="admin-queue-container" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+                            <div id="admin-queue-container" class="space-y-3 max-h-96 overflow-y-auto pr-1"></div>
                         </div>
 
                         <div>
@@ -303,7 +307,7 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v9";
+        const DB_KEY = "loothub_enterprise_state_v10";
         const SESSION_KEY = "loothub_session_user";
         let selectedAdminListingId = null;
         
@@ -349,11 +353,13 @@
         function handleAuth(type) {
             const emailElem = document.getElementById('auth-email');
             const passwordElem = document.getElementById('auth-password');
+            const standoffIdElem = document.getElementById('auth-standoff-id');
             const avatarInput = document.getElementById('auth-avatar-file');
             const errorBox = document.getElementById('auth-error');
 
             const email = emailElem.value.trim().toLowerCase();
             const password = passwordElem.value;
+            const standoffId = standoffIdElem.value.trim();
 
             errorBox.innerText = "";
 
@@ -369,6 +375,10 @@
             let state = getSystemState();
 
             if (type === 'signup') {
+                if (!standoffId) {
+                    errorBox.innerText = "Standoff 2 ID is required for registration.";
+                    return;
+                }
                 if (state.users[email]) {
                     errorBox.innerText = "Account already registered. Please sign in.";
                     return;
@@ -377,7 +387,7 @@
                 let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/><circle cx='12' cy='7' r='4'/></svg>";
 
                 if (!avatarInput.files || !avatarInput.files[0]) {
-                    finalizeRegistration(email, password, defaultAvatar, state);
+                    finalizeRegistration(email, password, standoffId, defaultAvatar, state);
                     return;
                 }
 
@@ -386,23 +396,23 @@
                 reader.onload = function(e) {
                     if (finished) return;
                     finished = true;
-                    finalizeRegistration(email, password, e.target.result, state);
+                    finalizeRegistration(email, password, standoffId, e.target.result, state);
                 };
                 reader.onerror = function() {
                     if (finished) return;
                     finished = true;
-                    finalizeRegistration(email, password, defaultAvatar, state);
+                    finalizeRegistration(email, password, standoffId, defaultAvatar, state);
                 };
                 try {
                     reader.readAsDataURL(avatarInput.files[0]);
                     setTimeout(() => {
                         if (!finished) {
                             finished = true;
-                            finalizeRegistration(email, password, defaultAvatar, state);
+                            finalizeRegistration(email, password, standoffId, defaultAvatar, state);
                         }
                     }, 1000);
                 } catch(e) {
-                    finalizeRegistration(email, password, defaultAvatar, state);
+                    finalizeRegistration(email, password, standoffId, defaultAvatar, state);
                 }
             } else {
                 if (!state.users[email] || state.users[email].password !== password) {
@@ -415,10 +425,11 @@
             }
         }
 
-        function finalizeRegistration(email, password, avatarDataUrl, state) {
+        function finalizeRegistration(email, password, standoffId, avatarDataUrl, state) {
             state.users[email] = {
                 email: email,
                 password: password,
+                standoffId: standoffId,
                 avatar: avatarDataUrl,
                 balance: 0.00,
                 lastTopupTimestamp: 0
@@ -436,8 +447,13 @@
             
             let state = getSystemState();
             let user = state.users[sessionUserEmail];
-            if (user && user.avatar) {
-                document.getElementById('nav-user-avatar').src = user.avatar;
+            if (user) {
+                if (user.avatar) {
+                    document.getElementById('nav-user-avatar').src = user.avatar;
+                }
+                if (user.standoffId) {
+                    document.getElementById('nav-user-so2-id').innerText = "ID: " + user.standoffId;
+                }
             }
 
             refreshUserBalanceUI();
@@ -605,9 +621,10 @@
             });
         }
 
-        // INSTANT DISPATCH WITHOUT FILE READER LAG
         function submitTopupProofInstantly() {
             let customAmountInput = document.getElementById('topup-custom-amount');
+            let screenshotInput = document.getElementById('topup-screenshot-file');
+            let profilePicInput = document.getElementById('topup-profile-pic-file');
             let statusMsg = document.getElementById('topup-status-msg');
 
             statusMsg.innerText = "";
@@ -620,8 +637,11 @@
             }
 
             let state = getSystemState();
+            let userObj = state.users[sessionUserEmail];
             let matchedListing = state.adminListings.find(l => l.id === selectedAdminListingId);
+            let skinTitle = matchedListing ? matchedListing.skinName : "Custom Top-Up";
             let patternTag = matchedListing ? matchedListing.pattern : 'CUSTOM';
+            let listingPrice = matchedListing ? matchedListing.price : amount;
             let reqId = 'TOPUP_' + Date.now();
 
             let placeholderImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
@@ -629,10 +649,13 @@
             state.topupRequests.unshift({
                 id: reqId,
                 email: sessionUserEmail,
+                standoffId: userObj ? userObj.standoffId : "N/A",
                 amount: amount,
+                skinName: skinTitle,
+                skinPrice: listingPrice,
                 pattern: patternTag,
                 screenshot: placeholderImg,
-                profilePic: placeholderImg,
+                profilePic: (userObj && userObj.avatar) ? userObj.avatar : placeholderImg,
                 status: 'pending_audit',
                 timestamp: Date.now()
             });
@@ -641,8 +664,8 @@
             checkAdminAlertBadge();
 
             // Clear inputs
-            document.getElementById('topup-screenshot-file').value = "";
-            document.getElementById('topup-profile-pic-file').value = "";
+            screenshotInput.value = "";
+            profilePicInput.value = "";
             customAmountInput.value = "";
             selectedAdminListingId = null;
 
@@ -683,6 +706,7 @@
             state.withdrawals.push({
                 id: 'WITHDRAW_' + Date.now(),
                 email: sessionUserEmail,
+                standoffId: user.standoffId,
                 baseAmount: amountInput,
                 randomizedPrice: randomizedPrice,
                 profile: profileInput,
@@ -778,14 +802,34 @@
                     let div = document.createElement('div');
                     div.className = "bg-dark-900 border border-brand-gold/40 p-4 rounded-xl space-y-3 shadow-lg";
                     div.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="text-xs font-bold text-brand-blue">User: ${req.email}</div>
-                                <div class="text-xs text-slate-300 mt-0.5">Top-Up Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-600 pb-3">
+                            <div class="flex items-center gap-3">
+                                <img src="${req.profilePic}" class="w-10 h-10 rounded-xl object-cover border border-brand-blue/40" alt="Profile">
+                                <div>
+                                    <div class="text-xs font-bold text-brand-blue">Gmail: ${req.email}</div>
+                                    <div class="text-xs text-brand-gold font-semibold">Standoff 2 ID: ${req.standoffId}</div>
+                                </div>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="processAdminAction('${req.id}', 'approved')" class="bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Verify & Credit</button>
                                 <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Decline</button>
+                            </div>
+                        </div>
+
+                        <!-- Bought G22 Listing & Verification Images -->
+                        <div class="space-y-2 pt-1">
+                            <div class="text-xs text-slate-300">
+                                Bought G22 Item: <b class="text-brand-blue">${req.skinName}</b> &bull; Price: <b class="text-brand-gold">${req.skinPrice} Gold</b> &bull; Pattern Tag: <b class="text-brand-green">${req.pattern}</b>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 pt-2">
+                                <div class="bg-dark-800 p-2 rounded-lg border border-dark-600 text-center">
+                                    <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">Purchase Proof Screenshot</div>
+                                    <img src="${req.screenshot}" class="w-full h-24 object-cover rounded border border-dark-600" alt="Proof">
+                                </div>
+                                <div class="bg-dark-800 p-2 rounded-lg border border-dark-600 text-center">
+                                    <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">User Profile Picture</div>
+                                    <img src="${req.profilePic}" class="w-full h-24 object-cover rounded border border-dark-600" alt="Avatar">
+                                </div>
                             </div>
                         </div>
                     `;
@@ -805,7 +849,7 @@
                     div.innerHTML = `
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-xs font-bold text-brand-blue">${w.email}</div>
+                                <div class="text-xs font-bold text-brand-blue">${w.email} (ID: ${w.standoffId})</div>
                                 <div class="text-xs text-slate-300 mt-0.5">Base Gold: <b class="text-brand-gold">${w.baseAmount} 🪙</b> | Randomized Price: <b class="text-brand-green">${w.randomizedPrice} Gold</b></div>
                                 <div class="text-xs text-slate-400 mt-1">Profile: <b>${w.profile}</b> | Pattern: <b>${w.pattern}</b></div>
                             </div>
@@ -822,7 +866,13 @@
                 let uDiv = document.createElement('div');
                 uDiv.className = "flex items-center justify-between bg-dark-900 p-3 rounded-xl border border-dark-600 text-xs";
                 uDiv.innerHTML = `
-                    <div class="flex items-center gap-3"><img src="${u.avatar}" class="w-8 h-8 rounded-lg object-cover border border-dark-600"><div class="font-bold text-slate-200">${u.email}</div></div>
+                    <div class="flex items-center gap-3">
+                        <img src="${u.avatar}" class="w-8 h-8 rounded-lg object-cover border border-dark-600">
+                        <div>
+                            <div class="font-bold text-slate-200">${u.email}</div>
+                            <div class="text-[10px] text-brand-blue font-semibold">ID: ${u.standoffId}</div>
+                        </div>
+                    </div>
                     <div class="text-right"><span class="font-black text-brand-green">${u.balance.toFixed(2)} 🪙</span></div>
                 `;
                 usersContainer.appendChild(uDiv);
