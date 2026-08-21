@@ -3,491 +3,585 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LootHUB - Premium Standoff 2 Platform</title>
+    <title>LootHUB Enterprise - Ultimate Standoff 2 Platform</title>
     <style>
         :root {
-            --bg-main: #0b0f19;
-            --bg-card: #131d31;
-            --bg-input: #090d16;
+            --bg-main: #070913;
+            --bg-card: #0f172a;
+            --bg-input: #050811;
             --border-color: #1e293b;
             --accent-blue: #38bdf8;
             --accent-green: #4ade80;
             --accent-gold: #f59e0b;
             --accent-red: #ef4444;
             --text-main: #f8fafc;
+            --text-muted: #94a3b8;
         }
+        * { box-sizing: border-box; }
         body {
             background-color: var(--bg-main);
             color: var(--text-main);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             margin: 0;
-            padding: 15px;
-        }
-        .container {
-            max-width: 950px;
-            margin: auto;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
             padding: 20px;
-            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
         }
-        h2, h3 { color: var(--accent-blue); text-align: center; margin-top: 0; }
-        .nav-bar {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
+        
+        /* Authentication Screen Overlay */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(4, 6, 12, 0.96); display: flex; align-items: center;
+            justify-content: center; z-index: 9999;
         }
-        .nav-bar button {
-            background: var(--border-color);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: background 0.2s;
+        .login-card {
+            background: var(--bg-card); border: 1px solid var(--border-color);
+            padding: 40px; border-radius: 16px; width: 100%; max-width: 400px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
-        .nav-bar button:hover { background: #334155; }
-        .nav-bar button.active { background: var(--accent-blue); color: var(--bg-main); }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 6px 0;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: white;
-            border-radius: 6px;
-            box-sizing: border-box;
+
+        /* Layout Architecture */
+        .app-wrapper {
+            max-width: 1000px; margin: 0 auto; background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 16px;
+            padding: 30px; box-shadow: 0 15px 40px rgba(0,0,0,0.7); display: none;
         }
-        button.action-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent-green);
-            color: #000;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: opacity 0.2s;
+        .user-statusbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: var(--bg-input); padding: 14px 20px; border-radius: 10px;
+            margin-bottom: 25px; border: 1px solid var(--border-color);
         }
-        button.action-btn:hover { opacity: 0.9; }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 12px;
-            margin-top: 10px;
+        
+        /* Navigation System */
+        .nav-grid {
+            display: flex; gap: 8px; margin-bottom: 25px; justify-content: center;
+            flex-wrap: wrap; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;
         }
-        .card {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
+        .nav-btn {
+            background: var(--border-color); color: var(--text-main); border: none;
+            padding: 10px 16px; border-radius: 8px; cursor: pointer; font-weight: 600;
+            font-size: 13px; transition: all 0.2s ease-in-out;
         }
-        .notice {
-            background: rgba(245, 158, 11, 0.1);
-            border: 1px dashed var(--accent-gold);
-            padding: 12px;
-            border-radius: 8px;
-            color: var(--accent-gold);
-            font-size: 13px;
-            margin-bottom: 12px;
-            text-align: center;
-            line-height: 1.4;
+        .nav-btn:hover { background: #334155; transform: translateY(-1px); }
+        .nav-btn.active { background: var(--accent-blue); color: var(--bg-main); box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
+
+        .tab-panel { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Form Controls & Elements */
+        input, select, textarea {
+            width: 100%; padding: 12px 14px; margin: 8px 0 16px 0; background: var(--bg-input);
+            border: 1px solid var(--border-color); color: var(--text-main); border-radius: 8px;
+            font-size: 14px; outline: none; transition: border-color 0.2s;
         }
-        .preview-box {
-            background: var(--bg-input);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-top: 10px;
+        input:focus, select:focus { border-color: var(--accent-blue); }
+        label { font-size: 12px; color: var(--text-muted); font-weight: 600; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .btn-action {
+            width: 100%; padding: 14px; background: var(--accent-green); color: #050811;
+            font-weight: bold; border: none; border-radius: 8px; cursor: pointer;
+            font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.2s;
         }
-        label { font-size: 12px; color: #94a3b8; display: block; margin-top: 6px; }
-        .miner-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            max-width: 320px;
-            margin: 15px auto;
+        .btn-action:hover { opacity: 0.9; }
+
+        /* Component Panels */
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 15px; }
+        .card-item { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; text-align: center; }
+        .notice-box {
+            background: rgba(245, 158, 11, 0.08); border: 1px dashed var(--accent-gold);
+            padding: 16px; border-radius: 10px; color: var(--accent-gold); font-size: 13px;
+            margin-bottom: 20px; text-align: center; line-height: 1.5;
         }
-        .miner-tile {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            height: 65px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
+        .preview-pane { background: var(--bg-input); padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); margin-top: 15px; }
+
+        /* Case Roller Animation UI */
+        .roller-wrapper {
+            width: 100%; overflow: hidden; background: var(--bg-input); border: 2px solid var(--border-color);
+            border-radius: 12px; height: 130px; position: relative; margin: 25px 0; display: flex; align-items: center;
         }
-        .miner-tile:hover { border-color: var(--accent-blue); }
+        .roller-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: var(--accent-gold); transform: translateX(-50%); z-index: 10; box-shadow: 0 0 10px var(--accent-gold); }
+        .roller-track { display: flex; position: absolute; left: 0; transition: left 4.5s cubic-bezier(0.06, 0.82, 0.12, 1); }
+        .roller-skin-card {
+            min-width: 140px; height: 105px; background: #131d31; border: 1px solid var(--border-color);
+            border-radius: 8px; margin-right: 10px; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; font-size: 12px; text-align: center; padding: 8px;
+        }
+
+        /* Miner Grid Board System */
+        .miner-board-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-width: 340px; margin: 20px auto;
+        }
+        .miner-tile-cell {
+            background: var(--bg-input); border: 1px solid var(--border-color); height: 75px; border-radius: 8px;
+            cursor: pointer; font-size: 24px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+        }
+        .miner-tile-cell:hover { border-color: var(--accent-blue); background: #0f1a30; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>LootHUB Platform</h2>
-        <div style="display: flex; justify-content: space-between; background: var(--bg-input); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
-            <span>User: <b style="color: var(--accent-blue);">Standoff_Player_1</b></span>
-            <span>Balance: <b id="user-balance" style="color: var(--accent-green);">350</b> 🪙 Gold</span>
+    <!-- AUTHENTICATION OVERLAY SCREEN -->
+    <div id="login-overlay">
+        <div class="login-card">
+            <h2 style="color: var(--accent-blue); margin-top: 0;">LootHUB Portal</h2>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Enter your unique Standoff 2 handle to initialize session access.</p>
+            <input type="text" id="auth-username-input" placeholder="e.g., StandoffElite_X" />
+            <button class="btn-action" onclick="executePlatformLogin()">Access Hub</button>
+        </div>
+    </div>
+
+    <!-- MASTER APP CONTAINER -->
+    <div class="app-wrapper" id="master-app-container">
+        <h2 style="text-align: center; color: var(--accent-blue); margin-top: 0;">LootHUB Platform Enterprise</h2>
+        
+        <div class="user-statusbar">
+            <span>Operator: <b id="ui-current-username" style="color: var(--accent-blue);"></b></span>
+            <span>Vault Reserve: <b id="ui-current-balance" style="color: var(--accent-green);">0.00</b> 🪙 Gold</span>
         </div>
 
-        <div class="nav-bar">
-            <button onclick="switchTab('cases')" id="btn-cases" class="active">Cases</button>
-            <button onclick="switchTab('upgrader')" id="btn-upgrader">Upgrader</button>
-            <button onclick="switchTab('miner')" id="btn-miner">Miner Game</button>
-            <button onclick="switchTab('topup')" id="btn-topup">Top-Up Market</button>
-            <button onclick="switchTab('withdraw')" id="btn-withdraw">Withdrawal</button>
-            <button onclick="switchTab('admin')" id="btn-admin">Admin Panel</button>
+        <div class="nav-grid">
+            <button class="nav-btn active" onclick="switchTabPanel('cases')" id="navtab-cases">Case Opening</button>
+            <button class="nav-btn" onclick="switchTabPanel('upgrader')" id="navtab-upgrader">Skin Upgrader</button>
+            <button class="nav-btn" onclick="switchTabPanel('miner')" id="navtab-miner">Miner Game</button>
+            <button class="nav-btn" onclick="switchTabPanel('topup')" id="navtab-topup">Top-Up Market</button>
+            <button class="nav-btn" onclick="switchTabPanel('withdraw')" id="navtab-withdraw">Withdrawal</button>
+            <button class="nav-btn" onclick="switchTabPanel('admin')" id="navtab-admin">Admin Dashboard</button>
         </div>
 
-        <!-- CASES TAB -->
-        <div id="tab-content-cases" class="tab-content active">
-            <h3>Hardcore Cases</h3>
-            <div class="grid">
-                <div class="card">
+        <!-- TAB 1: CASES OPENING MODULE -->
+        <div id="panel-cases" class="tab-panel active">
+            <h3 style="text-align:center;">Hardcore Case Repository</h3>
+            <div class="grid-cards">
+                <div class="card-item">
+                    <h4>Starter Case</h4>
+                    <p style="color: var(--accent-gold); font-weight: bold;">Cost: 25 🪙</p>
+                    <button class="btn-action" onclick="dispatchCaseRoll('starter')">Open Case</button>
+                </div>
+                <div class="card-item">
                     <h4>Pro Case</h4>
-                    <p style="color: var(--accent-gold);">Cost: 50 🪙</p>
-                    <button class="action-btn" onclick="openCase(50, 'pro')">Open Case</button>
-                </div>
-                <div class="card">
-                    <h4>Legendary Case</h4>
-                    <p style="color: var(--accent-gold);">Cost: 200 🪙</p>
-                    <button class="action-btn" onclick="openCase(200, 'legendary')">Open Case</button>
+                    <p style="color: var(--accent-gold); font-weight: bold;">Cost: 150 🪙</p>
+                    <button class="btn-action" onclick="dispatchCaseRoll('pro')">Open Case</button>
                 </div>
             </div>
-            <div id="case-result" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px;"></div>
-        </div>
 
-        <!-- UPGRADER TAB -->
-        <div id="tab-content-upgrader" class="tab-content">
-            <h3>Skin Upgrader</h3>
-            <p style="text-align: center; font-size: 13px; color: #94a3b8;">Risk your gold for a higher multiplier payout (Harder Odds).</p>
-            <label>Gold Amount to Risk:</label>
-            <input type="number" id="upgrade-bet" value="50" />
-            <label>Target Multiplier:</label>
-            <select id="upgrade-multiplier">
-                <option value="2">2.0x (45% Win Chance)</option>
-                <option value="5">5.0x (18% Win Chance)</option>
-                <option value="10">10.0x (8% Win Chance)</option>
-            </select>
-            <button class="action-btn" onclick="playUpgrader()">Launch Upgrade</button>
-            <div id="upgrade-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
-        </div>
-
-        <!-- MINER TAB -->
-        <div id="tab-content-miner" class="tab-content">
-            <h3>Miner Field</h3>
-            <p style="text-align: center; font-size: 13px; color: #94a3b8;">Uncover gems and avoid mines to multiply your bet!</p>
-            <label>Bet Amount:</label>
-            <input type="number" id="miner-bet" value="30" />
-            <button class="action-btn" onclick="startMinerGame()">Start Game</button>
-            <div class="miner-grid" id="miner-board"></div>
-            <div id="miner-msg" style="text-align: center; font-weight: bold; margin-top: 10px;"></div>
-        </div>
-
-        <!-- TOP UP TAB -->
-        <div id="tab-content-topup" class="tab-content">
-            <h3>Market Top-Up</h3>
-            <div class="notice" id="topup-info-box">Loading active market listing set by admin...</div>
-            <label>Standoff 2 Profile Photo (Filename or URL):</label>
-            <input type="text" id="topup-profile" placeholder="profile_screen.png" />
-            <label>Purchase Proof Screenshot (Filename or URL):</label>
-            <input type="text" id="topup-proof" placeholder="market_receipt.png" />
-            <button class="action-btn" onclick="submitTopUpClaim()">Submit Top-Up Proof</button>
-            <div id="topup-status" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
-        </div>
-
-        <!-- WITHDRAWAL TAB -->
-        <div id="tab-content-withdraw" class="tab-content">
-            <h3>Gold Withdrawal (Min 20 🪙)</h3>
-            <label>Amount of Gold to Withdraw:</label>
-            <input type="number" id="withdraw-amount" min="20" placeholder="e.g. 50" />
-            <label>Skin Item Name (e.g., G22 | Carbon):</label>
-            <input type="text" id="withdraw-skin" placeholder="Skin name" />
-            <label>Skin Pattern Code:</label>
-            <input type="text" id="withdraw-pattern" placeholder="Pattern code" />
-            <label>Standoff 2 Profile Photo Link/Name:</label>
-            <input type="text" id="withdraw-profile" placeholder="profile_screen.png" />
-            <button class="action-btn" style="background: var(--accent-blue); color: #000;" onclick="requestWithdrawal()">Generate Listing Instructions</button>
-            <div id="withdraw-result" style="margin-top: 15px;"></div>
-        </div>
-
-        <!-- ADMIN PANEL TAB -->
-        <div id="tab-content-admin" class="tab-content">
-            <h3>Admin Management Dashboard</h3>
-            <input type="password" id="admin-pass" placeholder="Enter Admin Passcode (100200100)" />
-            <div class="preview-box">
-                <h4 style="margin: 0 0 8px 0; color: var(--accent-gold);">Set Active Top-Up Listing</h4>
-                <input type="text" id="adm-item" placeholder="Item Name (e.g., G22 | Carbon)" />
-                <input type="number" id="adm-price" placeholder="Price in Gold" />
-                <input type="text" id="adm-pattern" placeholder="Pattern Code" />
-                <button class="action-btn" style="background: var(--accent-gold); color: #000;" onclick="adminSetTopup()">Publish Live</button>
+            <!-- Roller Viewport Matrix -->
+            <div class="roller-wrapper">
+                <div class="roller-line"></div>
+                <div class="roller-track" id="case-roller-track"></div>
             </div>
-            <button class="action-btn" style="background: #64748b; color: white; margin-top: 10px;" onclick="loadAdminQueues()">Load Pending Queues</button>
-            <div id="admin-queues-output" style="margin-top: 12px; font-size: 13px; line-height: 1.5;"></div>
+            <div id="case-outcome-display" style="text-align: center; font-weight: bold; font-size: 16px; margin-top: 15px;"></div>
+        </div>
+
+        <!-- TAB 2: SKIN UPGRADER MODULE -->
+        <div id="panel-upgrader" class="tab-panel">
+            <h3 style="text-align:center;">Multiplier Risk Upgrader</h3>
+            <p style="text-align: center; font-size: 13px; color: var(--text-muted);">Risk specific vault capital against high-risk structural multipliers.</p>
+            <div style="max-width: 400px; margin: 0 auto;">
+                <label>Gold Stake Amount:</label>
+                <input type="number" id="upgrader-stake" value="50" min="1" />
+                <label>Target Multiplier Factor:</label>
+                <select id="upgrader-mult-select">
+                    <option value="2">2.0x Multiplier (45% Success Chance)</option>
+                    <option value="5">5.0x Multiplier (18% Success Chance)</option>
+                    <option value="10">10.0x Multiplier (8% Success Chance)</option>
+                </select>
+                <button class="btn-action" onclick="executeUpgraderRun()">Execute Upgrade Sequence</button>
+                <div id="upgrader-outcome-msg" style="text-align: center; font-weight: bold; margin-top: 15px; font-size: 15px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 3: MINER GRID MODULE -->
+        <div id="panel-miner" class="tab-panel">
+            <h3 style="text-align:center;">Tile Miner Multiplier Game</h3>
+            <p style="text-align: center; font-size: 13px; color: var(--text-muted);">Uncover crystal nodes while bypassing hazard tiles.</p>
+            <div style="max-width: 340px; margin: 0 auto;">
+                <label>Game Entry Stake:</label>
+                <input type="number" id="miner-stake" value="30" min="1" />
+                <button class="btn-action" onclick="initializeMinerGameSession()">Launch Miner Board</button>
+            </div>
+            <div class="miner-board-grid" id="miner-matrix-board"></div>
+            <div id="miner-status-message" style="text-align: center; font-weight: bold; margin-top: 10px;"></div>
+        </div>
+
+        <!-- TAB 4: MARKET TOP-UP MODULE -->
+        <div id="panel-topup" class="tab-panel">
+            <h3 style="text-align:center;">Marketplace Top-Up Protocol</h3>
+            <div class="notice-box" id="topup-live-banner">Synchronizing active market asset feed...</div>
+            <div style="max-width: 500px; margin: 0 auto;">
+                <label>Standoff 2 Profile Photo (Filename or URL):</label>
+                <input type="text" id="topup-profile-input" placeholder="e.g., profile_capture.png" />
+                <label>Market Purchase Proof Screenshot (Filename or URL):</label>
+                <input type="text" id="topup-proof-input" placeholder="e.g., receipt_proof.png" />
+                <button class="btn-action" onclick="submitTopUpProofClaim()">Confirm Purchase & Submit Claim</button>
+                <div id="topup-feedback-status" style="text-align: center; font-weight: bold; margin-top: 12px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 5: WITHDRAWAL MODULE -->
+        <div id="panel-withdraw" class="tab-panel">
+            <h3 style="text-align:center;">Gold Payout Withdrawal Portal</h3>
+            <p style="text-align: center; font-size: 13px; color: var(--text-muted);">Minimum withdrawal threshold: 20 Gold. Automated randomized decimals applied.</p>
+            <div style="max-width: 500px; margin: 0 auto;">
+                <label>Gold Amount to Payout (Min 20):</label>
+                <input type="number" id="withdraw-amount-input" min="20" placeholder="e.g., 100" />
+                <label>Standoff 2 Skin Item Name (e.g., G22 | Carbon):</label>
+                <input type="text" id="withdraw-skin-input" placeholder="Enter market skin item name" />
+                <label>Skin Pattern Code:</label>
+                <input type="text" id="withdraw-pattern-input" placeholder="Enter pattern verification code" />
+                <label>Standoff 2 Profile Photo Verification Link:</label>
+                <input type="text" id="withdraw-profile-input" placeholder="e.g., my_profile_screen.png" />
+                <button class="btn-action" style="background: var(--accent-blue); color: #050811;" onclick="dispatchWithdrawalRequest()">Generate Listing Instructions</button>
+                <div id="withdraw-result-output" style="margin-top: 15px;"></div>
+            </div>
+        </div>
+
+        <!-- TAB 6: ADMIN DASHBOARD MODULE -->
+        <div id="panel-admin" class="tab-panel">
+            <h3 style="text-align:center;">Secure Admin Control Center</h3>
+            <div style="max-width: 600px; margin: 0 auto;">
+                <label>System Passcode Authorization:</label>
+                <input type="password" id="admin-passcode-input" placeholder="Enter security passcode (100200100)" />
+                
+                <div class="preview-pane">
+                    <h4 style="margin: 0 0 10px 0; color: var(--accent-gold);">Configure Active Top-Up Listing</h4>
+                    <label>Skin Item Name:</label>
+                    <input type="text" id="admin-cfg-item" placeholder="e.g., G22 | Carbon" />
+                    <label>Asset Price (Gold):</label>
+                    <input type="number" id="admin-cfg-price" placeholder="50" />
+                    <label>Pattern Identifier:</label>
+                    <input type="text" id="admin-cfg-pattern" placeholder="482" />
+                    <button class="btn-action" style="background: var(--accent-gold); color: #050811;" onclick="executeAdminTopupUpdate()">Publish Listing Live</button>
+                </div>
+
+                <button class="btn-action" style="background: #64748b; color: white; margin-top: 20px;" onclick="loadAdminOperationQueues()">Load Pending Operations Queues</button>
+                <div id="admin-queues-container" style="margin-top: 15px; font-size: 13px; line-height: 1.6;"></div>
+            </div>
         </div>
 
     </div>
 
+    <!-- FRONTEND CLIENT CONTROLLER SCRIPT -->
     <script>
-        let balance = 350;
-        const userId = "Standoff_Player_1";
+        let activeUserSession = null;
+        let activeUserBalance = 0;
 
-        function updateBalanceDisplay() {
-            document.getElementById('user-balance').innerText = balance;
+        async function executePlatformLogin() {
+            const usernameField = document.getElementById('auth-username-input').value.trim();
+            if (!usernameField) {
+                alert("Please specify a valid account username.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usernameField })
+                });
+                const payload = await response.json();
+
+                if (payload.success) {
+                    activeUserSession = payload.user.username;
+                    activeUserBalance = payload.user.balance;
+                    document.getElementById('ui-current-username').innerText = activeUserSession;
+                    document.getElementById('ui-current-balance').innerText = activeUserBalance.toFixed(2);
+                    document.getElementById('login-overlay').style.display = 'none';
+                    document.getElementById('master-app-container').style.display = 'block';
+                    fetchMarketTopupListingData();
+                } else {
+                    alert(payload.message);
+                }
+            } catch (err) {
+                alert("Network communication failure during login.");
+            }
         }
 
-        function switchTab(tab) {
-            ['cases', 'upgrader', 'miner', 'topup', 'withdraw', 'admin'].forEach(t => {
-                document.getElementById('tab-content-' + t).classList.remove('active');
-                document.getElementById('btn-' + t).classList.remove('active');
+        function switchTabPanel(panelId) {
+            const panels = ['cases', 'upgrader', 'miner', 'topup', 'withdraw', 'admin'];
+            panels.forEach(p => {
+                document.getElementById('panel-' + p).classList.remove('active');
+                document.getElementById('navtab-' + p).classList.remove('active');
             });
-            document.getElementById('tab-content-' + tab).classList.add('active');
-            document.getElementById('btn-' + tab).classList.add('active');
-            if(tab === 'topup') fetchTopupListing();
+            document.getElementById('panel-' + panelId).classList.add('active');
+            document.getElementById('navtab-' + panelId).classList.add('active');
+            if (panelId === 'topup') fetchMarketTopupListingData();
         }
 
-        // --- HARDCORE CASES LOGIC ---
-        function openCase(cost, type) {
-            if (balance < cost) {
-                alert("Insufficient balance!");
-                return;
-            }
-            balance -= cost;
-            updateBalanceDisplay();
-
-            // Harder odds configuration
-            let roll = Math.random() * 100;
-            let prize = 0;
-            let name = "";
-
-            if (type === 'pro') {
-                if (roll < 75) { name = "P350 | Forest (5 Gold)"; prize = 5; }
-                else if (roll < 95) { name = "AKR | Railgun (35 Gold)"; prize = 35; }
-                else { name = "Karambit | Gold (500 Gold)"; prize = 500; }
-            } else {
-                if (roll < 80) { name = "TEC-9 | Scale (15 Gold)"; prize = 15; }
-                else if (roll < 97) { name = "AWM | Sport (120 Gold)"; prize = 120; }
-                else { name = "M9 Bayonet | Dragon (1500 Gold)"; prize = 1500; }
-            }
-
-            balance += prize;
-            updateBalanceDisplay();
-            document.getElementById('case-result').innerHTML = `<span style="color: var(--accent-green);">🎉 Opened Case & Won: ${name}</span>`;
+        function refreshBalanceUI(newBalance) {
+            activeUserBalance = newBalance;
+            document.getElementById('ui-current-balance').innerText = activeUserBalance.toFixed(2);
         }
 
-        // --- UPGRADER LOGIC ---
-        function playUpgrader() {
-            let bet = parseFloat(document.getElementById('upgrade-bet').value);
-            let mult = parseFloat(document.getElementById('upgrade-multiplier').value);
-            let resDiv = document.getElementById('upgrade-result');
-
-            if (isNaN(bet) || bet <= 0 || bet > balance) {
-                alert("Invalid bet amount.");
+        // --- CASE OPENING CLIENT CONTROLLER ---
+        async function dispatchCaseRoll(caseKey) {
+            const cost = caseKey === 'starter' ? 25 : 150;
+            if (activeUserBalance < cost) {
+                alert("Insufficient vault reserve balance.");
                 return;
             }
-            balance -= bet;
-            updateBalanceDisplay();
 
-            let winChance = mult === 2 ? 0.45 : (mult === 5 ? 0.18 : 0.08);
-            let success = Math.random() < winChance;
+            try {
+                const response = await fetch('/api/games/case/open', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: activeUserSession, caseKey })
+                });
+                const payload = await response.json();
 
-            if (success) {
-                let wonAmount = Math.floor(bet * mult);
-                balance += wonAmount;
-                resDiv.style.color = "var(--accent-green)";
-                resDiv.innerText = `✅ Upgrade Successful! Won +${wonAmount} 🪙`;
-            } else {
-                resDiv.style.color = "var(--accent-red)";
-                resDiv.innerText = `❌ Upgrade Failed! Lost ${bet} 🪙`;
+                if (!payload.success) {
+                    alert(payload.message);
+                    return;
+                }
+
+                refreshBalanceUI(payload.newBalance);
+                document.getElementById('case-outcome-display').innerText = "";
+
+                const track = document.getElementById('case-roller-track');
+                track.style.transition = 'none';
+                track.style.left = '0px';
+                track.innerHTML = "";
+
+                payload.rollerSequence.forEach(skin => {
+                    const card = document.createElement('div');
+                    card.className = "roller-skin-card";
+                    card.innerHTML = `<b style="color:var(--accent-blue);">${skin.name}</b><br><span style="color:var(--accent-gold);">${skin.value} 🪙</span>`;
+                    track.appendChild(card);
+                });
+
+                // Trigger smooth CSS animation sequence
+                setTimeout(() => {
+                    track.style.transition = 'left 4.5s cubic-bezier(0.06, 0.82, 0.12, 1)';
+                    const targetOffset = -(18 * 150) + 180; // Alignment offset for index 18
+                    track.style.left = targetOffset + 'px';
+                }, 50);
+
+                setTimeout(() => {
+                    document.getElementById('case-outcome-display').innerHTML = `<span style="color: var(--accent-green);">🎉 Acquired Item: ${payload.wonItem.name} (${payload.wonItem.value} 🪙)</span>`;
+                }, 4600);
+
+            } catch (err) {
+                alert("Error executing case roll sequence.");
             }
-            updateBalanceDisplay();
         }
 
-        // --- MINER GAME LOGIC ---
-        let minerActive = false;
-        function startMinerGame() {
-            let bet = parseFloat(document.getElementById('miner-bet').value);
-            if (isNaN(bet) || bet <= 0 || bet > balance) {
-                alert("Invalid bet amount.");
+        // --- UPGRADER CLIENT CONTROLLER ---
+        async function executeUpgraderRun() {
+            const betAmount = document.getElementById('upgrader-stake').value;
+            const multiplier = document.getElementById('upgrader-mult-select').value;
+            const feedback = document.getElementById('upgrader-outcome-msg');
+
+            try {
+                const response = await fetch('/api/games/upgrader/play', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: activeUserSession, betAmount, multiplier })
+                });
+                const payload = await response.json();
+
+                if (!payload.success) {
+                    alert(payload.message);
+                    return;
+                }
+
+                refreshBalanceUI(payload.newBalance);
+                if (payload.isWin) {
+                    feedback.style.color = "var(--accent-green)";
+                    feedback.innerText = `✅ Upgrade Successful! Payout: +${payload.payout} 🪙`;
+                } else {
+                    feedback.style.color = "var(--accent-red)";
+                    feedback.innerText = `❌ Upgrade Failed. Stake lost.`;
+                }
+            } catch (err) {
+                alert("Communication error in upgrader module.");
+            }
+        }
+
+        // --- MINER GRID CLIENT CONTROLLER ---
+        let minerSessionActive = false;
+        function initializeMinerGameSession() {
+            const stake = parseFloat(document.getElementById('miner-stake').value);
+            if (isNaN(stake) || stake <= 0 || stake > activeUserBalance) {
+                alert("Invalid miner stake amount.");
                 return;
             }
-            balance -= bet;
-            updateBalanceDisplay();
-            minerActive = true;
 
-            let board = document.getElementById('miner-board');
+            refreshBalanceUI(activeUserBalance - stake);
+            minerSessionActive = true;
+
+            const board = document.getElementById('miner-matrix-board');
             board.innerHTML = "";
-            document.getElementById('miner-msg').innerText = "Game active! Click tiles carefully.";
+            document.getElementById('miner-status-message').innerText = "Game active! Select grid tiles.";
 
-            let mineIndex = Math.floor(Math.random() * 8);
+            const mineIndex = Math.floor(Math.random() * 8);
 
-            for(let i=0; i<8; i++) {
-                let tile = document.createElement('div');
-                tile.className = "miner-tile";
-                tile.innerText = "❓";
-                tile.onclick = () => {
-                    if(!minerActive) return;
-                    if(i === mineIndex) {
-                        tile.innerText = "💣";
-                        tile.style.background = "rgba(239, 68, 68, 0.2)";
-                        document.getElementById('miner-msg.innerText') = "💥 Boom! You hit a mine.";
-                        document.getElementById('miner-msg').style.color = "var(--accent-red)";
-                        minerActive = false;
+            for (let i = 0; i < 8; i++) {
+                const cell = document.createElement('div');
+                cell.className = "miner-tile-cell";
+                cell.innerText = "❓";
+                cell.onclick = () => {
+                    if (!minerSessionActive) return;
+                    if (i === mineIndex) {
+                        cell.innerText = "💣";
+                        cell.style.background = "rgba(239, 68, 68, 0.25)";
+                        document.getElementById('miner-status-message').style.color = "var(--accent-red)";
+                        document.getElementById('miner-status-message').innerText = "💥 Hazard hit! Stake forfeited.";
+                        minerSessionActive = false;
                     } else {
-                        let reward = Math.floor(bet * 1.5);
-                        balance += reward;
-                        updateBalanceDisplay();
-                        tile.innerText = "💎";
-                        tile.style.background = "rgba(74, 222, 128, 0.2)";
-                        document.getElementById('miner-msg').innerText = `✨ Gem found! Won +${reward} 🪙`;
-                        document.getElementById('miner-msg').style.color = "var(--accent-green)";
-                        minerActive = false;
+                        const reward = Math.floor(stake * 1.6);
+                        refreshBalanceUI(activeUserBalance + reward);
+                        cell.innerText = "💎";
+                        cell.style.background = "rgba(74, 222, 128, 0.25)";
+                        document.getElementById('miner-status-message').style.color = "var(--accent-green)";
+                        document.getElementById('miner-status-message').innerText = `✨ Crystal node discovered! Won +${reward} 🪙`;
+                        minerSessionActive = false;
                     }
                 };
-                board.appendChild(tile);
+                board.appendChild(cell);
             }
         }
 
-        // --- TOP UP LOGIC ---
-        async function fetchTopupListing() {
+        // --- MARKET TOP-UP CLIENT CONTROLLER ---
+        async function fetchMarketTopupListingData() {
             try {
-                const res = await fetch('/api/topup/listing');
-                const data = await res.json();
-                if(data.success) {
-                    document.getElementById('topup-info-box').innerHTML = `
-                        <b>Active Marketplace Item:</b> ${data.listing.item}<br>
-                        <b>Price to Buy:</b> ${data.listing.price} 🪙 Gold<br>
-                        <b>Required Pattern:</b> ${data.listing.pattern}
+                const response = await fetch('/api/topup/listing');
+                const payload = await response.json();
+                if (payload.success) {
+                    document.getElementById('topup-live-banner').innerHTML = `
+                        <b>Active Marketplace Item:</b> ${payload.listing.item}<br>
+                        <b>Required Purchase Price:</b> ${payload.listing.price} 🪙 Gold<br>
+                        <b>Mandatory Skin Pattern:</b> ${payload.listing.pattern}
                     `;
                 }
-            } catch(e) {
-                document.getElementById('topup-info-box').innerText = "Market feed loaded.";
+            } catch (err) {
+                document.getElementById('topup-live-banner').innerText = "Failed to sync marketplace top-up feed.";
             }
         }
 
-        async function submitTopUpClaim() {
-            const profilePhoto = document.getElementById('topup-profile').value.trim();
-            const proofScreenshot = document.getElementById('topup-proof').value.trim();
-            const statusDiv = document.getElementById('topup-status');
+        async function submitTopUpProofClaim() {
+            const profilePhoto = document.getElementById('topup-profile-input').value.trim();
+            const proofScreenshot = document.getElementById('topup-proof-input').value.trim();
+            const statusNode = document.getElementById('topup-feedback-status');
 
-            if(!profilePhoto || !proofScreenshot) {
-                statusDiv.style.color = "var(--accent-red)";
-                statusDiv.innerText = "Please provide profile photo and proof screenshot.";
+            if (!profilePhoto || !proofScreenshot) {
+                statusNode.style.color = "var(--accent-red)";
+                statusNode.innerText = "All verification files/URLs must be supplied.";
                 return;
             }
 
-            const res = await fetch('/api/topup/claim', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, profilePhoto, proofScreenshot })
-            });
-            const data = await res.json();
-            if(data.success) {
-                statusDiv.style.color = "var(--accent-green)";
-                statusDiv.innerText = "✅ Top-up proof submitted to admin successfully!";
-            } else {
-                statusDiv.style.color = "var(--accent-red)";
-                statusDiv.innerText = "❌ " + data.message;
-            }
-        }
-
-        // --- WITHDRAWAL LOGIC ---
-        async function requestWithdrawal() {
-            const amount = document.getElementById('withdraw-amount').value;
-            const skinItem = document.getElementById('withdraw-skin').value.trim();
-            const pattern = document.getElementById('withdraw-pattern').value.trim();
-            const profilePhoto = document.getElementById('withdraw-profile').value.trim();
-            const resultDiv = document.getElementById('withdraw-result');
-
-            if(!amount || amount < 20) {
-                alert("Minimum withdrawal is 20 Gold.");
-                return;
-            }
-            if(!skinItem || !pattern || !profilePhoto) {
-                alert("Please fill in all skin, pattern, and profile verification fields.");
-                return;
-            }
-            if(amount > balance) {
-                alert("Insufficient balance.");
-                return;
-            }
-
-            const res = await fetch('/api/withdraw/request', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, amount, skinItem, pattern, profilePhoto })
-            });
-            const data = await res.json();
-
-            if(data.success) {
-                balance -= parseFloat(amount);
-                updateBalanceDisplay();
-                resultDiv.innerHTML = `
-                    <div class="preview-box" style="border-color: var(--accent-blue);">
-                        <p style="color: var(--accent-green); margin:0 0 6px 0; font-weight:bold;">Withdrawal Instructions Generated!</p>
-                        <p style="margin:3px 0;">List your skin on the market for exact price: <b style="color:var(--accent-gold); font-size:15px;">${data.exactPrice} 🪙 Gold</b></p>
-                        <p style="margin:3px 0;">Pattern Code: <b>${pattern}</b></p>
-                    </div>
-                `;
-            } else {
-                alert(data.message);
-            }
-        }
-
-        // --- ADMIN PANEL LOGIC ---
-        async function adminSetTopup() {
-            const passcode = document.getElementById('admin-pass').value;
-            const item = document.getElementById('adm-item').value;
-            const price = document.getElementById('adm-price').value;
-            const pattern = document.getElementById('adm-pattern').value;
-
-            const res = await fetch('/api/admin/set-topup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passcode, item, price, pattern })
-            });
-            const data = await res.json();
-            if(data.success) alert("Top-up listing updated live!");
-            else alert(data.message);
-        }
-
-        async function loadAdminQueues() {
-            const passcode = document.getElementById('admin-pass').value;
-            const res = await fetch('/api/admin/queues', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ passcode })
-            });
-            const data = await res.json();
-            if(data.success) {
-                let html = "<b style='color:var(--accent-gold);'>Top-Up Claims Queue:</b><br>";
-                if(data.topupClaims.length === 0) html += "<i>No claims</i><br>";
-                data.topupClaims.forEach(c => {
-                    html += `• User: ${c.userId} | Profile: ${c.profilePhoto} | Proof: ${c.proofScreenshot}<br>`;
+            try {
+                const response = await fetch('/api/topup/claim', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: activeUserSession, profilePhoto, proofScreenshot })
                 });
-                html += "<br><b style='color:var(--accent-blue);'>Withdrawals Queue:</b><br>";
-                if(data.withdrawalRequests.length === 0) html += "<i>No requests</i><br>";
-                data.withdrawalRequests.forEach(w => {
-                    html += `• User: ${w.userId} | Skin: ${w.skinItem} | Price: <b>${w.exactPrice}G</b> | Pattern: ${w.pattern} | Profile: ${w.profilePhoto}<br>`;
-                });
-                document.getElementById('admin-queues-output').innerHTML = html;
-            } else {
-                alert("Incorrect admin passcode.");
+                const payload = await response.json();
+
+                if (payload.success) {
+                    statusNode.style.color = "var(--accent-green)";
+                    statusNode.innerText = "✅ Top-up claim successfully submitted to admin review queue.";
+                } else {
+                    statusNode.style.color = "var(--accent-red)";
+                    statusNode.innerText = "❌ " + payload.message;
+                }
+            } catch (err) {
+                alert("Network transmission error.");
             }
         }
 
-        fetchTopupListing();
+        // --- WITHDRAWAL CLIENT CONTROLLER ---
+        async function dispatchWithdrawalRequest() {
+            const amount = document.getElementById('withdraw-amount-input').value;
+            const skinItem = document.getElementById('withdraw-skin-input').value.trim();
+            const pattern = document.getElementById('withdraw-pattern-input').value.trim();
+            const profilePhoto = document.getElementById('withdraw-profile-input').value.trim();
+            const outputPane = document.getElementById('withdraw-result-output');
+
+            if (!amount || amount < 20) {
+                alert("Minimum withdrawal threshold is 20 Gold.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/withdraw/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: activeUserSession, amount, skinItem, pattern, profilePhoto })
+                });
+                const payload = await response.json();
+
+                if (payload.success) {
+                    refreshBalanceUI(payload.newBalance);
+                    outputPane.innerHTML = `
+                        <div class="preview-pane" style="border-color: var(--accent-blue);">
+                            <p style="color: var(--accent-green); margin:0 0 6px 0; font-weight:bold;">Withdrawal Request Successfully Initialized!</p>
+                            <p style="margin:3px 0;">List your item on the market for exact randomized decimal price: <b style="color:var(--accent-gold); font-size:16px;">${payload.exactPrice} 🪙 Gold</b></p>
+                            <p style="margin:3px 0;">Required Pattern: <b>${pattern}</b></p>
+                            <p style="margin:6px 0 0 0; font-size:11px; color:var(--text-muted);">Profile verification screenshot dispatched to admin queue.</p>
+                        </div>
+                    `;
+                } else {
+                    alert(payload.message);
+                }
+            } catch (err) {
+                alert("Error processing withdrawal request.");
+            }
+        }
+
+        // --- ADMIN MODULE CLIENT CONTROLLER ---
+        async function executeAdminTopupUpdate() {
+            const passcode = document.getElementById('admin-passcode-input').value;
+            const item = document.getElementById('admin-cfg-item').value;
+            const price = document.getElementById('admin-cfg-price').value;
+            const pattern = document.getElementById('admin-cfg-pattern').value;
+
+            try {
+                const response = await fetch('/api/admin/set-topup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passcode, item, price, pattern })
+                });
+                const payload = await response.json();
+                if (payload.success) {
+                    alert("Top-up listing updated live across platform.");
+                } else {
+                    alert(payload.message);
+                }
+            } catch (err) {
+                alert("Admin authentication error.");
+            }
+        }
+
+        async function loadAdminOperationQueues() {
+            const passcode = document.getElementById('admin-passcode-input').value;
+
+            try {
+                const response = await fetch('/api/admin/queues', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ passcode })
+                });
+                const payload = await response.json();
+
+                if (payload.success) {
+                    let containerHtml = `<b style="color:var(--accent-gold);">📥 Top-Up Claims (${payload.topupClaims.length}):</b><br>`;
+                    if (payload.topupClaims.length === 0) containerHtml += "<i>No pending top-up claims.</i><br>";
+                    payload.topupClaims.forEach(c => {
+                        containerHtml += `• Operator: <b>${c.username}</b> | Item: ${c.item} | Profile: <span style="color:var(--accent-blue);">${c.profilePhoto}</span> | Proof: <span style="color:var(--accent-blue);">${c.proofScreenshot}</span><br>`;
+                    });
+
+                    containerHtml += `<br><b style="color:var(--accent-blue);">📤 Withdrawals Queue (${payload.withdrawalRequests.length}):</b><br>`;
+                    if (payload.withdrawalRequests.length === 0) containerHtml += "<i>No pending withdrawal requests.</i><br>";
+                    payload.withdrawalRequests.forEach(w => {
+                        containerHtml += `• Operator: <b>${w.username}</b> | Skin: ${w.skinItem} | Exact Price: <b style="color:var(--accent-gold);">${w.exactPrice}G</b> | Pattern: ${w.pattern} | Profile: <span style="color:var(--accent-blue);">${w.profilePhoto}</span><br>`;
+                    });
+
+                    document.getElementById('admin-queues-output').innerHTML = containerHtml;
+                } else {
+                    alert(payload.message);
+                }
+            } catch (err) {
+                alert("Failed to load operations queues.");
+            }
+        }
     </script>
 </body>
 </html>
