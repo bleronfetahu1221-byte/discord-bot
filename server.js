@@ -281,7 +281,11 @@ app.post('/api/games/upgrader/play', verifyUserSession, (req, res) => {
 // ----------------------------------------------------------------------------
 app.post('/api/admin/set-topup', (req, res) => {
     try {
-        const { passcode, item, price, pattern } = req.body;
+        const passcode = req.body.passcode;
+        const item = req.body.item;
+        const price = req.body.price;
+        const pattern = req.body.pattern;
+
         if (passcode !== ADMIN_PASSCODE) {
             return res.status(403).json({ success: false, message: "Unauthorized: Invalid Admin Passcode." });
         }
@@ -308,7 +312,7 @@ app.post('/api/admin/set-topup', (req, res) => {
 
 app.post('/api/admin/queues', (req, res) => {
     try {
-        const { passcode } = req.body;
+        const passcode = req.body.passcode;
         if (passcode !== ADMIN_PASSCODE) {
             return res.status(403).json({ success: false, message: "Unauthorized: Invalid Admin Passcode." });
         }
@@ -324,7 +328,7 @@ app.post('/api/admin/queues', (req, res) => {
     }
 });
 
-// Fallback routing
+// Fallback routing for any sub-path (like /palermo) to correctly load index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -332,16 +336,3 @@ app.get('*', (req, res) => {
 app.listen(PORT, () => {
     console.log(`[LootHUB Engine] Enterprise server active and listening on port ${PORT}`);
 });
-
-
-
-
-
-
-
-// Add this route in your server.js (before app.listen)
-app.get('/:palermo', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
-
-
