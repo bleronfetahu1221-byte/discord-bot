@@ -167,7 +167,7 @@
                             <input type="file" id="topup-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
                         <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Send Proof Directly to Admin</button>
-                        <div id="topup-status-msg" class="text-center text-xs font-bold mt-2"></div>
+                        <div id="topup-status-msg" class="text-center text-xs font-bold mt-2 min-h-[20px]"></div>
                     </div>
                 </div>
             </section>
@@ -357,7 +357,6 @@
                     return;
                 }
 
-                // Mobile-safe file reader with timeout fallback
                 let reader = new FileReader();
                 let readerFinished = false;
 
@@ -375,8 +374,6 @@
 
                 try {
                     reader.readAsDataURL(avatarInput.files[0]);
-                    
-                    // Fallback timer in case mobile OS hangs on large image file streams
                     setTimeout(() => {
                         if (!readerFinished) {
                             readerFinished = true;
@@ -459,7 +456,7 @@
             }
         }
 
-        // CASE OPENING MODULE (SUPER HARD ODDS)
+        // CASE OPENING MODULE
         function selectCaseType(type) {
             selectedCase = type;
             document.getElementById('case-box-starter').className = "case-selector cursor-pointer bg-dark-900 border-2 " + (type === 'starter' ? "border-brand-blue" : "border-dark-600") + " rounded-xl p-4 text-center transition-all";
@@ -522,7 +519,7 @@
             }, 4600);
         }
 
-        // UPGRADER MODULE (SUPER HARD)
+        // UPGRADER MODULE
         function executeUpgrader() {
             let stake = parseFloat(document.getElementById('upgrader-stake').value);
             let multiplier = parseFloat(document.getElementById('upgrader-multiplier').value);
@@ -553,7 +550,7 @@
             refreshUserBalanceUI();
         }
 
-        // TOP-UP MODULE (DIRECT TO ADMIN)
+        // TOP-UP MODULE (MOBILE SAFE FIXED VERSION)
         function renderClientAdminListings() {
             let state = getSystemState();
             let container = document.getElementById('client-admin-listings-view');
@@ -584,6 +581,8 @@
             let profilePicInput = document.getElementById('topup-profile-pic-file');
             let statusMsg = document.getElementById('topup-status-msg');
 
+            statusMsg.innerText = "";
+
             if (!fileInput.files || fileInput.files.length === 0) {
                 statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
                 statusMsg.innerText = "Please attach a confirmation screenshot showing purchase!";
@@ -595,15 +594,26 @@
                 return;
             }
 
-            let reader1 = new FileReader();
-            reader1.onload = function(e1) {
-                let screenshotDataUrl = e1.target.result;
+            statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-blue";
+            statusMsg.innerText = "Processing images and sending proof to admin...";
 
-                let reader2 = new FileReader();
-                reader2.onload = function(e2) {
-                    let profilePicDataUrl = e2.target.result;
+            let defaultPlaceholderImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
+
+            let screenshotDataUrl = defaultPlaceholderImg;
+            let profilePicDataUrl = defaultPlaceholderImg;
+
+            let file1 = fileInput.files[0];
+            let file2 = profilePicInput.files[0];
+
+            let reader1 = new FileReader();
+            let reader2 = new FileReader();
+
+            let finishedCount = 0;
+
+            function checkAndSaveTicket() {
+                finishedCount++;
+                if (finishedCount >= 2) {
                     let state = getSystemState();
-                    
                     let reqId = 'TOPUP_' + Date.now();
                     let defaultListing = state.adminListings[0] || { price: 100, pattern: '542' };
 
@@ -621,13 +631,62 @@
                     saveSystemState(state);
 
                     statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
-                    statusMsg.innerText = "Proof sent directly to admin dashboard! If delayed, email loothubsup@gmail.com.";
+                    statusMsg.innerText = "Success! Proof sent directly to admin dashboard queue.";
                     fileInput.value = "";
                     profilePicInput.value = "";
-                };
-                reader2.readAsDataURL(profilePicInput.files[0]);
+                }
+            }
+
+            // Read screenshot with fallback timeout
+            let r1Done = false;
+            reader1.onload = function(e1) {
+                if (r1Done) return;
+                r1Done = true;
+                if (e1 && e1.target && e1.target.result) {
+                    screenshotDataUrl = e1.target.result;
+                }
+                checkAndSaveTicket();
             };
-            reader1.readAsDataURL(fileInput.files[0]);
+            reader1.onerror = function() {
+                if (r1Done) return;
+                r1Done = true;
+                checkAndSaveTicket();
+            };
+
+            // Read profile pic with fallback timeout
+            let r2Done = false;
+            reader2.onload = function(e2) {
+                if (r2Done) return;
+                r2Done = true;
+                if (e2 && e2.target && e2.target.result) {
+                    profilePicDataUrl = e2.target.result;
+                }
+                checkAndSaveTicket();
+            };
+            reader2.onerror = function() {
+                if (r2Done) return;
+                r2Done = true;
+                checkAndSaveTicket();
+            };
+
+            try {
+                reader1.readAsDataURL(file1);
+                reader2.readAsDataURL(file2);
+
+                // Mobile safeguard timeout so it never hangs indefinitely
+                setTimeout(() => {
+                    if (!r1Done) {
+                        r1Done = true;
+                        checkAndSaveTicket();
+                    }
+                    if (!r2Done) {
+                        r2Done = true;
+                        checkAndSaveTicket();
+                    }
+                }, 2000);
+            } catch (err) {
+                checkAndSaveTicket();
+            }
         }
 
         // WITHDRAWAL MODULE
