@@ -119,9 +119,6 @@
             cursor: pointer;
         }
         .item-card:hover { border-color: var(--accent-blue); }
-        .rarity-legendary { color: #f43f5e; font-weight: bold; }
-        .rarity-epic { color: #a855f7; font-weight: bold; }
-        .rarity-rare { color: #3b82f6; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -211,15 +208,15 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // REPLACE THESE WITH YOUR FIREBASE CONFIG DETAILS
+        // YOUR REAL FIREBASE CONFIGURATION
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_DATABASE_NAME.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "SENDER_ID",
-            appId: "APP_ID"
+            apiKey: "AIzaSyDqmHsE2CU...",
+            authDomain: "loothub-c969f.firebaseapp.com",
+            databaseURL: "https://loothub-c969f-default-rtdb.firebaseio.com",
+            projectId: "loothub-c969f",
+            storageBucket: "loothub-c969f.appspot.com",
+            messagingSenderId: "537489181344",
+            appId: "1:537489181344:web:..."
         };
 
         const app = initializeApp(firebaseConfig);
@@ -248,7 +245,6 @@
                 }
                 currentUser = userCred.user;
                 
-                // Fetch or initialize user balance
                 const userRef = ref(db, 'users/' + currentUser.uid);
                 const snap = await get(userRef);
                 if (snap.exists()) {
