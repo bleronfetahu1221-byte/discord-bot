@@ -220,14 +220,15 @@
 
         <!-- MAIN DASHBOARD -->
         <div id="dashboard-section" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 10px 15px; border-radius: 8px;">
-                <span id="user-email-display" style="font-size: 14px; color: var(--accent-blue);"></span>
-                <span style="font-weight: bold;">Balance: <span id="user-balance" style="color: var(--accent-green);">0</span> Gold</span>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 10px 15px; border-radius: 8px; flex-wrap: wrap; gap: 5px;">
+                <span id="user-email-display" style="font-size: 13px; color: var(--accent-blue); word-break: break-all;"></span>
+                <span style="font-weight: bold; white-space: nowrap;">Balance: <span id="user-balance" style="color: var(--accent-green);">0</span> Gold</span>
             </div>
 
             <!-- Navigation Tabs -->
             <div class="nav-bar" style="margin-top: 15px;">
                 <button onclick="switchTab('cases')" id="tab-cases" class="active-tab">Cases</button>
+                <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
                 <button onclick="switchTab('upgrader')" id="tab-upgrader">Upgrader</button>
                 <button onclick="switchTab('miner')" id="tab-miner">Miner Game</button>
                 <button onclick="switchTab('topup')" id="tab-topup">Top-Up</button>
@@ -238,7 +239,7 @@
             <!-- CASES TAB -->
             <div id="content-cases" class="tab-content">
                 <div id="cases-home">
-                    <h3>Standoff 2 Cases (SO2 Wiki Data)</h3>
+                    <h3>Standoff 2 Cases (Expanded Skins)</h3>
                     <div class="item-grid">
                         <div class="item-card" onclick="openCaseView('free')">
                             <h4>Starter Case</h4>
@@ -279,6 +280,14 @@
                 </div>
             </div>
 
+            <!-- INVENTORY TAB -->
+            <div id="content-inventory" class="tab-content" style="display:none;">
+                <h3>Your Skin Inventory</h3>
+                <p style="text-align:center; font-size:13px; color:var(--accent-yellow);">Skins won from cases appear here. You can sell them for gold!</p>
+                <div id="inventory-grid" class="item-grid"></div>
+                <div id="inventory-empty-msg" style="text-align:center; color:var(--border-color); margin-top:20px;">Your inventory is empty. Open cases to win skins!</div>
+            </div>
+
             <!-- CIRCULAR UPGRADER TAB -->
             <div id="content-upgrader" class="tab-content" style="display:none;">
                 <h3>Circular Target Upgrader</h3>
@@ -296,15 +305,15 @@
                 <div id="upgrader-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
             </div>
 
-            <!-- MINER TAB (Custom Red Count Selection) -->
+            <!-- MINER TAB (Custom Red Count Selection & Harder Calculation) -->
             <div id="content-miner" class="tab-content" style="display:none;">
                 <h3>Miner Game (Custom Hardness)</h3>
-                <p style="text-align:center; font-size:13px;">Pick how many red bombs you want (1 to 24 out of 25 tiles). More reds = higher multiplier per safe tile!</p>
+                <p style="text-align:center; font-size:13px;">Pick how many red bombs you want (1 to 24). More reds scale up your payout multiplier dynamically!</p>
                 
                 <div id="miner-setup-area" style="background:#111827; padding:12px; border-radius:8px; margin-bottom:10px;">
                     <input type="number" id="miner-bet" placeholder="Bet amount in Gold" />
                     <label style="font-size:12px; display:block; margin-top:6px;">Number of Red Bombs (1 - 24):</label>
-                    <input type="number" id="miner-reds-count" placeholder="e.g. 3" min="1" max="24" value="3" />
+                    <input type="number" id="miner-reds-count" placeholder="e.g. 5" min="1" max="24" value="5" />
                     <button onclick="startMinerGame()">Start Game</button>
                 </div>
                 
@@ -354,20 +363,29 @@
                 </div>
 
                 <div id="admin-dashboard" style="display:none;">
-                    <div style="background:#111827; padding:10px; border-radius:6px; margin-bottom:15px;">
-                        <h4 style="color:var(--accent-gold); margin:0 0 10px 0;">Configure Global Top-Up Listing</h4>
-                        <input type="text" id="admin-set-item" placeholder="Item Name (e.g., G22 Glock)" />
-                        <input type="number" id="admin-set-price" placeholder="Price in Gold" />
-                        <input type="text" id="admin-set-pattern" placeholder="Specific Pattern Code" />
-                        <button onclick="saveAdminListing()" style="background:var(--accent-gold);">Update Live Listing</button>
+                    <!-- Admin Sub-Navigation Tabs -->
+                    <div style="display:flex; gap:5px; margin-bottom:15px;">
+                        <button onclick="switchAdminSubTab('listings')" id="admin-sub-listings" style="background:var(--accent-blue); font-size:12px; padding:8px;">Listings</button>
+                        <button onclick="switchAdminSubTab('topups')" id="admin-sub-topups" style="background:var(--border-color); font-size:12px; padding:8px;">Top-Up Claims</button>
+                        <button onclick="switchAdminSubTab('withdrawals')" id="admin-sub-withdrawals" style="background:var(--border-color); font-size:12px; padding:8px;">Withdrawals</button>
                     </div>
 
-                    <div style="display:flex; gap:10px; margin-bottom:10px;">
-                        <button onclick="switchAdminSubTab('topups')" id="admin-sub-topups" style="background:var(--accent-blue);">Top-Up Claims</button>
-                        <button onclick="switchAdminSubTab('withdrawals')" id="admin-sub-withdrawals" style="background:var(--border-color);">Withdrawal Requests</button>
+                    <!-- Listings Sub-Tab -->
+                    <div id="admin-list-listings" class="admin-sub-content">
+                        <div style="background:#111827; padding:10px; border-radius:6px; margin-bottom:15px;">
+                            <h4 style="color:var(--accent-gold); margin:0 0 10px 0;">Configure Global Top-Up Listing</h4>
+                            <input type="text" id="admin-set-item" placeholder="Item Name (e.g., G22 | Carbon)" />
+                            <input type="number" id="admin-set-price" placeholder="Price in Gold" />
+                            <input type="text" id="admin-set-pattern" placeholder="Specific Pattern Code" />
+                            <button onclick="saveAdminListing()" style="background:var(--accent-gold);">Update Live Listing</button>
+                            <div id="admin-listing-success-msg" style="margin-top:8px; text-align:center; font-weight:bold;"></div>
+                        </div>
                     </div>
 
-                    <div id="admin-list-topups" class="admin-sub-content"></div>
+                    <!-- Top-Ups Sub-Tab -->
+                    <div id="admin-list-topups" class="admin-sub-content" style="display:none;"></div>
+
+                    <!-- Withdrawals Sub-Tab -->
                     <div id="admin-list-withdrawals" class="admin-sub-content" style="display:none;"></div>
                 </div>
             </div>
@@ -398,6 +416,7 @@
 
         let currentUser = null;
         let currentBalance = 100;
+        let userInventory = [];
         let currentWheelRotation = 0;
         let winAngleDegrees = 0;
 
@@ -409,14 +428,17 @@
                 const snap = await get(userRef);
                 if (snap.exists()) {
                     currentBalance = snap.val().balance || 100;
+                    userInventory = snap.val().inventory || [];
                 } else {
-                    await set(userRef, { email: user.email, balance: 100, lastTopUp: 0 });
+                    await set(userRef, { email: user.email, balance: 100, lastTopUp: 0, inventory: [] });
                     currentBalance = 100;
+                    userInventory = [];
                 }
                 document.getElementById('auth-section').classList.remove('active');
                 document.getElementById('dashboard-section').classList.add('active');
                 document.getElementById('user-email-display').innerText = user.email;
                 document.getElementById('user-balance').innerText = currentBalance;
+                renderInventory();
                 listenToGlobalListing();
             } else {
                 document.getElementById('auth-section').classList.add('active');
@@ -443,20 +465,56 @@
         };
 
         window.switchTab = function(tabName) {
-            ['cases', 'upgrader', 'miner', 'topup', 'withdraw', 'admin'].forEach(t => {
+            ['cases', 'inventory', 'upgrader', 'miner', 'topup', 'withdraw', 'admin'].forEach(t => {
                 document.getElementById('content-' + t).style.display = (t === tabName) ? 'block' : 'none';
                 document.getElementById('tab-' + t).classList.remove('active-tab');
             });
             document.getElementById('tab-' + tabName).classList.add('active-tab');
+            if(tabName === 'inventory') renderInventory();
         };
 
-        // --- SO2 CASES WITH ROLL ANIMATION ---
+        // --- EXPANDED SO2 CASES WITH UNIQUE SKINS & VALUES ---
         const casesData = {
-            'free': { name: 'Starter Case', cost: 0, items: [{name:'P350 | Forest', odds:'60%'}, {name:'SM1014 | Carbon', odds:'30%'}, {name:'AKR | Railgun', odds:'10%'}] },
-            'standoff': { name: 'Standoff Box', cost: 50, items: [{name:'G22 | Carbon', odds:'50%'}, {name:'P90 | Death', odds:'35%'}, {name:'M4 | Necromancer', odds:'15%'}] },
-            'dragon': { name: 'Dragon Case', cost: 150, items: [{name:'TEC-9 | Scale', odds:'45%'}, {name:'AWM | Sport', odds:'40%'}, {name:'Dragon Glass | AWM', odds:'15%'}] },
-            'fable': { name: 'Fable Collection', cost: 300, items: [{name:'USP | 2 Years', odds:'50%'}, {name:'MP5 | Lab', odds:'35%'}, {name:'Karambit | Gold', odds:'15%'}] },
-            'rival': { name: 'Rival Case', cost: 100, items: [{name:'FAMAS | Fury', odds:'55%'}, {name:'AKR | Starlight', odds:'30%'}, {name:'M9 Bayonet | Frost', odds:'15%'}] }
+            'free': { 
+                name: 'Starter Case', cost: 0, 
+                items: [
+                    {name:'P350 | Forest', odds:'50%', value: 5}, 
+                    {name:'SM1014 | Carbon', odds:'35%', value: 10}, 
+                    {name:'AKR | Railgun', odds:'15%', value: 25}
+                ] 
+            },
+            'standoff': { 
+                name: 'Standoff Box', cost: 50, 
+                items: [
+                    {name:'G22 | Carbon', odds:'45%', value: 40}, 
+                    {name:'P90 | Death', odds:'35%', value: 70}, 
+                    {name:'M4 | Necromancer', odds:'20%', value: 150}
+                ] 
+            },
+            'dragon': { 
+                name: 'Dragon Case', cost: 150, 
+                items: [
+                    {name:'TEC-9 | Scale', odds:'45%', value: 100}, 
+                    {name:'AWM | Sport', odds:'40%', value: 200}, 
+                    {name:'Dragon Glass | AWM', odds:'15%', value: 500}
+                ] 
+            },
+            'fable': { 
+                name: 'Fable Collection', cost: 300, 
+                items: [
+                    {name:'USP | 2 Years', odds:'50%', value: 250}, 
+                    {name:'MP5 | Lab', odds:'35%', value: 400}, 
+                    {name:'Karambit | Gold', odds:'15%', value: 1200}
+                ] 
+            },
+            'rival': { 
+                name: 'Rival Case', cost: 100, 
+                items: [
+                    {name:'FAMAS | Fury', odds:'50%', value: 80}, 
+                    {name:'AKR | Starlight', odds:'35%', value: 150}, 
+                    {name:'M9 Bayonet | Frost', odds:'15%', value: 450}
+                ] 
+            }
         };
 
         let selectedCaseKey = null;
@@ -468,9 +526,9 @@
             document.getElementById('case-detail-view').style.display = 'block';
             document.getElementById('selected-case-title').innerText = c.name + ` (Cost: ${c.cost} G)`;
             
-            let html = "<b>Possible Drops & SO2 Wiki Odds:</b><br>";
+            let html = "<b>Possible Drops & Wiki Odds:</b><br>";
             c.items.forEach(i => {
-                html += `• ${i.name} — <span style="color:var(--accent-green);">${i.odds}</span><br>`;
+                html += `• ${i.name} (Value: ${i.value} G) — <span style="color:var(--accent-green);">${i.odds}</span><br>`;
             });
             document.getElementById('case-items-preview').innerHTML = html;
             document.getElementById('case-result').innerHTML = "";
@@ -482,7 +540,7 @@
             let html = "";
             for (let i = 0; i < 30; i++) {
                 const randItem = items[Math.floor(Math.random() * items.length)];
-                html += `<div class="case-item-card"><span style="font-size:12px; color:var(--accent-yellow);">${randItem.name}</span></div>`;
+                html += `<div class="case-item-card"><span style="font-size:12px; color:var(--accent-yellow); text-align:center;">${randItem.name}</span></div>`;
             }
             track.innerHTML = html;
             track.style.transform = `translateX(0px)`;
@@ -509,13 +567,50 @@
             // Animate Track Roll
             const track = document.getElementById('case-track');
             renderCaseTrack(c.items);
-            // Place winning item roughly around index 20
-            track.children[20].innerHTML = `<span style="font-size:12px; color:var(--accent-green); font-weight:bold;">${wonObj.name}</span>`;
+            track.children[20].innerHTML = `<span style="font-size:12px; color:var(--accent-green); font-weight:bold; text-align:center;">${wonObj.name}</span>`;
             track.style.transform = `translateX(-${20 * 140 - 70}px)`;
 
             setTimeout(async () => {
-                document.getElementById('case-result').innerHTML = `<span style="color:var(--accent-green);">🎉 Roll complete! You hit and won: ${wonObj.name}!</span>`;
+                userInventory.push(wonObj);
+                await update(ref(db, 'users/' + currentUser.uid), { inventory: userInventory });
+                document.getElementById('case-result').innerHTML = `<span style="color:var(--accent-green);">🎉 Roll complete! You hit and won: ${wonObj.name}! Added to your Inventory.</span>`;
             }, 3100);
+        };
+
+        // --- INVENTORY & SELLING ---
+        function renderInventory() {
+            const grid = document.getElementById('inventory-grid');
+            const emptyMsg = document.getElementById('inventory-empty-msg');
+            grid.innerHTML = "";
+
+            if (!userInventory || userInventory.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            userInventory.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <div style="font-size:12px; color:var(--accent-gold); font-weight:bold; margin-bottom:5px;">${item.name}</div>
+                    <div style="font-size:11px; color:var(--accent-green); margin-bottom:8px;">Value: ${item.value} G</div>
+                    <button onclick="sellSkin(${index})" style="background:var(--accent-red); color:white; padding:5px; font-size:11px; margin-top:0;">Sell (${item.value} G)</button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        window.sellSkin = async function(index) {
+            const soldItem = userInventory.splice(index, 1)[0];
+            currentBalance += soldItem.value;
+            await update(ref(db, 'users/' + currentUser.uid), { 
+                balance: currentBalance, 
+                inventory: userInventory 
+            });
+            document.getElementById('user-balance').innerText = currentBalance;
+            renderInventory();
+            alert(`Successfully sold ${soldItem.name} for ${soldItem.value} Gold!`);
         };
 
         // --- UPGRADER (Wheel and Pointer Spin Together) ---
@@ -560,7 +655,6 @@
             let extraSpins = 360 * 6;
             let landingAngle = isWin ? (Math.random() * (winAngleDegrees - 2)) + 1 : winAngleDegrees + (Math.random() * (360 - winAngleDegrees - 2)) + 1;
             
-            // Because the pointer is fixed at top (0 deg), rotate wheel backwards to land landingAngle under top pointer
             currentWheelRotation += extraSpins + (360 - landingAngle);
 
             const wheel = document.getElementById('upgrade-wheel');
@@ -578,16 +672,16 @@
             }, 3100);
         };
 
-        // --- MINER GAME WITH CUSTOM REDS & DYNAMIC MULTIPLIER ---
+        // --- MINER GAME (Harder / Custom Reds with steeper risk multiplier) ---
         let minerActive = false;
         let minerTiles = [];
         let minerCurrentPot = 0;
         let minerBetAmount = 0;
-        let minerSafeCountTotal = 22;
+        let minerSafeCountTotal = 20;
 
         window.startMinerGame = async function() {
             const bet = parseFloat(document.getElementById('miner-bet').value);
-            const reds = parseInt(document.getElementById('miner-reds-count').value) || 3;
+            const reds = parseInt(document.getElementById('miner-reds-count').value) || 5;
 
             if (!bet || bet <= 0 || bet > currentBalance) {
                 alert("Enter a valid bet amount!");
@@ -609,7 +703,7 @@
             document.getElementById('miner-cashout-btn').style.display = 'block';
             document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
             document.getElementById('miner-current-multiplier').innerText = "Multiplier: 1.00x";
-            document.getElementById('miner-status').innerHTML = `Game Live (${reds} Bombs)! Pick tiles.`;
+            document.getElementById('miner-status').innerHTML = `Game Live (${reds} Bombs, Harder Mode)! Pick tiles.`;
             
             minerTiles = Array(minerSafeCountTotal).fill('gold').concat(Array(reds).fill('bomb'));
             minerTiles.sort(() => Math.random() - 0.5);
@@ -638,9 +732,9 @@
             } else {
                 element.className = 'tile revealed-gold';
                 element.innerText = "🪙";
-                // Scaling multiplier calculation based on risk (red count)
-                let riskFactor = 1 + ((25 - minerSafeCountTotal) / 10);
-                minerCurrentPot *= riskFactor; 
+                // Steeper risk calculation making it harder / more rewarding per safe click
+                let riskMultiplier = 1 + ((25 - minerSafeCountTotal) / 8.5);
+                minerCurrentPot *= riskMultiplier; 
                 let mult = (minerCurrentPot / minerBetAmount).toFixed(2);
                 document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
                 document.getElementById('miner-current-multiplier').innerText = `Multiplier: ${mult}x`;
@@ -739,7 +833,7 @@
             `;
         };
 
-        // --- ADMIN PANEL ---
+        // --- ADMIN PANEL WITH 3 TABS ---
         window.verifyAdmin = function() {
             const code = document.getElementById('admin-passcode').value;
             if (code !== "100200100") {
@@ -752,21 +846,26 @@
         };
 
         window.switchAdminSubTab = function(sub) {
-            document.getElementById('admin-list-topups').style.display = (sub === 'topups') ? 'block' : 'none';
-            document.getElementById('admin-list-withdrawals').style.display = (sub === 'withdrawals') ? 'block' : 'none';
-            document.getElementById('admin-sub-topups').style.background = (sub === 'topups') ? 'var(--accent-blue)' : 'var(--border-color)';
-            document.getElementById('admin-sub-withdrawals').style.background = (sub === 'withdrawals') ? 'var(--accent-blue)' : 'var(--border-color)';
+            ['listings', 'topups', 'withdrawals'].forEach(s => {
+                document.getElementById('admin-list-' + s).style.display = (s === sub) ? 'block' : 'none';
+                document.getElementById('admin-sub-' + s).style.background = (s === sub) ? 'var(--accent-blue)' : 'var(--border-color)';
+            });
         };
 
         window.saveAdminListing = async function() {
             const item = document.getElementById('admin-set-item').value;
             const price = document.getElementById('admin-set-price').value;
             const pattern = document.getElementById('admin-set-pattern').value;
+            const msgBox = document.getElementById('admin-listing-success-msg');
 
-            if (!item || !price || !pattern) return alert("Fill out all listing fields!");
+            if (!item || !price || !pattern) {
+                alert("Fill out all listing fields!");
+                return;
+            }
 
             await set(ref(db, 'admin_listing'), { item, price, pattern });
-            alert("Global listing updated successfully!");
+            msgBox.innerHTML = "<span style='color:var(--accent-green);'>✅ Success! Global listing updated successfully.</span>";
+            setTimeout(() => { msgBox.innerHTML = ""; }, 4000);
         };
 
         async function loadAdminData() {
