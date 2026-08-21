@@ -110,7 +110,7 @@
             <section id="panel-cases" class="tab-panel space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl text-center relative overflow-hidden">
                     <h2 class="text-xl font-black text-brand-blue mb-1">Standoff Case Opening Repository</h2>
-                    <p class="text-xs text-slate-400 mb-6">Extreme low odds configured. High risk environment.</p>
+                    <p class="text-xs text-slate-400 mb-6">Ultra rare Knife tier configured at 0.1% probability. High risk environment.</p>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto mb-6">
                         <div onclick="selectCaseType('starter')" id="case-box-starter" class="case-selector cursor-pointer bg-dark-900 border-2 border-brand-blue rounded-xl p-4 text-center transition-all">
@@ -134,28 +134,47 @@
                 </div>
             </section>
 
-            <!-- UPGRADER TAB -->
+            <!-- UPGRADER TAB (SPINNING WHEEL) -->
             <section id="panel-upgrader" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
-                    <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Balance Multiplier Upgrader</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Extreme difficulty active. High house edge.</p>
+                    <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Gold Multiplier Spinner Upgrader</h2>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Land the green sector on the top arrow to win your target payout!</p>
                     
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Stake Amount (🪙)</label>
-                            <input type="number" id="upgrader-stake" placeholder="50" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                    <div class="space-y-6">
+                        <!-- Spinning Wheel Container -->
+                        <div class="relative w-48 h-48 mx-auto flex items-center justify-center">
+                            <!-- Indicator Arrow on Top -->
+                            <div class="absolute -top-3 z-30 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[14px] border-t-brand-gold filter drop-shadow"></div>
+                            
+                            <!-- The Wheel Element -->
+                            <div id="upgrade-wheel" class="w-full h-full rounded-full border-4 border-dark-600 relative overflow-hidden transition-all duration-[4000ms] ease-[cubic-bezier(0.15,0.85,0.15,1)] shadow-2xl bg-dark-900" style="transform: rotate(0deg);">
+                                <div id="wheel-slice-green" class="absolute inset-0 bg-brand-green/80 origin-center" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%);"></div>
+                            </div>
+                            
+                            <!-- Center Hub -->
+                            <div class="absolute z-20 w-12 h-12 bg-dark-800 border-2 border-dark-600 rounded-full flex items-center justify-center text-xs font-black text-brand-gold shadow-inner">
+                                SPINS
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Target Multiplier</label>
-                            <select id="upgrader-multiplier" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue text-slate-100">
-                                <option value="2">2.0x (10.0% Win Chance)</option>
-                                <option value="3">3.0x (5.0% Win Chance)</option>
-                                <option value="5">5.0x (2.0% Win Chance)</option>
-                                <option value="10">10.0x (0.5% Win Chance)</option>
-                            </select>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Stake Amount (🪙)</label>
+                                <input type="number" id="upgrader-stake" placeholder="50" oninput="updateWheelCalculation()" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Desired Return (🪙)</label>
+                                <input type="number" id="upgrader-target" placeholder="100" oninput="updateWheelCalculation()" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                            </div>
                         </div>
-                        <button onclick="executeUpgrader()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Execute Upgrade Challenge</button>
-                        <div id="upgrader-feedback" class="text-center font-bold text-sm mt-4 min-h-[24px]"></div>
+
+                        <div class="bg-dark-900 border border-dark-600 p-3 rounded-xl flex items-center justify-between text-xs">
+                            <span class="text-slate-400">Calculated Win Chance:</span>
+                            <span id="upgrader-win-chance-text" class="font-black text-brand-gold text-sm">50.0%</span>
+                        </div>
+
+                        <button onclick="executeWheelUpgrader()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Spin Wheel Upgrader</button>
+                        <div id="upgrader-feedback" class="text-center font-bold text-sm mt-2 min-h-[24px]"></div>
                     </div>
                 </div>
             </section>
@@ -307,9 +326,10 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v10";
+        const DB_KEY = "loothub_enterprise_state_v11";
         const SESSION_KEY = "loothub_session_user";
         let selectedAdminListingId = null;
+        let currentWheelRotation = 0;
         
         function getSystemState() {
             let state = localStorage.getItem(DB_KEY);
@@ -459,6 +479,7 @@
             refreshUserBalanceUI();
             renderClientAdminListings();
             checkAdminAlertBadge();
+            updateWheelCalculation();
         }
 
         function logoutSession() {
@@ -525,11 +546,34 @@
             saveSystemState(state);
             refreshUserBalanceUI();
 
-            const skinPool = selectedCase === 'starter' ? [
-                {name: "Trash | Spray", value: 0}, {name: "Trash | Sticker", value: 0}, {name: "G22 | Carbon", value: 5}
-            ] : [
-                {name: "Trash | Charm", value: 0}, {name: "Trash | Scrap", value: 0}, {name: "AWM | Sport", value: 20}
+            // Standoff 2 Skin pool with 0.1% Knife chance and hard odds
+            const starterPool = [
+                {name: "G22 | Carbon", value: 5, color: "text-slate-300"},
+                {name: "P350 | Cyber", value: 8, color: "text-slate-300"},
+                {name: "MP5 | Rail", value: 12, color: "text-brand-blue"},
+                {name: "AKR | Necromancer", value: 35, color: "text-brand-purple"},
+                {name: "M4 | Samurai", value: 50, color: "text-brand-purple"},
+                {name: "Karambit | Gold Knife", value: 5000, color: "text-brand-gold"} // 0.1% chance
             ];
+
+            const premiumPool = [
+                {name: "AWM | Sport", value: 30, color: "text-brand-blue"},
+                {name: "FAMAS | Jumble", value: 45, color: "text-brand-blue"},
+                {name: "M4 | Dragon", value: 120, color: "text-brand-purple"},
+                {name: "AKR12 | Carbon", value: 180, color: "text-brand-purple"},
+                {name: "Butterfly | Legacy Knife", value: 12000, color: "text-brand-gold"} // 0.1% chance
+            ];
+
+            const pool = selectedCase === 'starter' ? starterPool : premiumPool;
+
+            function getRandomSkin() {
+                let roll = Math.random() * 100;
+                if (roll < 0.1) {
+                    return pool[pool.length - 1]; // Knife
+                }
+                let regularItems = pool.slice(0, pool.length - 1);
+                return regularItems[Math.floor(Math.random() * regularItems.length)];
+            }
 
             const track = document.getElementById('roller-track');
             track.style.transition = 'none';
@@ -537,38 +581,70 @@
             track.innerHTML = '';
 
             let sequenceNodes = [];
-            for (let i = 0; i < 25; i++) {
-                let randomSkin = skinPool[Math.floor(Math.random() * skinPool.length)];
-                sequenceNodes.push(randomSkin);
+            for (let i = 0; i < 30; i++) {
+                let skin = (i === 19) ? getRandomSkin() : pool[Math.floor(Math.random() * (pool.length - 1))];
+                sequenceNodes.push(skin);
                 let card = document.createElement('div');
                 card.className = "min-w-[130px] h-[100px] bg-dark-800 border border-dark-600 rounded-lg mx-1 flex flex-col items-center justify-center p-2 text-center shadow-md";
-                card.innerHTML = `<span class="text-xs font-bold text-slate-400 truncate w-full">${randomSkin.name}</span><span class="text-xs text-brand-gold font-bold mt-1">${randomSkin.value} 🪙</span>`;
+                card.innerHTML = `<span class="text-xs font-bold ${skin.color} truncate w-full">${skin.name}</span><span class="text-xs text-brand-gold font-bold mt-1">${skin.value} 🪙</span>`;
                 track.appendChild(card);
             }
 
-            let winningItem = sequenceNodes[18];
+            let winningItem = sequenceNodes[19];
             user.balance += winningItem.value;
             saveSystemState(state);
 
             setTimeout(() => {
                 track.style.transition = 'left 4.5s cubic-bezier(0.08, 0.82, 0.12, 1)';
-                track.style.left = -(18 * 138) + 160 + 'px';
+                track.style.left = -(19 * 138) + 160 + 'px';
             }, 50);
 
             setTimeout(() => {
                 refreshUserBalanceUI();
-                if (winningItem.value > 0) {
-                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-green text-base">🎉 Won Asset: ${winningItem.name} valued at ${winningItem.value} 🪙!</span>`;
+                if (winningItem.value >= 1000) {
+                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-gold text-lg font-black">🌟 LEGENDARY DROP! Won ${winningItem.name} worth ${winningItem.value} 🪙!</span>`;
                 } else {
-                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red text-base">❌ Case yielded trash item (${winningItem.name}). Try again!</span>`;
+                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-green text-base">🎉 Won Asset: ${winningItem.name} valued at ${winningItem.value} 🪙!</span>`;
                 }
             }, 4600);
         }
 
-        function executeUpgrader() {
+        function updateWheelCalculation() {
+            let stake = parseFloat(document.getElementById('upgrader-stake').value) || 0;
+            let target = parseFloat(document.getElementById('upgrader-target').value) || 0;
+            let chanceText = document.getElementById('upgrader-win-chance-text');
+            let greenSlice = document.getElementById('wheel-slice-green');
+
+            if (stake <= 0 || target <= stake) {
+                chanceText.innerText = "0.0%";
+                greenSlice.style.clipPath = "polygon(50% 50%, 50% 50%, 50% 50%)";
+                return;
+            }
+
+            // Calculate percentage based on stake vs target payout (hard odds)
+            let winChance = Math.min(Math.max((stake / target) * 100, 0.5), 95.0);
+            chanceText.innerText = winChance.toFixed(1) + "%";
+
+            // Update CSS clip-path for the circular green slice based on percentage
+            let angle = (winChance / 100) * 360;
+            if (angle <= 180) {
+                let rad = angle * (Math.PI / 180);
+                let x = (50 + 50 * Math.sin(rad)).toFixed(2);
+                let y = (50 - 50 * Math.cos(rad)).toFixed(2);
+                greenSlice.style.clipPath = `polygon(50% 50%, 50% 0%, ${x}% ${y}%)`;
+            } else {
+                let rad = (angle - 180) * (Math.PI / 180);
+                let x = (50 - 50 * Math.sin(rad)).toFixed(2);
+                let y = (50 + 50 * Math.cos(rad)).toFixed(2);
+                greenSlice.style.clipPath = `polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, ${x}% ${y}%)`;
+            }
+        }
+
+        function executeWheelUpgrader() {
             let stake = parseFloat(document.getElementById('upgrader-stake').value);
-            let multiplier = parseFloat(document.getElementById('upgrader-multiplier').value);
+            let target = parseFloat(document.getElementById('upgrader-target').value);
             let feedback = document.getElementById('upgrader-feedback');
+            let wheel = document.getElementById('upgrade-wheel');
             let state = getSystemState();
             let user = state.users[sessionUserEmail];
 
@@ -576,18 +652,45 @@
                 feedback.innerHTML = `<span class="text-brand-red">Invalid stake amount specified.</span>`;
                 return;
             }
+            if (!target || target <= stake) {
+                feedback.innerHTML = `<span class="text-brand-red">Target return must be greater than your stake.</span>`;
+                return;
+            }
 
             user.balance -= stake;
-            let winChance = multiplier === 2 ? 0.10 : (multiplier === 3 ? 0.05 : (multiplier === 5 ? 0.02 : 0.005));
-            if (Math.random() <= winChance) {
-                let winnings = stake * multiplier;
-                user.balance += winnings;
-                feedback.innerHTML = `<span class="text-brand-green">🔥 Challenge SUCCESS! Added +${winnings.toFixed(2)} 🪙.</span>`;
-            } else {
-                feedback.innerHTML = `<span class="text-brand-red">❌ Challenge FAILED. Stake forfeited.</span>`;
-            }
             saveSystemState(state);
             refreshUserBalanceUI();
+
+            let winChance = Math.min(Math.max((stake / target) * 100, 0.5), 95.0);
+            let isWin = Math.random() * 100 <= winChance;
+
+            // Calculate target stop degree so that top arrow (0 deg) lands in green or outside
+            let targetDegree;
+            if (isWin) {
+                // Land safely inside the green sector (0 to winChance percentage of 360)
+                let maxGreenDeg = (winChance / 100) * 360;
+                targetDegree = Math.random() * (maxGreenDeg - 10) + 5;
+            } else {
+                // Land outside the green sector
+                let minRedDeg = (winChance / 100) * 360 + 10;
+                targetDegree = Math.random() * (360 - minRedDeg) + minRedDeg;
+            }
+
+            let totalSpins = 360 * 6; // 6 full rotations
+            currentWheelRotation += totalSpins + (360 - targetDegree);
+
+            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            setTimeout(() => {
+                if (isWin) {
+                    user.balance += target;
+                    feedback.innerHTML = `<span class="text-brand-green font-bold text-base">🔥 SPIN SUCCESS! Won +${target.toFixed(2)} 🪙!</span>`;
+                } else {
+                    feedback.innerHTML = `<span class="text-brand-red font-bold text-base">❌ SPIN FAILED. Stake forfeited. Try again!</span>`;
+                }
+                saveSystemState(state);
+                refreshUserBalanceUI();
+            }, 4100);
         }
 
         function renderClientAdminListings() {
@@ -663,13 +766,11 @@
             saveSystemState(state);
             checkAdminAlertBadge();
 
-            // Clear inputs
             screenshotInput.value = "";
             profilePicInput.value = "";
             customAmountInput.value = "";
             selectedAdminListingId = null;
 
-            // Trigger Success Popup Immediately
             document.getElementById('popup-message-text').innerText = `Verification proof for ${amount} Gold has been instantly sent to the admin dashboard!`;
             document.getElementById('success-popup-modal').classList.remove('hidden');
         }
