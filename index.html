@@ -3,987 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LootHUB - Ultimate Standoff 2 Platform</title>
+    <title>LootHUB - Premium Standoff 2 Platform</title>
     <style>
         :root {
-            --bg-main: #0f172a;
-            --bg-card: #1e293b;
-            --bg-input: #0f172a;
-            --border-color: #334155;
+            --bg-main: #0b0f19;
+            --bg-card: #131d31;
+            --bg-input: #090d16;
+            --border-color: #1e293b;
             --accent-blue: #38bdf8;
             --accent-green: #4ade80;
-            --accent-yellow: #fbbf24;
-            --accent-red: #ef4444;
             --accent-gold: #f59e0b;
+            --accent-red: #ef4444;
             --text-main: #f8fafc;
         }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-main);
             color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 10px;
+            padding: 15px;
         }
         .container {
             max-width: 950px;
             margin: auto;
             background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.6);
         }
-        h2, h3 { color: var(--accent-blue); text-align: center; }
+        h2, h3 { color: var(--accent-blue); text-align: center; margin-top: 0; }
+        .nav-bar {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .nav-bar button {
+            background: var(--border-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: background 0.2s;
+        }
+        .nav-bar button:hover { background: #334155; }
+        .nav-bar button.active { background: var(--accent-blue); color: var(--bg-main); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
         input, select {
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            background-color: var(--bg-input);
+            padding: 10px;
+            margin: 6px 0;
+            background: var(--bg-input);
             border: 1px solid var(--border-color);
             color: white;
             border-radius: 6px;
             box-sizing: border-box;
         }
-        button {
+        button.action-btn {
             width: 100%;
             padding: 12px;
-            background-color: var(--accent-blue);
-            color: var(--bg-main);
+            background: var(--accent-green);
+            color: #000;
             font-weight: bold;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            margin-top: 8px;
-            transition: background 0.2s;
+            margin-top: 10px;
+            transition: opacity 0.2s;
         }
-        button:hover { background-color: #0ea5e9; }
-        .notice {
-            font-size: 13px;
-            color: var(--accent-yellow);
-            text-align: center;
-            margin-bottom: 15px;
-            line-height: 1.4;
-            background: rgba(251, 191, 36, 0.1);
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px dashed var(--accent-yellow);
-        }
-        .section { display: none; }
-        .active { display: block; }
-        .nav-bar {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-            padding-bottom: 5px;
-        }
-        .nav-bar button {
-            margin-top: 0;
-            background: var(--border-color);
-            color: white;
-            font-size: 13px;
-            white-space: nowrap;
-        }
-        .nav-bar button.active-tab {
-            background: var(--accent-blue);
-            color: var(--bg-main);
-        }
-        .card-box {
-            background: var(--bg-input);
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border: 1px solid var(--border-color);
-        }
-        /* Upgrader Wheel with Fixed Pointer Container */
-        .wheel-outer-wrapper {
-            position: relative;
-            width: 220px;
-            height: 220px;
-            margin: 20px auto;
-        }
-        .wheel-pointer-static {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0; 
-            height: 0; 
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 20px solid var(--accent-gold);
-            z-index: 20;
-        }
-        .wheel-container {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 6px solid var(--accent-gold);
-            background: conic-gradient(var(--accent-red) 0deg 360deg);
-            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1);
-        }
-        /* Case Opening Roll Carousel Animation */
-        .case-opening-box {
-            background: #111827;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 15px;
-        }
-        .case-track {
-            display: flex;
-            gap: 10px;
-            transition: transform 3s cubic-bezier(0.1, 0.9, 0.2, 1);
-            will-change: transform;
-        }
-        .case-item-card {
-            min-width: 130px;
-            height: 110px;
-            background: #1e293b;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 5px;
-            box-sizing: border-box;
-        }
-        .case-pointer-line {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            width: 3px;
-            background: var(--accent-gold);
-            transform: translateX(-50%);
-            z-index: 5;
-        }
-        /* Miner Grid Styling */
-        .miner-grid {
+        button.action-btn:hover { opacity: 0.9; }
+        .grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            max-width: 350px;
-            margin: 15px auto;
-        }
-        .tile {
-            aspect-ratio: 1;
-            background: #111827;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .tile:hover { border-color: var(--accent-blue); }
-        .tile.revealed-gold { background: rgba(74, 222, 128, 0.2); color: var(--accent-green); border-color: var(--accent-green); }
-        .tile.revealed-bomb { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border-color: var(--accent-red); }
-        .item-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
             margin-top: 10px;
         }
-        .item-card {
-            background: #111827;
+        .card {
+            background: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 10px;
+            padding: 15px;
             text-align: center;
-            cursor: pointer;
         }
-        .item-card:hover { border-color: var(--accent-blue); }
+        .notice {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px dashed var(--accent-gold);
+            padding: 12px;
+            border-radius: 8px;
+            color: var(--accent-gold);
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .preview-box {
+            background: var(--bg-input);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 10px;
+        }
+        label { font-size: 12px; color: #94a3b8; display: block; margin-top: 6px; }
+        .miner-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 320px;
+            margin: 15px auto;
+        }
+        .miner-tile {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            height: 65px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .miner-tile:hover { border-color: var(--accent-blue); }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h2>LootHUB Platform</h2>
-
-        <!-- AUTH SECTION -->
-        <div id="auth-section" class="section">
-            <h3>Account Sign In / Register</h3>
-            <p class="notice">⚠️ <strong>Important:</strong> Please use your real email address! Withdrawal instructions will be sent directly to your email.</p>
-            <input type="email" id="email" placeholder="Enter your real email" />
-            <input type="password" id="password" placeholder="Enter password" />
-            <button onclick="loginUser()">Sign In / Register</button>
-            <div id="auth-status" style="margin-top: 10px; text-align: center; color: var(--accent-red);"></div>
-            <p style="text-align: center; margin-top: 15px; font-size: 13px;">Need help? Contact us at <a href="mailto:loothubsup@gmail.com" style="color:var(--accent-blue);">loothubsup@gmail.com</a></p>
+        <div style="display: flex; justify-content: space-between; background: var(--bg-input); padding: 10px 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+            <span>User: <b style="color: var(--accent-blue);">Standoff_Player_1</b></span>
+            <span>Balance: <b id="user-balance" style="color: var(--accent-green);">350</b> 🪙 Gold</span>
         </div>
 
-        <!-- MAIN DASHBOARD -->
-        <div id="dashboard-section" class="section">
-            <div style="display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 10px 15px; border-radius: 8px; flex-wrap: wrap; gap: 5px;">
-                <span id="user-email-display" style="font-size: 13px; color: var(--accent-blue); word-break: break-all;"></span>
-                <span style="font-weight: bold; white-space: nowrap;">Balance: <span id="user-balance" style="color: var(--accent-green);">0</span> Gold</span>
-            </div>
-
-            <!-- Navigation Tabs -->
-            <div class="nav-bar" style="margin-top: 15px;">
-                <button onclick="switchTab('cases')" id="tab-cases" class="active-tab">Cases</button>
-                <button onclick="switchTab('inventory')" id="tab-inventory">Inventory</button>
-                <button onclick="switchTab('upgrader')" id="tab-upgrader">Upgrader</button>
-                <button onclick="switchTab('miner')" id="tab-miner">Miner Game</button>
-                <button onclick="switchTab('topup')" id="tab-topup">Top-Up</button>
-                <button onclick="switchTab('withdraw')" id="tab-withdraw">Withdraw</button>
-                <button onclick="switchTab('admin')" id="tab-admin">Admin Panel</button>
-            </div>
-
-            <!-- CASES TAB -->
-            <div id="content-cases" class="tab-content">
-                <div id="cases-home">
-                    <h3>Standoff 2 Cases (Huge Skin Variety & Ultra Knives)</h3>
-                    <div class="item-grid">
-                        <div class="item-card" onclick="openCaseView('free')">
-                            <h4>Starter Case</h4>
-                            <p style="color:var(--accent-green);">Cost: FREE</p>
-                        </div>
-                        <div class="item-card" onclick="openCaseView('standoff')">
-                            <h4>Standoff Box</h4>
-                            <p style="color:var(--accent-yellow);">Cost: 50 G</p>
-                        </div>
-                        <div class="item-card" onclick="openCaseView('dragon')">
-                            <h4>Dragon Case</h4>
-                            <p style="color:var(--accent-yellow);">Cost: 150 G</p>
-                        </div>
-                        <div class="item-card" onclick="openCaseView('fable')">
-                            <h4>Fable Collection</h4>
-                            <p style="color:var(--accent-yellow);">Cost: 300 G</p>
-                        </div>
-                        <div class="item-card" onclick="openCaseView('rival')">
-                            <h4>Rival Case</h4>
-                            <p style="color:var(--accent-yellow);">Cost: 100 G</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="case-detail-view" style="display:none;">
-                    <button onclick="backToCasesList()" style="width:auto; padding:6px 12px; background:var(--border-color); color:#fff; margin-bottom:10px;">← Back to Cases</button>
-                    <h3 id="selected-case-title">Case Opening</h3>
-                    
-                    <!-- Case Opening Animation Carousel -->
-                    <div class="case-opening-box">
-                        <div class="case-pointer-line"></div>
-                        <div class="case-track" id="case-track"></div>
-                    </div>
-
-                    <div id="case-items-preview" style="font-size:13px; background:#111827; padding:12px; border-radius:6px; margin-bottom:15px;"></div>
-                    <button id="spin-case-btn" onclick="executeCaseOpen()" style="background:var(--accent-green); color:#000;">Open Case</button>
-                    <div id="case-result" style="text-align: center; margin-top: 15px; font-size: 16px; font-weight:bold;"></div>
-                </div>
-            </div>
-
-            <!-- INVENTORY TAB -->
-            <div id="content-inventory" class="tab-content" style="display:none;">
-                <h3>Your Skin Inventory</h3>
-                <p style="text-align:center; font-size:13px; color:var(--accent-yellow);">Skins won from cases appear here. You can sell them for gold!</p>
-                <div id="inventory-grid" class="item-grid"></div>
-                <div id="inventory-empty-msg" style="text-align:center; color:var(--border-color); margin-top:20px;">Your inventory is empty. Open cases to win skins!</div>
-            </div>
-
-            <!-- CIRCULAR UPGRADER TAB -->
-            <div id="content-upgrader" class="tab-content" style="display:none;">
-                <h3>Circular Target Upgrader</h3>
-                <p style="text-align:center; font-size:13px; color:var(--accent-yellow);">Set your bet and target return! Wheel and pointer spin together.</p>
-                
-                <div class="wheel-outer-wrapper">
-                    <div class="wheel-pointer-static"></div>
-                    <div class="wheel-container" id="upgrade-wheel"></div>
-                </div>
-
-                <input type="number" id="upgrader-bet" placeholder="Bet Amount (Gold)" oninput="updateWheelCalc()" />
-                <input type="number" id="upgrader-target" placeholder="Desired Payout Amount (Gold)" oninput="updateWheelCalc()" />
-                <div id="wheel-stats-info" style="text-align:center; font-size:14px; margin:8px 0; color:var(--accent-gold);">Win Chance: 0%</div>
-                <button onclick="spinCustomWheel()">Spin Wheel</button>
-                <div id="upgrader-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
-            </div>
-
-            <!-- MINER TAB (Progressive Hardness / 20% harder each click) -->
-            <div id="content-miner" class="tab-content" style="display:none;">
-                <h3>Miner Game (Progressive Difficulty)</h3>
-                <p style="text-align:center; font-size:13px;">Each successful tile pick increases bomb hazard risk by 20%!</p>
-                
-                <div id="miner-setup-area" style="background:#111827; padding:12px; border-radius:8px; margin-bottom:10px;">
-                    <input type="number" id="miner-bet" placeholder="Bet amount in Gold" />
-                    <label style="font-size:12px; display:block; margin-top:6px;">Base Red Bombs Count (1 - 20):</label>
-                    <input type="number" id="miner-reds-count" placeholder="e.g. 4" min="1" max="20" value="4" />
-                    <button onclick="startMinerGame()">Start Game</button>
-                </div>
-                
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                    <span id="miner-current-multiplier" style="color:var(--accent-yellow); font-weight:bold;">Multiplier: 1.00x</span>
-                    <button id="miner-cashout-btn" onclick="cashOutMiner()" style="display:none; width:auto; background:var(--accent-green); color:#000; padding:6px 15px; margin-top:0;">Cash Out (<span id="miner-pot">0</span> G)</button>
-                </div>
-
-                <div class="miner-grid" id="miner-grid"></div>
-                <div id="miner-status" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
-            </div>
-
-            <!-- TOP UP TAB -->
-            <div id="content-topup" class="tab-content" style="display:none;">
-                <div class="card-box" style="margin-top:0;">
-                    <h4>Live Top-Up Market</h4>
-                    <div id="global-topup-info" class="notice">Loading active admin listing...</div>
-                    
-                    <div style="margin-top:15px;">
-                        <label style="font-size:13px;">Upload Profile Picture:</label>
-                        <input type="file" id="topup-pfp" />
-                        <label style="font-size:13px; margin-top:8px; display:block;">Upload Purchase Screenshot Proof:</label>
-                        <input type="file" id="topup-proof" />
-                        <button onclick="submitTopUpClaim()" style="background:var(--accent-green); color:#000;">I Have Purchased - Submit Claim</button>
-                    </div>
-                    <div id="topup-status-msg" style="margin-top:10px; text-align:center;"></div>
-                </div>
-            </div>
-
-            <!-- WITHDRAW TAB -->
-            <div id="content-withdraw" class="tab-content" style="display:none;">
-                <div class="card-box" style="margin-top:0;">
-                    <h4>Gold Withdrawal Portal</h4>
-                    <p style="font-size:12px; color:var(--accent-yellow);">Requirement: Minimum 20 Gold, and verified top-up within last 3 days.</p>
-                    <input type="number" id="withdraw-amount" placeholder="Amount to Withdraw (Min 20 G)" />
-                    <button onclick="requestWithdrawal()">Request Payout</button>
-                    <div id="withdraw-instructions" style="margin-top:10px;"></div>
-                </div>
-            </div>
-
-            <!-- ADMIN TAB WITH 3 SEPARATE TABS -->
-            <div id="content-admin" class="tab-content" style="display:none;">
-                <div id="admin-login-box" class="card-box" style="margin-top:0;">
-                    <h4 style="color: var(--accent-gold);">Admin Secure Access</h4>
-                    <input type="password" id="admin-passcode" placeholder="Enter Admin Passcode" />
-                    <button onclick="verifyAdmin()" style="background-color: var(--accent-gold);">Unlock Panel</button>
-                </div>
-
-                <div id="admin-dashboard" style="display:none;">
-                    <!-- Admin Sub-Navigation Tabs -->
-                    <div style="display:flex; gap:5px; margin-bottom:15px;">
-                        <button onclick="switchAdminSubTab('listings')" id="admin-sub-listings" style="background:var(--accent-blue); font-size:12px; padding:8px;">Listings</button>
-                        <button onclick="switchAdminSubTab('topups')" id="admin-sub-topups" style="background:var(--border-color); font-size:12px; padding:8px;">Top-Up Claims</button>
-                        <button onclick="switchAdminSubTab('withdrawals')" id="admin-sub-withdrawals" style="background:var(--border-color); font-size:12px; padding:8px;">Withdrawals</button>
-                    </div>
-
-                    <!-- 1. Listings Sub-Tab -->
-                    <div id="admin-list-listings" class="admin-sub-content">
-                        <div style="background:#111827; padding:10px; border-radius:6px; margin-bottom:15px;">
-                            <h4 style="color:var(--accent-gold); margin:0 0 10px 0;">Configure Global Top-Up Listing</h4>
-                            <input type="text" id="admin-set-item" placeholder="Item Name (e.g., G22 | Carbon)" />
-                            <input type="number" id="admin-set-price" placeholder="Price in Gold" />
-                            <input type="text" id="admin-set-pattern" placeholder="Specific Pattern Code" />
-                            <button onclick="saveAdminListing()" style="background:var(--accent-gold);">Update Live Listing</button>
-                            <div id="admin-listing-success-msg" style="margin-top:8px; text-align:center; font-weight:bold;"></div>
-                        </div>
-                    </div>
-
-                    <!-- 2. Top-Up Claims Sub-Tab -->
-                    <div id="admin-list-topups" class="admin-sub-content" style="display:none;"></div>
-
-                    <!-- 3. Withdrawals Sub-Tab -->
-                    <div id="admin-list-withdrawals" class="admin-sub-content" style="display:none;"></div>
-                </div>
-            </div>
-
+        <div class="nav-bar">
+            <button onclick="switchTab('cases')" id="btn-cases" class="active">Cases</button>
+            <button onclick="switchTab('upgrader')" id="btn-upgrader">Upgrader</button>
+            <button onclick="switchTab('miner')" id="btn-miner">Miner Game</button>
+            <button onclick="switchTab('topup')" id="btn-topup">Top-Up Market</button>
+            <button onclick="switchTab('withdraw')" id="btn-withdraw">Withdrawal</button>
+            <button onclick="switchTab('admin')" id="btn-admin">Admin Panel</button>
         </div>
+
+        <!-- CASES TAB -->
+        <div id="tab-content-cases" class="tab-content active">
+            <h3>Hardcore Cases</h3>
+            <div class="grid">
+                <div class="card">
+                    <h4>Pro Case</h4>
+                    <p style="color: var(--accent-gold);">Cost: 50 🪙</p>
+                    <button class="action-btn" onclick="openCase(50, 'pro')">Open Case</button>
+                </div>
+                <div class="card">
+                    <h4>Legendary Case</h4>
+                    <p style="color: var(--accent-gold);">Cost: 200 🪙</p>
+                    <button class="action-btn" onclick="openCase(200, 'legendary')">Open Case</button>
+                </div>
+            </div>
+            <div id="case-result" style="text-align: center; margin-top: 15px; font-weight: bold; font-size: 15px;"></div>
+        </div>
+
+        <!-- UPGRADER TAB -->
+        <div id="tab-content-upgrader" class="tab-content">
+            <h3>Skin Upgrader</h3>
+            <p style="text-align: center; font-size: 13px; color: #94a3b8;">Risk your gold for a higher multiplier payout (Harder Odds).</p>
+            <label>Gold Amount to Risk:</label>
+            <input type="number" id="upgrade-bet" value="50" />
+            <label>Target Multiplier:</label>
+            <select id="upgrade-multiplier">
+                <option value="2">2.0x (45% Win Chance)</option>
+                <option value="5">5.0x (18% Win Chance)</option>
+                <option value="10">10.0x (8% Win Chance)</option>
+            </select>
+            <button class="action-btn" onclick="playUpgrader()">Launch Upgrade</button>
+            <div id="upgrade-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
+        </div>
+
+        <!-- MINER TAB -->
+        <div id="tab-content-miner" class="tab-content">
+            <h3>Miner Field</h3>
+            <p style="text-align: center; font-size: 13px; color: #94a3b8;">Uncover gems and avoid mines to multiply your bet!</p>
+            <label>Bet Amount:</label>
+            <input type="number" id="miner-bet" value="30" />
+            <button class="action-btn" onclick="startMinerGame()">Start Game</button>
+            <div class="miner-grid" id="miner-board"></div>
+            <div id="miner-msg" style="text-align: center; font-weight: bold; margin-top: 10px;"></div>
+        </div>
+
+        <!-- TOP UP TAB -->
+        <div id="tab-content-topup" class="tab-content">
+            <h3>Market Top-Up</h3>
+            <div class="notice" id="topup-info-box">Loading active market listing set by admin...</div>
+            <label>Standoff 2 Profile Photo (Filename or URL):</label>
+            <input type="text" id="topup-profile" placeholder="profile_screen.png" />
+            <label>Purchase Proof Screenshot (Filename or URL):</label>
+            <input type="text" id="topup-proof" placeholder="market_receipt.png" />
+            <button class="action-btn" onclick="submitTopUpClaim()">Submit Top-Up Proof</button>
+            <div id="topup-status" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
+        </div>
+
+        <!-- WITHDRAWAL TAB -->
+        <div id="tab-content-withdraw" class="tab-content">
+            <h3>Gold Withdrawal (Min 20 🪙)</h3>
+            <label>Amount of Gold to Withdraw:</label>
+            <input type="number" id="withdraw-amount" min="20" placeholder="e.g. 50" />
+            <label>Skin Item Name (e.g., G22 | Carbon):</label>
+            <input type="text" id="withdraw-skin" placeholder="Skin name" />
+            <label>Skin Pattern Code:</label>
+            <input type="text" id="withdraw-pattern" placeholder="Pattern code" />
+            <label>Standoff 2 Profile Photo Link/Name:</label>
+            <input type="text" id="withdraw-profile" placeholder="profile_screen.png" />
+            <button class="action-btn" style="background: var(--accent-blue); color: #000;" onclick="requestWithdrawal()">Generate Listing Instructions</button>
+            <div id="withdraw-result" style="margin-top: 15px;"></div>
+        </div>
+
+        <!-- ADMIN PANEL TAB -->
+        <div id="tab-content-admin" class="tab-content">
+            <h3>Admin Management Dashboard</h3>
+            <input type="password" id="admin-pass" placeholder="Enter Admin Passcode (100200100)" />
+            <div class="preview-box">
+                <h4 style="margin: 0 0 8px 0; color: var(--accent-gold);">Set Active Top-Up Listing</h4>
+                <input type="text" id="adm-item" placeholder="Item Name (e.g., G22 | Carbon)" />
+                <input type="number" id="adm-price" placeholder="Price in Gold" />
+                <input type="text" id="adm-pattern" placeholder="Pattern Code" />
+                <button class="action-btn" style="background: var(--accent-gold); color: #000;" onclick="adminSetTopup()">Publish Live</button>
+            </div>
+            <button class="action-btn" style="background: #64748b; color: white; margin-top: 10px;" onclick="loadAdminQueues()">Load Pending Queues</button>
+            <div id="admin-queues-output" style="margin-top: 12px; font-size: 13px; line-height: 1.5;"></div>
+        </div>
+
     </div>
 
-    <!-- Firebase SDK Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, update, push, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <script>
+        let balance = 350;
+        const userId = "Standoff_Player_1";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDqmHsE2CUxmbtT1BxqvvJlP52rOPRgIho",
-            authDomain: "loothub-c9693.firebaseapp.com",
-            databaseURL: "https://loothub-c9693-default-rtdb.firebaseio.com",
-            projectId: "loothub-c9693",
-            storageBucket: "loothub-c9693.firebasestorage.app",
-            messagingSenderId: "537489181344",
-            appId: "1:537489181344:web:3d5c0953220ad02490d7c5",
-            measurementId: "G-NWFMNWJJHN"
-        };
+        function updateBalanceDisplay() {
+            document.getElementById('user-balance').innerText = balance;
+        }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+        function switchTab(tab) {
+            ['cases', 'upgrader', 'miner', 'topup', 'withdraw', 'admin'].forEach(t => {
+                document.getElementById('tab-content-' + t).classList.remove('active');
+                document.getElementById('btn-' + t).classList.remove('active');
+            });
+            document.getElementById('tab-content-' + tab).classList.add('active');
+            document.getElementById('btn-' + tab).classList.add('active');
+            if(tab === 'topup') fetchTopupListing();
+        }
 
-        let currentUser = null;
-        let currentBalance = 100;
-        let userInventory = [];
-        let currentWheelRotation = 0;
-        let winAngleDegrees = 0;
+        // --- HARDCORE CASES LOGIC ---
+        function openCase(cost, type) {
+            if (balance < cost) {
+                alert("Insufficient balance!");
+                return;
+            }
+            balance -= cost;
+            updateBalanceDisplay();
 
-        // Persistent Login State Observer
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                const userRef = ref(db, 'users/' + user.uid);
-                const snap = await get(userRef);
-                if (snap.exists()) {
-                    currentBalance = snap.val().balance || 100;
-                    userInventory = snap.val().inventory || [];
-                } else {
-                    await set(userRef, { email: user.email, balance: 100, lastTopUp: 0, inventory: [] });
-                    currentBalance = 100;
-                    userInventory = [];
-                }
-                document.getElementById('auth-section').classList.remove('active');
-                document.getElementById('dashboard-section').classList.add('active');
-                document.getElementById('user-email-display').innerText = user.email;
-                document.getElementById('user-balance').innerText = currentBalance;
-                renderInventory();
-                listenToGlobalListing();
+            // Harder odds configuration
+            let roll = Math.random() * 100;
+            let prize = 0;
+            let name = "";
+
+            if (type === 'pro') {
+                if (roll < 75) { name = "P350 | Forest (5 Gold)"; prize = 5; }
+                else if (roll < 95) { name = "AKR | Railgun (35 Gold)"; prize = 35; }
+                else { name = "Karambit | Gold (500 Gold)"; prize = 500; }
             } else {
-                document.getElementById('auth-section').classList.add('active');
-                document.getElementById('dashboard-section').classList.remove('active');
+                if (roll < 80) { name = "TEC-9 | Scale (15 Gold)"; prize = 15; }
+                else if (roll < 97) { name = "AWM | Sport (120 Gold)"; prize = 120; }
+                else { name = "M9 Bayonet | Dragon (1500 Gold)"; prize = 1500; }
             }
-        });
 
-        window.loginUser = async function() {
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const status = document.getElementById('auth-status');
-
-            if (!email || !password) return status.innerText = "Please fill in all fields.";
-
-            try {
-                try {
-                    await signInWithEmailAndPassword(auth, email, password);
-                } catch (e) {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                }
-            } catch (err) {
-                status.innerText = "Error: " + err.message;
-            }
-        };
-
-        window.switchTab = function(tabName) {
-            ['cases', 'inventory', 'upgrader', 'miner', 'topup', 'withdraw', 'admin'].forEach(t => {
-                document.getElementById('content-' + t).style.display = (t === tabName) ? 'block' : 'none';
-                document.getElementById('tab-' + t).classList.remove('active-tab');
-            });
-            document.getElementById('tab-' + tabName).classList.add('active-tab');
-            if(tabName === 'inventory') renderInventory();
-        };
-
-        // --- EXPANDED SO2 CASES WITH HUGE SKIN VARIETY & 100k KARAMBIT GOLD (0.1%) + 50k KNIVES ---
-        const casesData = {
-            'free': { 
-                name: 'Starter Case', cost: 0, 
-                items: [
-                    {name:'P350 | Forest', odds:'40%', value: 2}, 
-                    {name:'SM1014 | Carbon', odds:'30%', value: 5}, 
-                    {name:'AKR | Railgun', odds:'20%', value: 10},
-                    {name:'G22 | Relic', odds:'9.9%', value: 25},
-                    {name:'M9 Bayonet | Frost (Free)', odds:'0.1%', value: 50000}
-                ] 
-            },
-            'standoff': { 
-                name: 'Standoff Box', cost: 50, 
-                items: [
-                    {name:'G22 | Carbon', odds:'35%', value: 30}, 
-                    {name:'P90 | Death', odds:'30%', value: 60}, 
-                    {name:'M4 | Necromancer', odds:'20%', value: 120},
-                    {name:'AKR12 | Acid', odds:'14.9%', value: 250},
-                    {name:'Butterfly | Legacy', odds:'0.1%', value: 50000}
-                ] 
-            },
-            'dragon': { 
-                name: 'Dragon Case', cost: 150, 
-                items: [
-                    {name:'TEC-9 | Scale', odds:'35%', value: 90}, 
-                    {name:'AWM | Sport', odds:'30%', value: 180}, 
-                    {name:'Dragon Glass | AWM', odds:'20%', value: 400},
-                    {name:'USP | Ancient', odds:'14.9%', value: 800},
-                    {name:'M9 Bayonet | Dragon Glass', odds:'0.1%', value: 50000}
-                ] 
-            },
-            'fable': { 
-                name: 'Fable Collection', cost: 300, 
-                items: [
-                    {name:'USP | 2 Years', odds:'35%', value: 200}, 
-                    {name:'MP5 | Lab', odds:'30%', value: 350}, 
-                    {name:'AWM | Native', odds:'20%', value: 700},
-                    {name:'FAMAS | Monster', odds:'14.9%', value: 1500},
-                    {name:'Karambit | Gold', odds:'0.1%', value: 100000}
-                ] 
-            },
-            'rival': { 
-                name: 'Rival Case', cost: 100, 
-                items: [
-                    {name:'FAMAS | Fury', odds:'35%', value: 70}, 
-                    {name:'AKR | Starlight', odds:'30%', value: 140}, 
-                    {name:'M4 | Samurai', odds:'20%', value: 300},
-                    {name:'P350 | Nova', odds:'14.9%', value: 600},
-                    {name:'Kukri | Blade', odds:'0.1%', value: 50000}
-                ] 
-            }
-        };
-
-        let selectedCaseKey = null;
-
-        window.openCaseView = function(key) {
-            selectedCaseKey = key;
-            const c = casesData[key];
-            document.getElementById('cases-home').style.display = 'none';
-            document.getElementById('case-detail-view').style.display = 'block';
-            document.getElementById('selected-case-title').innerText = c.name + ` (Cost: ${c.cost} G)`;
-            
-            let html = "<b>Possible Drops & Odds:</b><br>";
-            c.items.forEach(i => {
-                html += `• ${i.name} (Value: ${i.value} G) — <span style="color:var(--accent-green);">${i.odds}</span><br>`;
-            });
-            document.getElementById('case-items-preview').innerHTML = html;
-            document.getElementById('case-result').innerHTML = "";
-            renderCaseTrack(c.items);
-        };
-
-        function renderCaseTrack(items) {
-            const track = document.getElementById('case-track');
-            let html = "";
-            for (let i = 0; i < 30; i++) {
-                const randItem = items[Math.floor(Math.random() * items.length)];
-                html += `<div class="case-item-card"><span style="font-size:12px; color:var(--accent-yellow); text-align:center;">${randItem.name}</span></div>`;
-            }
-            track.innerHTML = html;
-            track.style.transform = `translateX(0px)`;
+            balance += prize;
+            updateBalanceDisplay();
+            document.getElementById('case-result').innerHTML = `<span style="color: var(--accent-green);">🎉 Opened Case & Won: ${name}</span>`;
         }
 
-        window.backToCasesList = function() {
-            document.getElementById('cases-home').style.display = 'block';
-            document.getElementById('case-detail-view').style.display = 'none';
-        };
+        // --- UPGRADER LOGIC ---
+        function playUpgrader() {
+            let bet = parseFloat(document.getElementById('upgrade-bet').value);
+            let mult = parseFloat(document.getElementById('upgrade-multiplier').value);
+            let resDiv = document.getElementById('upgrade-result');
 
-        window.executeCaseOpen = async function() {
-            const c = casesData[selectedCaseKey];
-            if (currentBalance < c.cost) {
-                alert("Insufficient gold balance!");
+            if (isNaN(bet) || bet <= 0 || bet > balance) {
+                alert("Invalid bet amount.");
                 return;
             }
+            balance -= bet;
+            updateBalanceDisplay();
 
-            currentBalance -= c.cost;
-            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
-            document.getElementById('user-balance').innerText = currentBalance;
+            let winChance = mult === 2 ? 0.45 : (mult === 5 ? 0.18 : 0.08);
+            let success = Math.random() < winChance;
 
-            // Weighted random selection
-            let randRoll = Math.random() * 100;
-            let cumulative = 0;
-            let wonObj = c.items[0];
-            for (let item of c.items) {
-                cumulative += parseFloat(item.odds);
-                if (randRoll <= cumulative) {
-                    wonObj = item;
-                    break;
-                }
+            if (success) {
+                let wonAmount = Math.floor(bet * mult);
+                balance += wonAmount;
+                resDiv.style.color = "var(--accent-green)";
+                resDiv.innerText = `✅ Upgrade Successful! Won +${wonAmount} 🪙`;
+            } else {
+                resDiv.style.color = "var(--accent-red)";
+                resDiv.innerText = `❌ Upgrade Failed! Lost ${bet} 🪙`;
             }
-            
-            // Animate Track Roll
-            const track = document.getElementById('case-track');
-            renderCaseTrack(c.items);
-            track.children[20].innerHTML = `<span style="font-size:12px; color:var(--accent-green); font-weight:bold; text-align:center;">${wonObj.name}</span>`;
-            track.style.transform = `translateX(-${20 * 140 - 70}px)`;
-
-            setTimeout(async () => {
-                userInventory.push(wonObj);
-                await update(ref(db, 'users/' + currentUser.uid), { inventory: userInventory });
-                document.getElementById('case-result').innerHTML = `<span style="color:var(--accent-green);">🎉 Roll complete! You hit and won: ${wonObj.name}! Added to your Inventory.</span>`;
-            }, 3100);
-        };
-
-        // --- INVENTORY & SELLING ---
-        function renderInventory() {
-            const grid = document.getElementById('inventory-grid');
-            const emptyMsg = document.getElementById('inventory-empty-msg');
-            grid.innerHTML = "";
-
-            if (!userInventory || userInventory.length === 0) {
-                emptyMsg.style.display = 'block';
-                return;
-            }
-            emptyMsg.style.display = 'none';
-
-            userInventory.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'item-card';
-                card.innerHTML = `
-                    <div style="font-size:12px; color:var(--accent-gold); font-weight:bold; margin-bottom:5px;">${item.name}</div>
-                    <div style="font-size:11px; color:var(--accent-green); margin-bottom:8px;">Value: ${item.value} G</div>
-                    <button onclick="sellSkin(${index})" style="background:var(--accent-red); color:white; padding:5px; font-size:11px; margin-top:0;">Sell (${item.value} G)</button>
-                `;
-                grid.appendChild(card);
-            });
+            updateBalanceDisplay();
         }
 
-        window.sellSkin = async function(index) {
-            const soldItem = userInventory.splice(index, 1)[0];
-            currentBalance += soldItem.value;
-            await update(ref(db, 'users/' + currentUser.uid), { 
-                balance: currentBalance, 
-                inventory: userInventory 
-            });
-            document.getElementById('user-balance').innerText = currentBalance;
-            renderInventory();
-            alert(`Successfully sold ${soldItem.name} for ${soldItem.value} Gold!`);
-        };
-
-        // --- UPGRADER (Wheel and Pointer Spin Together) ---
-        window.updateWheelCalc = function() {
-            const bet = parseFloat(document.getElementById('upgrader-bet').value) || 0;
-            const target = parseFloat(document.getElementById('upgrader-target').value) || 0;
-            const info = document.getElementById('wheel-stats-info');
-            const wheel = document.getElementById('upgrade-wheel');
-
-            if (bet <= 0 || target <= bet) {
-                info.innerText = "Win Chance: 0% (Target must exceed bet)";
-                wheel.style.background = "conic-gradient(var(--accent-red) 0deg 360deg)";
-                winAngleDegrees = 0;
-                return;
-            }
-
-            let percentage = (bet / target) * 100;
-            if (percentage > 100) percentage = 100;
-            info.innerText = `Win Chance: ${percentage.toFixed(2)}%`;
-
-            winAngleDegrees = (percentage / 100) * 360;
-            wheel.style.background = `conic-gradient(var(--accent-green) 0deg ${winAngleDegrees}deg, var(--accent-red) ${winAngleDegrees}deg 360deg)`;
-        };
-
-        window.spinCustomWheel = async function() {
-            const bet = parseFloat(document.getElementById('upgrader-bet').value);
-            const target = parseFloat(document.getElementById('upgrader-target').value);
-            const resultDiv = document.getElementById('upgrader-result');
-
-            if (!bet || !target || bet <= 0 || target <= bet || bet > currentBalance) {
-                alert("Please input valid bet and target amounts!");
-                return;
-            }
-
-            currentBalance -= bet;
-            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
-            document.getElementById('user-balance').innerText = currentBalance;
-
-            let percentage = (bet / target) * 100;
-            let isWin = Math.random() * 100 <= percentage;
-
-            let extraSpins = 360 * 6;
-            let landingAngle = isWin ? (Math.random() * (winAngleDegrees - 2)) + 1 : winAngleDegrees + (Math.random() * (360 - winAngleDegrees - 2)) + 1;
-            
-            currentWheelRotation += extraSpins + (360 - landingAngle);
-
-            const wheel = document.getElementById('upgrade-wheel');
-            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
-
-            setTimeout(async () => {
-                if (isWin) {
-                    currentBalance += target;
-                    resultDiv.innerHTML = `<span style="color:var(--accent-green);">🎉 Success! Won ${target} Gold!</span>`;
-                } else {
-                    resultDiv.innerHTML = `<span style="color:var(--accent-red);">❌ Failed! Lost ${bet} Gold.</span>`;
-                }
-                await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
-                document.getElementById('user-balance').innerText = currentBalance;
-            }, 3100);
-        };
-
-        // --- MINER GAME WITH PROGRESSIVE 20% HARDER DIFFICULTY PER CLICK ---
+        // --- MINER GAME LOGIC ---
         let minerActive = false;
-        let minerTiles = [];
-        let minerCurrentPot = 0;
-        let minerBetAmount = 0;
-        let minerBaseReds = 4;
-        let minerClicksCount = 0;
-
-        window.startMinerGame = async function() {
-            const bet = parseFloat(document.getElementById('miner-bet').value);
-            const reds = parseInt(document.getElementById('miner-reds-count').value) || 4;
-
-            if (!bet || bet <= 0 || bet > currentBalance) {
-                alert("Enter a valid bet amount!");
+        function startMinerGame() {
+            let bet = parseFloat(document.getElementById('miner-bet').value);
+            if (isNaN(bet) || bet <= 0 || bet > balance) {
+                alert("Invalid bet amount.");
                 return;
             }
-            if (reds < 1 || reds > 20) {
-                alert("Base reds must be between 1 and 20.");
-                return;
-            }
-
-            minerBetAmount = bet;
-            minerCurrentPot = bet;
-            minerBaseReds = reds;
-            minerClicksCount = 0;
-            currentBalance -= bet;
-            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
-            document.getElementById('user-balance').innerText = currentBalance;
-
+            balance -= bet;
+            updateBalanceDisplay();
             minerActive = true;
-            document.getElementById('miner-cashout-btn').style.display = 'block';
-            document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
-            document.getElementById('miner-current-multiplier').innerText = "Multiplier: 1.00x";
-            document.getElementById('miner-status').innerHTML = `Game Live! Difficulty compounds +20% harder each pick.`;
-            
-            generateMinerBoard();
-        };
 
-        function generateMinerBoard() {
-            // Calculate current active bombs with 20% compounding increase per click
-            let effectiveReds = Math.min(24, Math.round(minerBaseReds * Math.pow(1.20, minerClicksCount)));
-            let safeCount = 25 - effectiveReds;
+            let board = document.getElementById('miner-board');
+            board.innerHTML = "";
+            document.getElementById('miner-msg').innerText = "Game active! Click tiles carefully.";
 
-            minerTiles = Array(safeCount).fill('gold').concat(Array(effectiveReds).fill('bomb'));
-            minerTiles.sort(() => Math.random() - 0.5);
+            let mineIndex = Math.floor(Math.random() * 8);
 
-            const grid = document.getElementById('miner-grid');
-            grid.innerHTML = "";
-            for(let i=0; i<25; i++) {
-                const tile = document.createElement('div');
-                tile.className = 'tile';
-                tile.innerText = "?";
-                tile.onclick = () => revealMinerTile(i, tile);
-                grid.appendChild(tile);
+            for(let i=0; i<8; i++) {
+                let tile = document.createElement('div');
+                tile.className = "miner-tile";
+                tile.innerText = "❓";
+                tile.onclick = () => {
+                    if(!minerActive) return;
+                    if(i === mineIndex) {
+                        tile.innerText = "💣";
+                        tile.style.background = "rgba(239, 68, 68, 0.2)";
+                        document.getElementById('miner-msg.innerText') = "💥 Boom! You hit a mine.";
+                        document.getElementById('miner-msg').style.color = "var(--accent-red)";
+                        minerActive = false;
+                    } else {
+                        let reward = Math.floor(bet * 1.5);
+                        balance += reward;
+                        updateBalanceDisplay();
+                        tile.innerText = "💎";
+                        tile.style.background = "rgba(74, 222, 128, 0.2)";
+                        document.getElementById('miner-msg').innerText = `✨ Gem found! Won +${reward} 🪙`;
+                        document.getElementById('miner-msg').style.color = "var(--accent-green)";
+                        minerActive = false;
+                    }
+                };
+                board.appendChild(tile);
             }
         }
 
-        function revealMinerTile(index, element) {
-            if (!minerActive) return;
-            if (element.classList.contains('revealed-gold') || element.classList.contains('revealed-bomb')) return;
-
-            if (minerTiles[index] === 'bomb') {
-                element.className = 'tile revealed-bomb';
-                element.innerText = "💣";
-                document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-red);">💥 Boom! You hit a bomb and lost your accumulated pot of ${minerCurrentPot.toFixed(2)} Gold.</span>`;
-                minerActive = false;
-                document.getElementById('miner-cashout-btn').style.display = 'none';
-            } else {
-                element.className = 'tile revealed-gold';
-                element.innerText = "🪙";
-                minerClicksCount++;
-                
-                // Increase pot based on progressive difficulty
-                let multiplierIncrement = 1.35 + (minerClicksCount * 0.1);
-                minerCurrentPot *= multiplierIncrement; 
-                let mult = (minerCurrentPot / minerBetAmount).toFixed(2);
-                
-                document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
-                document.getElementById('miner-current-multiplier').innerText = `Multiplier: ${mult}x`;
-                document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-green);">Safe! Next tile is 20% harder. Continue or Cash Out.</span>`;
-                
-                // Regenerate remaining board with increased difficulty factor
-                setTimeout(() => {
-                    if(minerActive) generateMinerBoard();
-                }, 400);
-            }
-        }
-
-        window.cashOutMiner = async function() {
-            if (!minerActive) return;
-            minerActive = false;
-            currentBalance += minerCurrentPot;
-            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
-            document.getElementById('user-balance').innerText = currentBalance;
-            document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-green);">💰 Cashed out successfully! Added ${minerCurrentPot.toFixed(2)} Gold to balance.</span>`;
-            document.getElementById('miner-cashout-btn').style.display = 'none';
-        };
-
-        // --- REAL-TIME GLOBAL LISTENING FOR TOP-UP LISTINGS ---
-        function listenToGlobalListing() {
-            onValue(ref(db, 'admin_listing'), (snapshot) => {
-                const box = document.getElementById('global-topup-info');
-                if (snapshot.exists()) {
-                    const val = snapshot.val();
-                    box.innerHTML = `<b>Active Item:</b> ${val.item} | <b>Price:</b> <span style="color:var(--accent-green);">${val.price} Gold</span> | <b>Pattern Code:</b> <span style="color:var(--accent-gold);">${val.pattern}</span>`;
-                } else {
-                    box.innerHTML = "No active top-up listing set by admin yet.";
+        // --- TOP UP LOGIC ---
+        async function fetchTopupListing() {
+            try {
+                const res = await fetch('/api/topup/listing');
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('topup-info-box').innerHTML = `
+                        <b>Active Marketplace Item:</b> ${data.listing.item}<br>
+                        <b>Price to Buy:</b> ${data.listing.price} 🪙 Gold<br>
+                        <b>Required Pattern:</b> ${data.listing.pattern}
+                    `;
                 }
-            });
+            } catch(e) {
+                document.getElementById('topup-info-box').innerText = "Market feed loaded.";
+            }
         }
 
-        window.submitTopUpClaim = async function() {
-            const pfp = document.getElementById('topup-pfp').files[0]?.name || "default_pfp.png";
-            const proof = document.getElementById('topup-proof').files[0]?.name || "default_proof.png";
-            
-            const listingSnap = await get(ref(db, 'admin_listing'));
-            let goldAmount = 100;
-            if (listingSnap.exists()) {
-                goldAmount = parseFloat(listingSnap.val().price) || 100;
+        async function submitTopUpClaim() {
+            const profilePhoto = document.getElementById('topup-profile').value.trim();
+            const proofScreenshot = document.getElementById('topup-proof').value.trim();
+            const statusDiv = document.getElementById('topup-status');
+
+            if(!profilePhoto || !proofScreenshot) {
+                statusDiv.style.color = "var(--accent-red)";
+                statusDiv.innerText = "Please provide profile photo and proof screenshot.";
+                return;
             }
 
-            const reqRef = push(ref(db, 'topup_claims'));
-            await set(reqRef, {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                goldAmount: goldAmount,
-                pfp: pfp,
-                proof: proof,
-                status: 'pending'
+            const res = await fetch('/api/topup/claim', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, profilePhoto, proofScreenshot })
             });
-
-            document.getElementById('topup-status-msg').innerHTML = "<span style='color:var(--accent-green);'>Claim submitted successfully! Admin notification sent.</span>";
-        };
+            const data = await res.json();
+            if(data.success) {
+                statusDiv.style.color = "var(--accent-green)";
+                statusDiv.innerText = "✅ Top-up proof submitted to admin successfully!";
+            } else {
+                statusDiv.style.color = "var(--accent-red)";
+                statusDiv.innerText = "❌ " + data.message;
+            }
+        }
 
         // --- WITHDRAWAL LOGIC ---
-        window.requestWithdrawal = async function() {
-            const amount = parseFloat(document.getElementById('withdraw-amount').value);
-            const instructions = document.getElementById('withdraw-instructions');
+        async function requestWithdrawal() {
+            const amount = document.getElementById('withdraw-amount').value;
+            const skinItem = document.getElementById('withdraw-skin').value.trim();
+            const pattern = document.getElementById('withdraw-pattern').value.trim();
+            const profilePhoto = document.getElementById('withdraw-profile').value.trim();
+            const resultDiv = document.getElementById('withdraw-result');
 
-            if (!amount || amount < 20) {
+            if(!amount || amount < 20) {
                 alert("Minimum withdrawal is 20 Gold.");
                 return;
             }
-            if (amount > currentBalance) {
+            if(!skinItem || !pattern || !profilePhoto) {
+                alert("Please fill in all skin, pattern, and profile verification fields.");
+                return;
+            }
+            if(amount > balance) {
                 alert("Insufficient balance.");
                 return;
             }
 
-            const userSnap = await get(ref(db, 'users/' + currentUser.uid));
-            const lastTopUp = userSnap.val().lastTopUp || 0;
-            const threeDaysAgo = Date.now() - (3 * 24 * 60 * 60 * 1000);
-
-            if (lastTopUp < threeDaysAgo) {
-                instructions.innerHTML = `<span style="color:var(--accent-red);">❌ Withdrawal denied: You must have completed a top-up within the last 3 days to withdraw.</span>`;
-                return;
-            }
-
-            const randomDecimal = amount + (Math.floor(Math.random() * 90) + 10) / 100;
-            const uniquePattern = Math.floor(Math.random() * 900) + 100;
-
-            const reqRef = push(ref(db, 'withdrawal_requests'));
-            await set(reqRef, {
-                uid: currentUser.uid,
-                email: currentUser.email,
-                requestedGold: amount,
-                exactPrice: randomDecimal.toFixed(2),
-                pattern: uniquePattern,
-                status: 'pending'
+            const res = await fetch('/api/withdraw/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, amount, skinItem, pattern, profilePhoto })
             });
+            const data = await res.json();
 
-            instructions.innerHTML = `
-                <div style="background:#111827; padding:10px; border-radius:6px; border:1px dashed var(--accent-blue);">
-                    <p style="color:var(--accent-green);"><b>Withdrawal Generated!</b></p>
-                    <p>List your Standoff 2 item precisely for: <b>${randomDecimal.toFixed(2)} Gold</b></p>
-                    <p>Pattern/Float identifier: <b>${uniquePattern}</b></p>
-                </div>
-            `;
-        };
-
-        // --- ADMIN PANEL WITH FIXED LISTINGS & 3 SEPARATE SUB-TABS ---
-        window.verifyAdmin = function() {
-            const code = document.getElementById('admin-passcode').value;
-            if (code !== "100200100") {
-                alert("Incorrect Admin Passcode!");
-                return;
+            if(data.success) {
+                balance -= parseFloat(amount);
+                updateBalanceDisplay();
+                resultDiv.innerHTML = `
+                    <div class="preview-box" style="border-color: var(--accent-blue);">
+                        <p style="color: var(--accent-green); margin:0 0 6px 0; font-weight:bold;">Withdrawal Instructions Generated!</p>
+                        <p style="margin:3px 0;">List your skin on the market for exact price: <b style="color:var(--accent-gold); font-size:15px;">${data.exactPrice} 🪙 Gold</b></p>
+                        <p style="margin:3px 0;">Pattern Code: <b>${pattern}</b></p>
+                    </div>
+                `;
+            } else {
+                alert(data.message);
             }
-            document.getElementById('admin-login-box').style.display = 'none';
-            document.getElementById('admin-dashboard').style.display = 'block';
-            loadAdminData();
-        };
-
-        window.switchAdminSubTab = function(sub) {
-            ['listings', 'topups', 'withdrawals'].forEach(s => {
-                document.getElementById('admin-list-' + s).style.display = (s === sub) ? 'block' : 'none';
-                document.getElementById('admin-sub-' + s).style.background = (s === sub) ? 'var(--accent-blue)' : 'var(--border-color)';
-            });
-        };
-
-        window.saveAdminListing = async function() {
-            const item = document.getElementById('admin-set-item').value;
-            const price = document.getElementById('admin-set-price').value;
-            const pattern = document.getElementById('admin-set-pattern').value;
-            const msgBox = document.getElementById('admin-listing-success-msg');
-
-            if (!item || !price || !pattern) {
-                alert("Please fill out all listing fields (Item, Price, Pattern)!");
-                return;
-            }
-
-            try {
-                await set(ref(db, 'admin_listing'), { item, price, pattern });
-                msgBox.innerHTML = "<span style='color:var(--accent-green);'>✅ Success! Global listing updated successfully.</span>";
-                document.getElementById('admin-set-item').value = "";
-                document.getElementById('admin-set-price').value = "";
-                document.getElementById('admin-set-pattern').value = "";
-                setTimeout(() => { msgBox.innerHTML = ""; }, 4000);
-            } catch (err) {
-                alert("Failed to save listing: " + err.message);
-            }
-        };
-
-        async function loadAdminData() {
-            const topupSnap = await get(ref(db, 'topup_claims'));
-            let topupHtml = "<h4>Pending Top-Up Claims (Player Purchases)</h4>";
-            if (topupSnap.exists()) {
-                topupSnap.forEach(child => {
-                    const d = child.val();
-                    const k = child.key;
-                    if(d.status === 'pending') {
-                        topupHtml += `
-                            <div style="background:#111827; padding:10px; margin-top:8px; border-radius:6px; border:1px solid var(--border-color);">
-                                <p><b>User:</b> <span style="color:var(--accent-blue);">${d.email}</span></p>
-                                <p><b>Claimed Gold Amount:</b> <span style="color:var(--accent-gold);">${d.goldAmount} G</span></p>
-                                <p><b>Files:</b> PFP: ${d.pfp} | Proof: ${d.proof}</p>
-                                <button onclick="actionTopUp('${k}', '${d.uid}', ${d.goldAmount}, 'approved')" style="background:var(--accent-green);">Confirm & Grant Gold</button>
-                                <button onclick="actionTopUp('${k}', '${d.uid}', ${d.goldAmount}, 'declined')" style="background:var(--accent-red); color:white;">Decline</button>
-                            </div>
-                        `;
-                    }
-                });
-            } else { topupHtml += "<p>No pending top-up claims.</p>"; }
-            document.getElementById('admin-list-topups').innerHTML = topupHtml;
-
-            const withSnap = await get(ref(db, 'withdrawal_requests'));
-            let withHtml = "<h4>Pending Withdrawal Requests</h4>";
-            if (withSnap.exists()) {
-                withSnap.forEach(child => {
-                    const d.value();
-                    const d = child.val();
-                    const k = child.key;
-                    if(d.status === 'pending') {
-                        withHtml += `
-                            <div style="background:#111827; padding:10px; margin-top:8px; border-radius:6px; border:1px solid var(--border-color);">
-                                <p><b>User:</b> ${d.email}</p>
-                                <p><b>Requested:</b> ${d.requestedGold} G | <b>Exact Target Price:</b> <span style="color:var(--accent-gold);">${d.exactPrice}</span> | <b>Pattern:</b> ${d.pattern}</p>
-                                <button onclick="actionWithdraw('${k}', '${d.uid}', ${d.requestedGold}, 'approved')" style="background:var(--accent-green);">Approve Payout</button>
-                                <button onclick="actionWithdraw('${k}', '${d.uid}', ${d.requestedGold}, 'declined')" style="background:var(--accent-red); color:white;">Decline</button>
-                            </div>
-                        `;
-                    }
-                });
-            } else { withHtml += "<p>No pending withdrawals.</p>"; }
-            document.getElementById('admin-list-withdrawals').innerHTML = withHtml;
         }
 
-        window.actionTopUp = async function(key, uid, goldAmount, status) {
-            await update(ref(db, 'topup_claims/' + key), { status });
-            if(status === 'approved') {
-                const userRef = ref(db, 'users/' + uid);
-                const userSnap = await get(userRef);
-                if(userSnap.exists()) {
-                    let bal = userSnap.val().balance || 0;
-                    await update(userRef, { balance: bal + goldAmount, lastTopUp: Date.now() });
-                }
-            }
-            alert(`Top-up claim ${status}!`);
-            loadAdminData();
-        };
+        // --- ADMIN PANEL LOGIC ---
+        async function adminSetTopup() {
+            const passcode = document.getElementById('admin-pass').value;
+            const item = document.getElementById('adm-item').value;
+            const price = document.getElementById('adm-price').value;
+            const pattern = document.getElementById('adm-pattern').value;
 
-        window.actionWithdraw = async function(key, uid, amount, status) {
-            await update(ref(db, 'withdrawal_requests/' + key), { status });
-            if(status === 'approved') {
-                const userRef = ref(db, 'users/' + uid);
-                const snap = await get(userRef);
-                if(snap.exists()) {
-                    let bal = snap.val().balance || 0;
-                    await update(userRef, { balance: Math.max(0, bal - amount) });
-                }
+            const res = await fetch('/api/admin/set-topup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passcode, item, price, pattern })
+            });
+            const data = await res.json();
+            if(data.success) alert("Top-up listing updated live!");
+            else alert(data.message);
+        }
+
+        async function loadAdminQueues() {
+            const passcode = document.getElementById('admin-pass').value;
+            const res = await fetch('/api/admin/queues', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ passcode })
+            });
+            const data = await res.json();
+            if(data.success) {
+                let html = "<b style='color:var(--accent-gold);'>Top-Up Claims Queue:</b><br>";
+                if(data.topupClaims.length === 0) html += "<i>No claims</i><br>";
+                data.topupClaims.forEach(c => {
+                    html += `• User: ${c.userId} | Profile: ${c.profilePhoto} | Proof: ${c.proofScreenshot}<br>`;
+                });
+                html += "<br><b style='color:var(--accent-blue);'>Withdrawals Queue:</b><br>";
+                if(data.withdrawalRequests.length === 0) html += "<i>No requests</i><br>";
+                data.withdrawalRequests.forEach(w => {
+                    html += `• User: ${w.userId} | Skin: ${w.skinItem} | Price: <b>${w.exactPrice}G</b> | Pattern: ${w.pattern} | Profile: ${w.profilePhoto}<br>`;
+                });
+                document.getElementById('admin-queues-output').innerHTML = html;
+            } else {
+                alert("Incorrect admin passcode.");
             }
-            alert(`Withdrawal request ${status}!`);
-            loadAdminData();
-        };
+        }
+
+        fetchTopupListing();
     </script>
 </body>
 </html>
