@@ -239,7 +239,7 @@
             <!-- CASES TAB -->
             <div id="content-cases" class="tab-content">
                 <div id="cases-home">
-                    <h3>Standoff 2 Cases (Expanded Skins)</h3>
+                    <h3>Standoff 2 Cases (Huge Skin Variety & Ultra Knives)</h3>
                     <div class="item-grid">
                         <div class="item-card" onclick="openCaseView('free')">
                             <h4>Starter Case</h4>
@@ -305,15 +305,15 @@
                 <div id="upgrader-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
             </div>
 
-            <!-- MINER TAB (Custom Red Count Selection & Harder Calculation) -->
+            <!-- MINER TAB (Progressive Hardness / 20% harder each click) -->
             <div id="content-miner" class="tab-content" style="display:none;">
-                <h3>Miner Game (Custom Hardness)</h3>
-                <p style="text-align:center; font-size:13px;">Pick how many red bombs you want (1 to 24). More reds scale up your payout multiplier dynamically!</p>
+                <h3>Miner Game (Progressive Difficulty)</h3>
+                <p style="text-align:center; font-size:13px;">Each successful tile pick increases bomb hazard risk by 20%!</p>
                 
                 <div id="miner-setup-area" style="background:#111827; padding:12px; border-radius:8px; margin-bottom:10px;">
                     <input type="number" id="miner-bet" placeholder="Bet amount in Gold" />
-                    <label style="font-size:12px; display:block; margin-top:6px;">Number of Red Bombs (1 - 24):</label>
-                    <input type="number" id="miner-reds-count" placeholder="e.g. 5" min="1" max="24" value="5" />
+                    <label style="font-size:12px; display:block; margin-top:6px;">Base Red Bombs Count (1 - 20):</label>
+                    <input type="number" id="miner-reds-count" placeholder="e.g. 4" min="1" max="20" value="4" />
                     <button onclick="startMinerGame()">Start Game</button>
                 </div>
                 
@@ -354,7 +354,7 @@
                 </div>
             </div>
 
-            <!-- ADMIN TAB -->
+            <!-- ADMIN TAB WITH 3 SEPARATE TABS -->
             <div id="content-admin" class="tab-content" style="display:none;">
                 <div id="admin-login-box" class="card-box" style="margin-top:0;">
                     <h4 style="color: var(--accent-gold);">Admin Secure Access</h4>
@@ -370,7 +370,7 @@
                         <button onclick="switchAdminSubTab('withdrawals')" id="admin-sub-withdrawals" style="background:var(--border-color); font-size:12px; padding:8px;">Withdrawals</button>
                     </div>
 
-                    <!-- Listings Sub-Tab -->
+                    <!-- 1. Listings Sub-Tab -->
                     <div id="admin-list-listings" class="admin-sub-content">
                         <div style="background:#111827; padding:10px; border-radius:6px; margin-bottom:15px;">
                             <h4 style="color:var(--accent-gold); margin:0 0 10px 0;">Configure Global Top-Up Listing</h4>
@@ -382,10 +382,10 @@
                         </div>
                     </div>
 
-                    <!-- Top-Ups Sub-Tab -->
+                    <!-- 2. Top-Up Claims Sub-Tab -->
                     <div id="admin-list-topups" class="admin-sub-content" style="display:none;"></div>
 
-                    <!-- Withdrawals Sub-Tab -->
+                    <!-- 3. Withdrawals Sub-Tab -->
                     <div id="admin-list-withdrawals" class="admin-sub-content" style="display:none;"></div>
                 </div>
             </div>
@@ -473,46 +473,56 @@
             if(tabName === 'inventory') renderInventory();
         };
 
-        // --- EXPANDED SO2 CASES WITH UNIQUE SKINS & VALUES ---
+        // --- EXPANDED SO2 CASES WITH HUGE SKIN VARIETY & 100k KARAMBIT GOLD (0.1%) + 50k KNIVES ---
         const casesData = {
             'free': { 
                 name: 'Starter Case', cost: 0, 
                 items: [
-                    {name:'P350 | Forest', odds:'50%', value: 5}, 
-                    {name:'SM1014 | Carbon', odds:'35%', value: 10}, 
-                    {name:'AKR | Railgun', odds:'15%', value: 25}
+                    {name:'P350 | Forest', odds:'40%', value: 2}, 
+                    {name:'SM1014 | Carbon', odds:'30%', value: 5}, 
+                    {name:'AKR | Railgun', odds:'20%', value: 10},
+                    {name:'G22 | Relic', odds:'9.9%', value: 25},
+                    {name:'M9 Bayonet | Frost (Free)', odds:'0.1%', value: 50000}
                 ] 
             },
             'standoff': { 
                 name: 'Standoff Box', cost: 50, 
                 items: [
-                    {name:'G22 | Carbon', odds:'45%', value: 40}, 
-                    {name:'P90 | Death', odds:'35%', value: 70}, 
-                    {name:'M4 | Necromancer', odds:'20%', value: 150}
+                    {name:'G22 | Carbon', odds:'35%', value: 30}, 
+                    {name:'P90 | Death', odds:'30%', value: 60}, 
+                    {name:'M4 | Necromancer', odds:'20%', value: 120},
+                    {name:'AKR12 | Acid', odds:'14.9%', value: 250},
+                    {name:'Butterfly | Legacy', odds:'0.1%', value: 50000}
                 ] 
             },
             'dragon': { 
                 name: 'Dragon Case', cost: 150, 
                 items: [
-                    {name:'TEC-9 | Scale', odds:'45%', value: 100}, 
-                    {name:'AWM | Sport', odds:'40%', value: 200}, 
-                    {name:'Dragon Glass | AWM', odds:'15%', value: 500}
+                    {name:'TEC-9 | Scale', odds:'35%', value: 90}, 
+                    {name:'AWM | Sport', odds:'30%', value: 180}, 
+                    {name:'Dragon Glass | AWM', odds:'20%', value: 400},
+                    {name:'USP | Ancient', odds:'14.9%', value: 800},
+                    {name:'M9 Bayonet | Dragon Glass', odds:'0.1%', value: 50000}
                 ] 
             },
             'fable': { 
                 name: 'Fable Collection', cost: 300, 
                 items: [
-                    {name:'USP | 2 Years', odds:'50%', value: 250}, 
-                    {name:'MP5 | Lab', odds:'35%', value: 400}, 
-                    {name:'Karambit | Gold', odds:'15%', value: 1200}
+                    {name:'USP | 2 Years', odds:'35%', value: 200}, 
+                    {name:'MP5 | Lab', odds:'30%', value: 350}, 
+                    {name:'AWM | Native', odds:'20%', value: 700},
+                    {name:'FAMAS | Monster', odds:'14.9%', value: 1500},
+                    {name:'Karambit | Gold', odds:'0.1%', value: 100000}
                 ] 
             },
             'rival': { 
                 name: 'Rival Case', cost: 100, 
                 items: [
-                    {name:'FAMAS | Fury', odds:'50%', value: 80}, 
-                    {name:'AKR | Starlight', odds:'35%', value: 150}, 
-                    {name:'M9 Bayonet | Frost', odds:'15%', value: 450}
+                    {name:'FAMAS | Fury', odds:'35%', value: 70}, 
+                    {name:'AKR | Starlight', odds:'30%', value: 140}, 
+                    {name:'M4 | Samurai', odds:'20%', value: 300},
+                    {name:'P350 | Nova', odds:'14.9%', value: 600},
+                    {name:'Kukri | Blade', odds:'0.1%', value: 50000}
                 ] 
             }
         };
@@ -526,7 +536,7 @@
             document.getElementById('case-detail-view').style.display = 'block';
             document.getElementById('selected-case-title').innerText = c.name + ` (Cost: ${c.cost} G)`;
             
-            let html = "<b>Possible Drops & Wiki Odds:</b><br>";
+            let html = "<b>Possible Drops & Odds:</b><br>";
             c.items.forEach(i => {
                 html += `• ${i.name} (Value: ${i.value} G) — <span style="color:var(--accent-green);">${i.odds}</span><br>`;
             });
@@ -562,7 +572,17 @@
             await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
             document.getElementById('user-balance').innerText = currentBalance;
 
-            const wonObj = c.items[Math.floor(Math.random() * c.items.length)];
+            // Weighted random selection
+            let randRoll = Math.random() * 100;
+            let cumulative = 0;
+            let wonObj = c.items[0];
+            for (let item of c.items) {
+                cumulative += parseFloat(item.odds);
+                if (randRoll <= cumulative) {
+                    wonObj = item;
+                    break;
+                }
+            }
             
             // Animate Track Roll
             const track = document.getElementById('case-track');
@@ -672,40 +692,50 @@
             }, 3100);
         };
 
-        // --- MINER GAME (Harder / Custom Reds with steeper risk multiplier) ---
+        // --- MINER GAME WITH PROGRESSIVE 20% HARDER DIFFICULTY PER CLICK ---
         let minerActive = false;
         let minerTiles = [];
         let minerCurrentPot = 0;
         let minerBetAmount = 0;
-        let minerSafeCountTotal = 20;
+        let minerBaseReds = 4;
+        let minerClicksCount = 0;
 
         window.startMinerGame = async function() {
             const bet = parseFloat(document.getElementById('miner-bet').value);
-            const reds = parseInt(document.getElementById('miner-reds-count').value) || 5;
+            const reds = parseInt(document.getElementById('miner-reds-count').value) || 4;
 
             if (!bet || bet <= 0 || bet > currentBalance) {
                 alert("Enter a valid bet amount!");
                 return;
             }
-            if (reds < 1 || reds > 24) {
-                alert("Red bombs must be between 1 and 24.");
+            if (reds < 1 || reds > 20) {
+                alert("Base reds must be between 1 and 20.");
                 return;
             }
 
             minerBetAmount = bet;
             minerCurrentPot = bet;
+            minerBaseReds = reds;
+            minerClicksCount = 0;
             currentBalance -= bet;
             await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
             document.getElementById('user-balance').innerText = currentBalance;
 
             minerActive = true;
-            minerSafeCountTotal = 25 - reds;
             document.getElementById('miner-cashout-btn').style.display = 'block';
             document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
             document.getElementById('miner-current-multiplier').innerText = "Multiplier: 1.00x";
-            document.getElementById('miner-status').innerHTML = `Game Live (${reds} Bombs, Harder Mode)! Pick tiles.`;
+            document.getElementById('miner-status').innerHTML = `Game Live! Difficulty compounds +20% harder each pick.`;
             
-            minerTiles = Array(minerSafeCountTotal).fill('gold').concat(Array(reds).fill('bomb'));
+            generateMinerBoard();
+        };
+
+        function generateMinerBoard() {
+            // Calculate current active bombs with 20% compounding increase per click
+            let effectiveReds = Math.min(24, Math.round(minerBaseReds * Math.pow(1.20, minerClicksCount)));
+            let safeCount = 25 - effectiveReds;
+
+            minerTiles = Array(safeCount).fill('gold').concat(Array(effectiveReds).fill('bomb'));
             minerTiles.sort(() => Math.random() - 0.5);
 
             const grid = document.getElementById('miner-grid');
@@ -717,7 +747,7 @@
                 tile.onclick = () => revealMinerTile(i, tile);
                 grid.appendChild(tile);
             }
-        };
+        }
 
         function revealMinerTile(index, element) {
             if (!minerActive) return;
@@ -732,13 +762,21 @@
             } else {
                 element.className = 'tile revealed-gold';
                 element.innerText = "🪙";
-                // Steeper risk calculation making it harder / more rewarding per safe click
-                let riskMultiplier = 1 + ((25 - minerSafeCountTotal) / 8.5);
-                minerCurrentPot *= riskMultiplier; 
+                minerClicksCount++;
+                
+                // Increase pot based on progressive difficulty
+                let multiplierIncrement = 1.35 + (minerClicksCount * 0.1);
+                minerCurrentPot *= multiplierIncrement; 
                 let mult = (minerCurrentPot / minerBetAmount).toFixed(2);
+                
                 document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
                 document.getElementById('miner-current-multiplier').innerText = `Multiplier: ${mult}x`;
-                document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-green);">Safe tile found! Continue or Cash Out.</span>`;
+                document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-green);">Safe! Next tile is 20% harder. Continue or Cash Out.</span>`;
+                
+                // Regenerate remaining board with increased difficulty factor
+                setTimeout(() => {
+                    if(minerActive) generateMinerBoard();
+                }, 400);
             }
         }
 
@@ -833,7 +871,7 @@
             `;
         };
 
-        // --- ADMIN PANEL WITH 3 TABS ---
+        // --- ADMIN PANEL WITH FIXED LISTINGS & 3 SEPARATE SUB-TABS ---
         window.verifyAdmin = function() {
             const code = document.getElementById('admin-passcode').value;
             if (code !== "100200100") {
@@ -859,13 +897,20 @@
             const msgBox = document.getElementById('admin-listing-success-msg');
 
             if (!item || !price || !pattern) {
-                alert("Fill out all listing fields!");
+                alert("Please fill out all listing fields (Item, Price, Pattern)!");
                 return;
             }
 
-            await set(ref(db, 'admin_listing'), { item, price, pattern });
-            msgBox.innerHTML = "<span style='color:var(--accent-green);'>✅ Success! Global listing updated successfully.</span>";
-            setTimeout(() => { msgBox.innerHTML = ""; }, 4000);
+            try {
+                await set(ref(db, 'admin_listing'), { item, price, pattern });
+                msgBox.innerHTML = "<span style='color:var(--accent-green);'>✅ Success! Global listing updated successfully.</span>";
+                document.getElementById('admin-set-item').value = "";
+                document.getElementById('admin-set-price').value = "";
+                document.getElementById('admin-set-pattern').value = "";
+                setTimeout(() => { msgBox.innerHTML = ""; }, 4000);
+            } catch (err) {
+                alert("Failed to save listing: " + err.message);
+            }
         };
 
         async function loadAdminData() {
@@ -894,6 +939,7 @@
             let withHtml = "<h4>Pending Withdrawal Requests</h4>";
             if (withSnap.exists()) {
                 withSnap.forEach(child => {
+                    const d.value();
                     const d = child.val();
                     const k = child.key;
                     if(d.status === 'pending') {
