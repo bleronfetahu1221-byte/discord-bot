@@ -1,1034 +1,410 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LootHUB - Standoff 2 Case & Battle Platform</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, sans-serif; }
-    body { background-color: #07090e; color: #fff; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LootHUB - Standoff 2 Case & Battle Platform</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #0f172a;
+            --border-color: #334155;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-yellow: #fbbf24;
+            --accent-red: #ef4444;
+            --accent-gold: #f59e0b;
+            --text-main: #f8fafc;
+        }
 
-    header { background: #0f1523; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a233a; }
-    .logo { font-size: 24px; font-weight: 900; color: #6366f1; letter-spacing: 2px; }
-    .logo span { color: #f59e0b; }
-    .nav-stats { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .stat-box { background: #1a233a; padding: 6px 12px; border-radius: 20px; font-weight: 700; border: 1px solid #2d3a58; font-size: 13px; }
-    .stat-box span { color: #10b981; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 10px;
+        }
 
-    /* Level Meter UI */
-    .level-container { width: 100%; background: #0a0e17; padding: 8px 20px; border-bottom: 1px solid #1a233a; display: flex; align-items: center; gap: 12px; }
-    .level-badge { background: #6366f1; font-weight: 900; padding: 4px 10px; border-radius: 6px; font-size: 12px; }
-    .xp-bar-outer { flex: 1; height: 10px; background: #1a233a; border-radius: 5px; overflow: hidden; position: relative; }
-    .xp-bar-inner { height: 100%; background: linear-gradient(90deg, #6366f1, #10b981); width: 0%; transition: width 0.4s ease; }
-    .xp-text { font-size: 11px; font-weight: 700; color: #9ca3af; min-width: 90px; text-align: right; }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+        }
 
-    .btn { background: linear-gradient(135deg, #6366f1, #4f46e5); color: white; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 700; transition: 0.2s; font-size: 12px; }
-    .btn:hover { transform: translateY(-2px); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-    .btn-topup { background: linear-gradient(135deg, #10b981, #059669); }
-    .btn-upgrade { background: linear-gradient(135deg, #f59e0b, #d97706); }
-    .btn-miner { background: linear-gradient(135deg, #ec4899, #be185d); }
-    .btn-battle { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
-    .btn-google { background: linear-gradient(135deg, #ea4335, #c5221f); }
-    .btn-discord { background: linear-gradient(135deg, #5865F2, #404EED); }
-    .btn-admin { background: linear-gradient(135deg, #ef4444, #dc2626); width: 100%; margin-top: 15px; }
+        h2, h3 { color: var(--accent-blue); text-align: center; }
 
-    main { flex: 1; padding: 20px 15px; max-width: 1000px; margin: 0 auto; width: 100%; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
 
-    /* Single Case View Display */
-    .case-display { background: linear-gradient(180deg, #0f1523 0%, #0a0e17 100%); border-radius: 16px; padding: 20px; text-align: center; border: 1px solid #1a233a; margin-bottom: 25px; display: none; }
-    .case-badge { width: 80px; height: 80px; border-radius: 50%; background: #1f293d; border: 3px solid #f59e0b; display: flex; justify-content: center; align-items: center; font-size: 28px; margin: 0 auto 10px; box-shadow: 0 0 15px rgba(245,158,11,0.3); }
-    
-    .spinner-container { position: relative; width: 100%; height: 130px; background: #05070a; overflow: hidden; border-radius: 10px; margin: 15px 0; border: 2px solid #1a233a; }
-    .spinner-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: #f59e0b; z-index: 10; transform: translateX(-50%); box-shadow: 0 0 12px #f59e0b; }
-    .spinner-track { display: flex; position: absolute; left: 0; top: 10px; height: 110px; transition: transform 5s cubic-bezier(0.1, 1, 0.1, 1); }
-    .item-card { min-width: 105px; height: 110px; margin: 0 4px; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 11px; font-weight: 800; text-align: center; padding: 5px; background: #131b2e; border-bottom: 4px solid #9ca3af; }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--accent-blue);
+            color: var(--bg-main);
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: background 0.2s;
+        }
+        button:hover { background-color: #0ea5e9; }
 
-    .odds-container { background: #07090e; border: 1px solid #1a233a; border-radius: 10px; padding: 12px; margin-top: 15px; text-align: left; }
-    .odds-title { font-size: 12px; font-weight: 800; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase; }
-    .odds-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #0f1523; font-size: 12px; font-weight: 600; }
+        .notice {
+            font-size: 13px;
+            color: var(--accent-yellow);
+            text-align: center;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            background: rgba(251, 191, 36, 0.1);
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px dashed var(--accent-yellow);
+        }
 
-    .section-title { font-size: 18px; margin: 20px 0 12px 0; font-weight: 900; color: #e2e8f0; }
-    .cases-grid-2col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-    .case-card { background: linear-gradient(145deg, #131b2e, #0f1523); border: 1px solid #1a233a; border-radius: 12px; padding: 15px 10px; text-align: center; cursor: pointer; transition: 0.2s; }
-    .case-card:hover { border-color: #6366f1; transform: translateY(-2px); }
-    .case-icon { font-size: 32px; margin-bottom: 8px; }
-    .case-card h3 { color: #f59e0b; font-size: 14px; font-weight: 800; margin-bottom: 2px; }
-    .case-card p { font-size: 12px; color: #9ca3af; font-weight: 600; margin-bottom: 8px; }
+        .section { display: none; }
+        .active { display: block; }
 
-    .history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .nav-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        .nav-bar button {
+            margin-top: 0;
+            background: var(--border-color);
+            color: white;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .nav-bar button.active-tab {
+            background: var(--accent-blue);
+            color: var(--bg-main);
+        }
 
-    /* Case Battle UI */
-    .battle-lobby-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; border: 1px solid #1a233a; border-radius: 8px; padding: 8px; background: #07090e; }
-    .battle-lobby-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #131b2e; border-radius: 6px; margin-bottom: 8px; font-size: 12px; }
-    .battle-arena { display: flex; gap: 10px; justify-content: space-between; margin-top: 15px; }
-    .battle-player-side { flex: 1; background: #07090e; border: 1px solid #1a233a; border-radius: 8px; padding: 10px; text-align: center; }
-    .battle-drops { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; max-height: 220px; overflow-y: auto; }
-    .battle-drop-card { padding: 8px; background: #131b2e; border-radius: 6px; font-size: 11px; text-align: left; border-left: 4px solid #6366f1; }
-    .opening-box { background: #131b2e; border: 1px dashed #6366f1; padding: 10px; border-radius: 6px; margin-top: 8px; font-size: 11px; text-align: center; color: #f59e0b; font-weight: 700; }
+        .card-box {
+            background: var(--bg-input);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+        }
 
-    /* Modals */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
-    .modal { background: #0f1523; padding: 20px; border-radius: 14px; width: 90%; max-width: 500px; border: 1px solid #2d3a58; max-height: 90vh; overflow-y: auto; }
-    .modal h3 { margin-bottom: 12px; font-size: 18px; font-weight: 800; }
-    .modal label { font-size: 11px; color: #9ca3af; font-weight: 700; display: block; margin-top: 10px; }
-    .modal input, .modal select { width: 100%; padding: 10px; margin-top: 4px; background: #07090e; border: 1px solid #1a233a; color: white; border-radius: 6px; font-weight: 600; font-size: 13px; }
-
-    .upgrade-wheel { width: 140px; height: 140px; border-radius: 50%; border: 6px solid #1a233a; margin: 15px auto; position: relative; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; background: #07090e; }
-
-    /* Rarities */
-    .rarity-uncommon { border-color: #60a5fa; color: #60a5fa; }
-    .rarity-rare { border-color: #3b82f6; color: #3b82f6; }
-    .rarity-epic { border-color: #a855f7; color: #a855f7; }
-    .rarity-legendary { border-color: #eab308; color: #eab308; }
-    .rarity-arcane { border-color: #ef4444; color: #ef4444; }
-    .rarity-nameless { border-color: #10b981; color: #10b981; }
-
-    .discord-box { background: rgba(88, 101, 242, 0.1); border: 1px solid #5865F2; padding: 12px; border-radius: 8px; margin-bottom: 12px; text-align: center; }
-    .pattern-box { background: #07090e; border: 1px dashed #f59e0b; padding: 12px; border-radius: 8px; margin: 10px 0; text-align: center; }
-  </style>
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .item-card {
+            background: #111827;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .item-card:hover { border-color: var(--accent-blue); }
+        .rarity-legendary { color: #f43f5e; font-weight: bold; }
+        .rarity-epic { color: #a855f7; font-weight: bold; }
+        .rarity-rare { color: #3b82f6; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-  <header>
-    <div class="logo">Loot<span>HUB</span></div>
-    <div class="nav-stats">
-      <div class="stat-box">Balance: <span id="userBalance">0.00</span> G</div>
-      <button class="btn btn-google" id="loginBtn" onclick="openModal('authModal')">Login Gmail</button>
-      <button class="btn btn-upgrade" onclick="openModal('upgradeModal')">⚡ Upgrader</button>
-      <button class="btn btn-miner" onclick="openModal('minerModal')">⛏️ Miners</button>
-      <button class="btn btn-battle" onclick="openModal('battleModal')">⚔️ Battles</button>
-      <button class="btn btn-topup" onclick="openModal('topUpModal')">+ Top Up</button>
-      <button class="btn" onclick="openModal('profileModal')">Profile</button>
-    </div>
-  </header>
+    <div class="container">
+        <h2>LootHUB Platform</h2>
 
-  <!-- XP & LEVEL PROGRESS BAR -->
-  <div class="level-container">
-    <div class="level-badge" id="playerLevelBadge">LVL 1</div>
-    <div class="xp-bar-outer">
-      <div class="xp-bar-inner" id="xpBarInner"></div>
-    </div>
-    <div class="xp-text" id="xpBarText">0 / 100 XP</div>
-  </div>
-
-  <main>
-    <!-- Single Case Display View -->
-    <div class="case-display" id="caseDisplay">
-      <button class="btn" style="background:#374151; float:left; padding: 4px 10px; font-size: 11px;" onclick="closeCaseView()">← Back to Cases</button>
-      <div style="clear:both;"></div>
-      
-      <div class="case-badge" id="activeCaseIcon">🎁</div>
-      <h2 id="activeCaseTitle" style="font-size:20px; font-weight:900;">Select Case</h2>
-      
-      <div class="spinner-container">
-        <div class="spinner-line"></div>
-        <div class="spinner-track" id="spinnerTrack"></div>
-      </div>
-
-      <div id="discordGateBox" class="discord-box" style="display:none;">
-        <p style="font-size:12px; margin-bottom:8px; color:#e2e8f0;">
-          To open this case, join our Discord server and post 
-          <strong style="color:#5865F2;" id="verifyEmailCmd">/(your_gmail)</strong> in the verification channel!
-        </p>
-        <button class="btn btn-discord" onclick="openDiscordServer()">1. Join Discord Group</button>
-        <button class="btn btn-topup" style="margin-top:6px;" onclick="promptDiscordVerification()">2. Confirm Verification Command</button>
-      </div>
-
-      <button class="btn" id="spinBtn" onclick="spinCase()" style="width:100%; padding:12px; font-size:15px;">Open Case (<span id="activeCasePrice">0</span> G)</button>
-
-      <div class="odds-container">
-        <div class="odds-title">Case Contents & Drop Chances</div>
-        <div id="oddsList"></div>
-      </div>
-    </div>
-
-    <!-- 2-Column Cases Grid -->
-    <div id="casesSection">
-      <div class="section-title">Standoff 2 Cases</div>
-      <div class="cases-grid-2col" id="casesGrid"></div>
-    </div>
-
-    <div class="section-title" style="margin-top:25px;">Drop History</div>
-    <div class="history-grid" id="historyGrid"></div>
-  </main>
-
-  <!-- GMAIL SYNC MODAL -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal">
-      <h3 id="authTitle">Gmail Account Sign In</h3>
-      <p style="font-size:12px; color:#9ca3af; margin-bottom:10px;">Enter your Gmail and password to carry your Gold balance to any browser or device.</p>
-
-      <label>Gmail Address:</label>
-      <input type="email" id="authEmailInput" placeholder="name@gmail.com">
-
-      <label>Account Password:</label>
-      <input type="password" id="authPasswordInput" placeholder="Enter password">
-
-      <button class="btn btn-google" style="width:100%; padding:12px; margin-top:15px;" onclick="handleGmailAuth()">Login / Sync Gmail Account</button>
-      <button class="btn" style="background:#6b7280; width:100%; margin-top:8px;" onclick="closeModal('authModal')">Cancel</button>
-    </div>
-  </div>
-
-  <!-- ADMIN ASSIGNED TOP UP PATTERN MODAL -->
-  <div class="modal-overlay" id="topUpModal">
-    <div class="modal">
-      <h3>Request Gold Top-Up</h3>
-      <p style="font-size:12px; color:#9ca3af; margin-bottom:10px;">Send a top-up request. An Admin will review and provide you with the required listing price and market pattern!</p>
-
-      <label>Gold Amount to Buy:</label>
-      <input type="number" id="topupAmountInput" placeholder="e.g. 100">
-
-      <button class="btn btn-topup" style="width:100%; padding:12px; margin-top:12px;" onclick="submitTopUpRequest()">Request Top-Up</button>
-
-      <div style="border-top:1px solid #1a233a; margin-top:15px; padding-top:10px;">
-        <h4 style="font-size:13px; color:#f59e0b;">Your Approved Top-Up Instructions:</h4>
-        <div id="approvedTopUpDetails" class="pattern-box">
-          <p style="font-size:12px; color:#9ca3af;">No active approved requests yet.</p>
-        </div>
-      </div>
-
-      <button class="btn" style="background:#6b7280; width:100%; margin-top:8px;" onclick="closeModal('topUpModal')">Close</button>
-    </div>
-  </div>
-
-  <!-- UPGRADER MODAL -->
-  <div class="modal-overlay" id="upgradeModal">
-    <div class="modal">
-      <h3>⚡ Skin Upgrader</h3>
-      <p style="font-size:12px; color:#9ca3af; margin-bottom:10px;">Select a target multiplier to multiply your bet!</p>
-
-      <label>Bet Amount (Gold):</label>
-      <input type="number" id="upgradeBet" value="10" min="1">
-
-      <label>Target Multiplier:</label>
-      <select id="upgradeMultiplier" onchange="calculateUpgradeChance()">
-        <option value="1.5">1.5x (60% Chance)</option>
-        <option value="2.0">2.0x (45% Chance)</option>
-        <option value="5.0">5.0x (18% Chance)</option>
-        <option value="10.0">10.0x (9% Chance)</option>
-      </select>
-
-      <div class="upgrade-wheel" id="upgradeWheelDisplay">45%</div>
-
-      <button class="btn btn-upgrade" style="width:100%; padding:12px; font-size:14px;" onclick="runUpgrader()">Upgrade Now</button>
-      <button class="btn" style="background:#6b7280; width:100%; margin-top:8px;" onclick="closeModal('upgradeModal')">Close</button>
-    </div>
-  </div>
-
-  <!-- MINERS MODAL -->
-  <div class="modal-overlay" id="minerModal">
-    <div class="modal">
-      <h3>⛏️ Passive Gold Miners</h3>
-      <p style="font-size:12px; color:#9ca3af; margin-bottom:12px;">Purchase miners to earn passive Gold every hour!</p>
-
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="background:#131b2e; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>🥉 Bronze Miner</strong><br>
-            <span style="font-size:11px; color:#10b981;">+0.50 G/hr</span>
-          </div>
-          <button class="btn btn-topup" onclick="buyMiner('bronze', 25)">Buy (25 G)</button>
+        <!-- AUTH SECTION -->
+        <div id="auth-section" class="section active">
+            <h3>Account Sign In / Register</h3>
+            <p class="notice">⚠️ <strong>Important:</strong> Please use your real email address! Withdrawal information and payout instructions will be sent directly to your email so you can receive your items.</p>
+            <input type="email" id="email" placeholder="Enter your real email" />
+            <input type="password" id="password" placeholder="Enter password" />
+            <button onclick="loginUser()">Sign In / Register</button>
+            <div id="auth-status" style="margin-top: 10px; text-align: center; color: var(--accent-red);"></div>
         </div>
 
-        <div style="background:#131b2e; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>🥈 Silver Miner</strong><br>
-            <span style="font-size:11px; color:#10b981;">+2.50 G/hr</span>
-          </div>
-          <button class="btn btn-topup" onclick="buyMiner('silver', 100)">Buy (100 G)</button>
+        <!-- MAIN DASHBOARD -->
+        <div id="dashboard-section" class="section">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #111827; padding: 10px 15px; border-radius: 8px;">
+                <span id="user-email-display" style="font-size: 14px; color: var(--accent-blue);"></span>
+                <span style="font-weight: bold;">Balance: <span id="user-balance" style="color: var(--accent-green);">0</span> Gold</span>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="nav-bar" style="margin-top: 15px;">
+                <button onclick="switchTab('cases')" id="tab-cases" class="active-tab">Cases</button>
+                <button onclick="switchTab('upgrader')" id="tab-upgrader">Upgrader</button>
+                <button onclick="switchTab('topup')" id="tab-topup">Top-Up</button>
+                <button onclick="switchTab('admin')" id="tab-admin">Admin Panel</button>
+            </div>
+
+            <!-- CASES TAB -->
+            <div id="content-cases" class="tab-content">
+                <h3>Case Opening</h3>
+                <div class="item-grid">
+                    <div class="item-card" onclick="openCase(50)">
+                        <h4>Standoff Box</h4>
+                        <p style="color:var(--accent-yellow);">Cost: 50 G</p>
+                    </div>
+                    <div class="item-card" onclick="openCase(150)">
+                        <h4>Dragon Case</h4>
+                        <p style="color:var(--accent-yellow);">Cost: 150 G</p>
+                    </div>
+                </div>
+                <div id="case-result" style="text-align: center; margin-top: 20px; font-size: 16px;"></div>
+            </div>
+
+            <!-- UPGRADER TAB -->
+            <div id="content-upgrader" class="tab-content" style="display:none;">
+                <h3>Item Upgrader</h3>
+                <p>Multiply your balance risk style!</p>
+                <input type="number" id="upgrade-bet" placeholder="Gold amount to risk" />
+                <button onclick="runUpgrade()">Attempt Upgrade (50% Win Rate)</button>
+                <div id="upgrade-result" style="text-align: center; margin-top: 15px;"></div>
+            </div>
+
+            <!-- TOP UP TAB -->
+            <div id="content-topup" class="tab-content" style="display:none;">
+                <div class="card-box" style="margin-top:0;">
+                    <h4>Request Gold Top-Up</h4>
+                    <input type="number" id="topup-amount" placeholder="Gold Amount to Buy" />
+                    <button onclick="requestTopUp()">Request Top-Up</button>
+                    <div id="topup-instructions" style="margin-top:10px;"></div>
+                </div>
+            </div>
+
+            <!-- ADMIN TAB -->
+            <div id="content-admin" class="tab-content" style="display:none;">
+                <div class="card-box" style="margin-top:0;">
+                    <h4 style="color: var(--accent-gold);">Admin Access Control</h4>
+                    <input type="password" id="admin-passcode" placeholder="Enter Admin Passcode" />
+                    <button onclick="verifyAdmin()" style="background-color: var(--accent-gold);">Unlock Admin Panel</button>
+                </div>
+                <div id="admin-panel-area" style="display:none; margin-top: 15px;">
+                    <h3 style="color: var(--accent-gold);">Pending Customer Requests</h3>
+                    <div id="admin-requests-list"></div>
+                </div>
+            </div>
+
         </div>
-
-        <div style="background:#131b2e; padding:10px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong>🥇 Gold Miner</strong><br>
-            <span style="font-size:11px; color:#10b981;">+12.00 G/hr</span>
-          </div>
-          <button class="btn btn-topup" onclick="buyMiner('gold', 400)">Buy (400 G)</button>
-        </div>
-      </div>
-
-      <div style="margin-top:15px; background:#07090e; padding:10px; border-radius:8px; text-align:center;">
-        <p style="font-size:12px;">Active Rate: <strong id="minerRateText" style="color:#10b981;">0.00 G/hr</strong></p>
-        <button class="btn btn-miner" style="margin-top:8px; width:100%;" onclick="claimMinerEarnings()">Collect Mined Gold</button>
-      </div>
-
-      <button class="btn" style="background:#6b7280; width:100%; margin-top:12px;" onclick="closeModal('minerModal')">Close</button>
     </div>
-  </div>
 
-  <!-- BATTLES MODAL -->
-  <div class="modal-overlay" id="battleModal">
-    <div class="modal" style="max-width: 600px;">
-      <h3>⚔️ Shared Case Battles</h3>
-      
-      <div id="battleLobbyView">
-        <div style="background:#07090e; padding:10px; border-radius:8px; margin-bottom:12px; border:1px solid #1a233a;">
-          <h4 style="font-size:13px; color:#f59e0b; margin-bottom:6px;">Create Battle</h4>
-          <div style="display:flex; gap:8px;">
-            <select id="battleCaseSelect" style="margin:0; flex:2;"></select>
-            <select id="battleCaseCount" style="margin:0; flex:1;">
-              <option value="1">1 Case</option>
-              <option value="2">2 Cases</option>
-              <option value="3">3 Cases</option>
-              <option value="4">4 Cases</option>
-              <option value="5">5 Cases</option>
-            </select>
-            <button class="btn btn-battle" onclick="createBattle()">Create</button>
-          </div>
-        </div>
+    <!-- Firebase SDK Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        <h4 style="font-size:13px; color:#9ca3af; margin-bottom:6px;">Open Lobbies</h4>
-        <div class="battle-lobby-list" id="battleLobbyList">
-          <p style="font-size:11px; color:#9ca3af; text-align:center;">Loading available battles...</p>
-        </div>
-      </div>
+        // REPLACE THESE WITH YOUR FIREBASE CONFIG DETAILS
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_DATABASE_NAME.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID"
+        };
 
-      <div id="battleArenaView" style="display:none;">
-        <div style="text-align:center; font-weight:800; color:#8b5cf6; margin-bottom:8px;" id="battleStatusTitle">WAITING FOR PLAYER...</div>
-        
-        <div class="battle-arena">
-          <div class="battle-player-side">
-            <h4 id="p1Name" style="font-size:12px; color:#10b981;">Player 1</h4>
-            <div style="font-size:16px; font-weight:900; margin:4px 0;" id="p1Total">0.00 G</div>
-            <div id="p1Opening" class="opening-box" style="display:none;">Opening Case...</div>
-            <div class="battle-drops" id="p1Drops"></div>
-          </div>
-          <div style="display:flex; align-items:center; font-weight:900; color:#ef4444; font-size:18px;">VS</div>
-          <div class="battle-player-side">
-            <h4 id="p2Name" style="font-size:12px; color:#ef4444;">Opponent</h4>
-            <div style="font-size:16px; font-weight:900; margin:4px 0;" id="p2Total">0.00 G</div>
-            <div id="p2Opening" class="opening-box" style="display:none;">Opening Case...</div>
-            <div class="battle-drops" id="p2Drops"></div>
-          </div>
-        </div>
-      </div>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
 
-      <button class="btn" style="background:#6b7280; width:100%; margin-top:12px;" onclick="closeModal('battleModal')">Close</button>
-    </div>
-  </div>
+        let currentUser = null;
+        let currentBalance = 100;
 
-  <!-- PROFILE & WITHDRAWAL MODAL -->
-  <div class="modal-overlay" id="profileModal">
-    <div class="modal">
-      <h3>User Profile & Withdrawals</h3>
-      <p style="margin-bottom: 5px; font-size: 13px;">Available Balance: <strong id="modalBalance">0.00</strong> G</p>
-      
-      <label>Withdraw Gold Amount:</label>
-      <input type="number" id="withdrawAmount" placeholder="e.g. 100">
-      
-      <label>Upload Profile Screenshot Proof ONLY:</label>
-      <input type="file" id="withdrawProfileImg" accept="image/*">
-      
-      <button class="btn btn-topup" style="width:100%; margin-top:15px;" onclick="submitWithdrawal()">Submit Withdrawal Request</button>
-      <button class="btn btn-admin" onclick="closeModal('profileModal'); openModal('adminPinModal');">🔑 Admin Portal</button>
-      <button class="btn" style="background:#6b7280; width:100%; margin-top:8px;" onclick="closeModal('profileModal')">Close</button>
-    </div>
-  </div>
+        window.loginUser = async function() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const status = document.getElementById('auth-status');
 
-  <!-- ADMIN AUTH & PORTAL MODALS -->
-  <div class="modal-overlay" id="adminPinModal">
-    <div class="modal">
-      <h3>Admin Security</h3>
-      <input type="password" id="adminPinInput" placeholder="Enter Admin PIN (Default: 7777)">
-      <div style="display:flex; gap:8px; margin-top:12px;">
-        <button class="btn btn-admin" style="flex:1; margin:0;" onclick="verifyAdminPin()">Unlock</button>
-        <button class="btn" style="background:#6b7280;" onclick="closeModal('adminPinModal')">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="adminPortalModal">
-    <div class="modal" style="max-width:600px;">
-      <h3>🔑 Admin Control Center</h3>
-      <h4 style="font-size:12px; color:#f59e0b; margin-top:10px;">Pending Top-Up Requests (Assign Price & Pattern):</h4>
-      <div id="adminTopupList" style="max-height:180px; overflow-y:auto; margin-bottom:15px;"></div>
-
-      <h4 style="font-size:12px; color:#10b981;">Pending Withdrawals:</h4>
-      <div id="adminWithdrawalRequests" style="max-height:180px; overflow-y:auto; font-size:12px; margin-bottom:15px;"></div>
-
-      <button class="btn" style="background:#6b7280; width:100%;" onclick="closeModal('adminPortalModal')">Close Portal</button>
-    </div>
-  </div>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDqmHsE2CUxmbtT1BxqvvJlP52rOPRgIho",
-      authDomain: "loothub-c9693.firebaseapp.com",
-      databaseURL: "https://loothub-c9693-default-rtdb.firebaseio.com",
-      projectId: "loothub-c9693",
-      storageBucket: "loothub-c9693.firebasestorage.app",
-      messagingSenderId: "537489181344",
-      appId: "1:537489181344:web:3d5c0953220ad02490d7c5"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const DISCORD_INVITE_URL = "https://discord.gg/DjeFgSP8s";
-
-    let userId = localStorage.getItem('lh_uid') || 'Player_' + Math.floor(1000 + Math.random() * 9000);
-    let userEmail = localStorage.getItem('lh_email') || '';
-
-    let balance = 0.00;
-    let inventory = [];
-    let lastFreeClaim = 0;
-    let discordVerified = false;
-    let userLevel = 1;
-    let userXP = 0;
-    let userMiners = { bronze: 0, silver: 0, gold: 0, lastClaim: Date.now() };
-    let selectedCaseIndex = null;
-
-    function encodeEmailKey(email) {
-      return email.replace(/\./g, '_dot_').replace(/@/g, '_at_');
-    }
-
-    // REAL-TIME DATABASE SYNC (Fixes Cross-Browser Balance Persistence)
-    function attachCloudSync() {
-      if (!userEmail) return;
-      const userKey = encodeEmailKey(userEmail);
-
-      database.ref('users/' + userKey).on('value', (snapshot) => {
-        if (snapshot.exists()) {
-          const acc = snapshot.val();
-          balance = parseFloat(acc.balance) || 0.00;
-          inventory = acc.inventory || [];
-          lastFreeClaim = acc.lastFreeClaim || 0;
-          discordVerified = acc.discordVerified || false;
-          userLevel = acc.userLevel || 1;
-          userXP = acc.userXP || 0;
-          userMiners = acc.userMiners || { bronze: 0, silver: 0, gold: 0, lastClaim: Date.now() };
-
-          updateUI();
-          checkUserTopUpInstructions();
-        }
-      });
-    }
-
-    function saveUserDataToCloud(passwordParam = null) {
-      if (!userEmail) return;
-      const userKey = encodeEmailKey(userEmail);
-
-      let payload = {
-        userId, email: userEmail, balance, inventory, lastFreeClaim, userLevel, userXP, userMiners, discordVerified, lastUpdated: Date.now()
-      };
-      if (passwordParam) payload.password = passwordParam;
-
-      database.ref('users/' + userKey).update(payload);
-    }
-
-    function handleGmailAuth() {
-      const email = document.getElementById('authEmailInput').value.trim().toLowerCase();
-      const password = document.getElementById('authPasswordInput').value.trim();
-
-      if (!email || !email.includes('@')) return alert('Please enter a valid Gmail address!');
-      if (!password || password.length < 4) return alert('Please enter a password!');
-
-      const userKey = encodeEmailKey(email);
-
-      database.ref('users/' + userKey).get().then((snapshot) => {
-        if (snapshot.exists()) {
-          const account = snapshot.val();
-          if (account.password === password) {
-            userEmail = email;
-            userId = email.split('@')[0];
-            localStorage.setItem('lh_uid', userId);
-            localStorage.setItem('lh_email', userEmail);
-            document.getElementById('loginBtn').innerText = userEmail;
-
-            alert(`Welcome back! Data synchronized across all devices.`);
-            closeModal('authModal');
-            attachCloudSync();
-          } else {
-            alert('Incorrect password for this Gmail address!');
-          }
-        } else {
-          userEmail = email;
-          userId = email.split('@')[0];
-          localStorage.setItem('lh_uid', userId);
-          localStorage.setItem('lh_email', userEmail);
-          document.getElementById('loginBtn').innerText = userEmail;
-
-          saveUserDataToCloud(password);
-          alert(`Account created successfully!`);
-          closeModal('authModal');
-          attachCloudSync();
-        }
-      });
-    }
-
-    // DISCORD VERIFICATION
-    function promptDiscordVerification() {
-      if (!userEmail) {
-        alert("Please login with Gmail first!");
-        openModal('authModal');
-        return;
-      }
-
-      const expectedCmd = `/${userEmail}`;
-      const typed = prompt(`Enter the command you typed in the Discord verification channel:\n(${expectedCmd})`);
-
-      if (typed && typed.trim().toLowerCase() === expectedCmd.toLowerCase()) {
-        discordVerified = true;
-        saveUserDataToCloud();
-        alert("🎉 Verification confirmed!");
-        selectCase(selectedCaseIndex);
-      } else {
-        alert("❌ Verification failed! You must type: " + expectedCmd);
-      }
-    }
-
-    // ADMIN PATTERN TOP-UP SYSTEM
-    function submitTopUpRequest() {
-      if (!userEmail) {
-        alert("Please login with Gmail first!");
-        return openModal('authModal');
-      }
-
-      const amt = parseFloat(document.getElementById('topupAmountInput').value);
-      if (!amt || amt <= 0) return alert('Enter a valid amount!');
-
-      database.ref('topup_requests').push({
-        userEmail, amount: amt, status: 'pending', timestamp: new Date().toLocaleTimeString()
-      });
-
-      alert('Top-up request submitted! Check this modal shortly for price & pattern instructions from the Admin.');
-    }
-
-    function checkUserTopUpInstructions() {
-      if (!userEmail) return;
-      database.ref('topup_requests').on('value', (snap) => {
-        const box = document.getElementById('approvedTopUpDetails');
-        box.innerHTML = '';
-        let found = false;
-
-        if (snap.exists()) {
-          Object.values(snap.val()).forEach(req => {
-            if (req.userEmail === userEmail && req.status === 'approved') {
-              found = true;
-              box.innerHTML = `
-                <p><strong>Gold Amount:</strong> ${req.amount} G</p>
-                <p><strong>Required Listing Price:</strong> <span style="color:#10b981;">${req.price} Gold</span></p>
-                <p><strong>Skin Pattern/Float:</strong> <span style="color:#f59e0b;">${req.pattern}</span></p>
-              `;
+            if (!email || !password) {
+                status.innerText = "Please fill in all fields.";
+                return;
             }
-          });
-        }
-        if (!found) box.innerHTML = `<p style="font-size:12px; color:#9ca3af;">No active approved top-up instructions.</p>`;
-      });
-    }
 
-    // CASES DATA
-    const cases = [
-      {
-        name: "Free Daily Case", price: 0, icon: "🎁", isFree: true, xpReward: 15,
-        items: [
-          { name: "P350 | Nano", value: 0.5, class: "rarity-uncommon", dropChance: 0.85 },
-          { name: "Glock | Nest", value: 1.5, class: "rarity-rare", dropChance: 0.11 },
-          { name: "USP | Pisces", value: 3.0, class: "rarity-epic", dropChance: 0.035 },
-          { name: "AKR | Tiger Special", value: 5.0, class: "rarity-arcane", dropChance: 0.005 }
-        ]
-      },
-      {
-        name: "Pocket Case", price: 10, icon: "🎒", xpReward: 25,
-        items: [
-          { name: "G22 | Relic", value: 2.0, class: "rarity-uncommon", dropChance: 0.70 },
-          { name: "Tec-9 | Aurora", value: 8.0, class: "rarity-rare", dropChance: 0.22 },
-          { name: "P350 | Forest", value: 22.0, class: "rarity-epic", dropChance: 0.075 },
-          { name: "USP | Genesis", value: 120.0, class: "rarity-arcane", dropChance: 0.005 }
-        ]
-      },
-      {
-        name: "Bronze Case", price: 20, icon: "🥉", xpReward: 50,
-        items: [
-          { name: "Fabarm | Neon", value: 4.0, class: "rarity-uncommon", dropChance: 0.68 },
-          { name: "SM1014 | Wave", value: 15.0, class: "rarity-rare", dropChance: 0.24 },
-          { name: "MP7 | Offroad", value: 45.0, class: "rarity-epic", dropChance: 0.075 },
-          { name: "M4 | Grand Prix", value: 250.0, class: "rarity-arcane", dropChance: 0.005 }
-        ]
-      },
-      {
-        name: "Starter Case", price: 25, icon: "⚡", xpReward: 65,
-        items: [
-          { name: "FN FAL | Tactical", value: 5.0, class: "rarity-uncommon", dropChance: 0.67 },
-          { name: "MAC10 | Blast", value: 20.0, class: "rarity-rare", dropChance: 0.25 },
-          { name: "M40 | Quake", value: 60.0, class: "rarity-epic", dropChance: 0.075 },
-          { name: "AKR | Carbon", value: 300.0, class: "rarity-arcane", dropChance: 0.005 }
-        ]
-      },
-      {
-        name: "Origin Case", price: 100, icon: "🔮", xpReward: 200,
-        items: [
-          { name: "Desert Eagle | Morgan", value: 10.0, class: "rarity-uncommon", dropChance: 0.65 },
-          { name: "UMP45 | Wings", value: 50.0, class: "rarity-rare", dropChance: 0.26 },
-          { name: "AKR | Treasure Hunter", value: 180.0, class: "rarity-epic", dropChance: 0.075 },
-          { name: "AWM | Genesis", value: 650.0, class: "rarity-arcane", dropChance: 0.0149 },
-          { name: "M9 Bayonet | Dragon Glass", value: 4500.0, class: "rarity-nameless", dropChance: 0.0001 }
-        ]
-      },
-      {
-        name: "Furious Case", price: 150, icon: "🔥", xpReward: 350,
-        items: [
-          { name: "MP5 | Zone", value: 15.0, class: "rarity-uncommon", dropChance: 0.65 },
-          { name: "M40 | Monster", value: 75.0, class: "rarity-rare", dropChance: 0.26 },
-          { name: "M4 | Necromancer", value: 280.0, class: "rarity-epic", dropChance: 0.084 },
-          { name: "Karambit | Claw", value: 2000.0, class: "rarity-nameless", dropChance: 0.006 }
-        ]
-      }
-    ];
+            try {
+                let userCred;
+                try {
+                    userCred = await signInWithEmailAndPassword(auth, email, password);
+                } catch (e) {
+                    userCred = await createUserWithEmailAndPassword(auth, email, password);
+                }
+                currentUser = userCred.user;
+                
+                // Fetch or initialize user balance
+                const userRef = ref(db, 'users/' + currentUser.uid);
+                const snap = await get(userRef);
+                if (snap.exists()) {
+                    currentBalance = snap.val().balance || 100;
+                } else {
+                    await set(userRef, { email: currentUser.email, balance: 100 });
+                    currentBalance = 100;
+                }
 
-    function initCases() {
-      const grid = document.getElementById('casesGrid');
-      const battleSelect = document.getElementById('battleCaseSelect');
-      grid.innerHTML = ''; battleSelect.innerHTML = '';
+                document.getElementById('auth-section').classList.remove('active');
+                document.getElementById('dashboard-section').classList.add('active');
+                document.getElementById('user-email-display').innerText = currentUser.email;
+                document.getElementById('user-balance').innerText = currentBalance;
+            } catch (err) {
+                status.innerText = "Error: " + err.message;
+            }
+        };
 
-      cases.forEach((c, idx) => {
-        grid.innerHTML += `
-          <div class="case-card" onclick="selectCase(${idx})">
-            <div class="case-icon">${c.icon}</div>
-            <h3>${c.name}</h3>
-            <p>${c.price === 0 ? 'FREE' : c.price + ' Gold'}</p>
-            <button class="btn" style="width:100%; font-size:11px;">Open (+${c.xpReward} XP)</button>
-          </div>`;
-
-        if (!c.isFree) {
-          battleSelect.innerHTML += `<option value="${idx}">${c.name} (${c.price} G)</option>`;
-        }
-      });
-    }
-
-    function selectCase(idx) {
-      selectedCaseIndex = idx;
-      const c = cases[idx];
-      document.getElementById('casesSection').style.display = 'none';
-      const display = document.getElementById('caseDisplay');
-      display.style.display = 'block';
-
-      document.getElementById('activeCaseIcon').innerText = c.icon;
-      document.getElementById('activeCaseTitle').innerText = c.name;
-      document.getElementById('activeCasePrice').innerText = c.price;
-
-      document.getElementById('verifyEmailCmd').innerText = userEmail ? `/${userEmail}` : `/(your_gmail)`;
-
-      if (c.isFree && !discordVerified) {
-        document.getElementById('discordGateBox').style.display = 'block';
-        document.getElementById('spinBtn').style.display = 'none';
-      } else {
-        document.getElementById('discordGateBox').style.display = 'none';
-        document.getElementById('spinBtn').style.display = 'block';
-        checkFreeCooldown();
-      }
-
-      const oddsList = document.getElementById('oddsList');
-      oddsList.innerHTML = '';
-      c.items.forEach(item => {
-        oddsList.innerHTML += `<div class="odds-item"><span class="${item.class}">${item.name}</span><span style="color:#e2e8f0;">${(item.dropChance * 100).toFixed(1)}%</span></div>`;
-      });
-    }
-
-    function openDiscordServer() {
-      window.open(DISCORD_INVITE_URL, '_blank');
-    }
-
-    function addXP(amount) {
-      userXP += amount;
-      const requiredXP = userLevel * 100;
-      if (userXP >= requiredXP) {
-        userXP -= requiredXP;
-        userLevel++;
-        balance += 10.0;
-        alert(`🎉 LEVEL UP! You reached Level ${userLevel} and received 10.0 Gold Bonus!`);
-      }
-      updateUI();
-    }
-
-    function updateUI() {
-      document.getElementById('userBalance').innerText = balance.toFixed(2);
-      document.getElementById('modalBalance').innerText = balance.toFixed(2);
-      if (userEmail) document.getElementById('loginBtn').innerText = userEmail;
-
-      const requiredXP = userLevel * 100;
-      const xpPct = (userXP / requiredXP) * 100;
-      document.getElementById('playerLevelBadge').innerText = `LVL ${userLevel}`;
-      document.getElementById('xpBarInner').style.width = `${xpPct}%`;
-      document.getElementById('xpBarText').innerText = `${userXP} / ${requiredXP} XP`;
-
-      const hourlyRate = (userMiners.bronze * 0.5) + (userMiners.silver * 2.5) + (userMiners.gold * 12.0);
-      document.getElementById('minerRateText').innerText = hourlyRate.toFixed(2) + ' G/hr';
-
-      const grid = document.getElementById('historyGrid');
-      grid.innerHTML = '';
-      inventory.slice(-8).reverse().forEach(item => {
-        grid.innerHTML += `<div class="case-card ${item.class}" style="padding:8px;"><strong>${item.name}</strong><br>${item.value.toFixed(2)} G</div>`;
-      });
-
-      saveUserDataToCloud();
-    }
-
-    function checkFreeCooldown() {
-      if (selectedCaseIndex === null) return;
-      const c = cases[selectedCaseIndex];
-      const spinBtn = document.getElementById('spinBtn');
-
-      if (c.isFree) {
-        const diff = Date.now() - lastFreeClaim;
-        const cooldown = 24 * 60 * 60 * 1000;
-        if (diff < cooldown) {
-          spinBtn.disabled = true;
-          const remainingSecs = Math.ceil((cooldown - diff) / 1000);
-          spinBtn.innerText = `Cooldown (${Math.floor(remainingSecs / 3600)}h ${Math.floor((remainingSecs % 3600) / 60)}m)`;
-          return false;
-        } else {
-          spinBtn.disabled = false;
-          spinBtn.innerText = `Open Free Daily Case`;
-          return true;
-        }
-      }
-    }
-
-    function closeCaseView() {
-      document.getElementById('caseDisplay').style.display = 'none';
-      document.getElementById('casesSection').style.display = 'block';
-    }
-
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-    // SPIN CASE
-    function spinCase() {
-      if (selectedCaseIndex === null) return;
-      const currentCase = cases[selectedCaseIndex];
-
-      if (currentCase.isFree) {
-        if (!checkFreeCooldown()) return alert("Free case is on cooldown!");
-        lastFreeClaim = Date.now();
-      } else {
-        if (balance < currentCase.price) return alert("Insufficient balance!");
-        balance -= currentCase.price;
-      }
-
-      updateUI();
-      const track = document.getElementById('spinnerTrack');
-      document.getElementById('spinBtn').disabled = true;
-      track.style.transition = 'none';
-      track.style.transform = 'translateX(0px)';
-      track.innerHTML = '';
-
-      let strip = [];
-      for (let i = 0; i < 70; i++) {
-        let item = getRandomItemFromCase(currentCase);
-        strip.push(item);
-        track.innerHTML += `<div class="item-card ${item.class}"><div>${item.name}</div><div>${item.value.toFixed(2)} G</div></div>`;
-      }
-
-      const winItem = strip[60];
-      setTimeout(() => {
-        track.style.transition = 'transform 5s cubic-bezier(0.1, 1, 0.1, 1)';
-        track.style.transform = `translateX(-${60 * 113 - 130}px)`;
-      }, 50);
-
-      setTimeout(() => {
-        balance += winItem.value;
-        inventory.push(winItem);
-        addXP(currentCase.xpReward);
-        updateUI();
-        if (currentCase.isFree) checkFreeCooldown();
-      }, 5200);
-    }
-
-    function getRandomItemFromCase(caseObj) {
-      let rand = Math.random(), cumulative = 0;
-      for (let item of caseObj.items) {
-        cumulative += item.dropChance;
-        if (rand <= cumulative) return item;
-      }
-      return caseObj.items[0];
-    }
-
-    // UPGRADER
-    function calculateUpgradeChance() {
-      const mult = parseFloat(document.getElementById('upgradeMultiplier').value);
-      const chance = (90 / mult).toFixed(0);
-      document.getElementById('upgradeWheelDisplay').innerText = chance + '%';
-    }
-
-    function runUpgrader() {
-      const bet = parseFloat(document.getElementById('upgradeBet').value);
-      const mult = parseFloat(document.getElementById('upgradeMultiplier').value);
-      if (!bet || bet <= 0 || bet > balance) return alert('Invalid bet amount!');
-
-      const winChance = 90 / mult;
-      balance -= bet;
-      updateUI();
-
-      const rand = Math.random() * 100;
-      if (rand <= winChance) {
-        const reward = bet * mult;
-        balance += reward;
-        alert(`🎉 UPGRADE SUCCESS! Won ${reward.toFixed(2)} Gold!`);
-      } else {
-        alert(`❌ UPGRADE FAILED! Lost ${bet.toFixed(2)} Gold.`);
-      }
-      updateUI();
-    }
-
-    // MINERS
-    function buyMiner(type, cost) {
-      if (balance < cost) return alert('Insufficient balance!');
-      balance -= cost;
-      userMiners[type] = (userMiners[type] || 0) + 1;
-      updateUI();
-      alert(`Purchased 1x ${type.toUpperCase()} Miner!`);
-    }
-
-    function claimMinerEarnings() {
-      const now = Date.now();
-      const hoursPassed = (now - userMiners.lastClaim) / (1000 * 60 * 60);
-      const hourlyRate = (userMiners.bronze * 0.5) + (userMiners.silver * 2.5) + (userMiners.gold * 12.0);
-      const earned = hoursPassed * hourlyRate;
-
-      if (earned <= 0.01) return alert('No significant mined gold to collect yet.');
-
-      balance += earned;
-      userMiners.lastClaim = now;
-      updateUI();
-      alert(`Collected ${earned.toFixed(2)} Gold from miners!`);
-    }
-
-    // BATTLES
-    let activeBattleKey = null;
-
-    database.ref('case_battles').on('value', (snap) => {
-      const container = document.getElementById('battleLobbyList');
-      container.innerHTML = '';
-      const data = snap.val();
-
-      if (!data) return container.innerHTML = '<p style="font-size:11px; color:#9ca3af; text-align:center;">No open battles.</p>';
-
-      Object.entries(data).forEach(([key, battle]) => {
-        if (battle.status === 'waiting') {
-          const caseObj = cases[battle.caseIdx];
-          const totalCost = caseObj.price * battle.caseCount;
-          container.innerHTML += `
-            <div class="battle-lobby-item">
-              <div><strong>${battle.creator}</strong> (${battle.caseCount}x ${caseObj.name}) <span style="color:#f59e0b;">${totalCost} G</span></div>
-              ${battle.creatorId === userId ? '<span style="color:#a855f7;">Waiting...</span>' : `<button class="btn btn-battle" onclick="joinBattle('${key}')">Join</button>`}
-            </div>`;
-        }
-      });
-    });
-
-    function createBattle() {
-      const caseIdx = parseInt(document.getElementById('battleCaseSelect').value);
-      const caseCount = parseInt(document.getElementById('battleCaseCount').value);
-      const caseObj = cases[caseIdx];
-      const totalCost = caseObj.price * caseCount;
-
-      if (balance < totalCost) return alert("Insufficient balance!");
-
-      balance -= totalCost;
-      updateUI();
-
-      const battleRef = database.ref('case_battles').push({
-        creator: userId, creatorId: userId, caseIdx, caseCount, cost: totalCost, status: 'waiting'
-      });
-
-      activeBattleKey = battleRef.key;
-      listenToBattle(activeBattleKey);
-
-      setTimeout(() => {
-        database.ref(`case_battles/${activeBattleKey}`).get().then((snap) => {
-          if (snap.exists() && snap.val().status === 'waiting') {
-            database.ref(`case_battles/${activeBattleKey}`).update({
-              status: 'in_progress', opponent: '🤖 EasyBot_AI', opponentId: 'BOT_AI'
+        window.switchTab = function(tabName) {
+            ['cases', 'upgrader', 'topup', 'admin'].forEach(t => {
+                document.getElementById('content-' + t).style.display = (t === tabName) ? 'block' : 'none';
+                document.getElementById('tab-' + t).classList.remove('active-tab');
             });
-          }
-        });
-      }, 25000);
-    }
+            document.getElementById('tab-' + tabName).classList.add('active-tab');
+        };
 
-    function joinBattle(battleKey) {
-      database.ref(`case_battles/${battleKey}`).get().then((snap) => {
-        if (!snap.exists()) return;
-        const b = snap.val();
-        if (balance < b.cost) return alert("Insufficient balance!");
+        window.openCase = async function(cost) {
+            if (currentBalance < cost) {
+                alert("Insufficient gold balance!");
+                return;
+            }
+            currentBalance -= cost;
+            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
+            document.getElementById('user-balance').innerText = currentBalance;
 
-        balance -= b.cost;
-        updateUI();
+            const rewards = ["M4A1 | Necromancer", "AKr | Starlight", "AWM | Sport", "Glove | Punisher"];
+            const won = rewards[Math.floor(Math.random() * rewards.length)];
+            document.getElementById('case-result').innerHTML = `<p style="color:var(--accent-green);">🎉 You opened and won: <b>${won}</b>!</p>`;
+        };
 
-        database.ref(`case_battles/${battleKey}`).update({ status: 'in_progress', opponent: userId, opponentId: userId });
-        activeBattleKey = battleKey;
-        listenToBattle(activeBattleKey);
-      });
-    }
+        window.runUpgrade = async function() {
+            const bet = parseInt(document.getElementById('upgrade-bet').value);
+            if (!bet || bet <= 0 || bet > currentBalance) {
+                alert("Invalid bet amount!");
+                return;
+            }
 
-    function listenToBattle(battleKey) {
-      document.getElementById('battleLobbyView').style.display = 'none';
-      document.getElementById('battleArenaView').style.display = 'block';
+            currentBalance -= bet;
+            const win = Math.random() < 0.5;
+            if (win) {
+                currentBalance += (bet * 2);
+                document.getElementById('upgrade-result').innerHTML = `<p style="color:var(--accent-green);">🔥 Upgrade SUCCESS! You won ${bet * 2} Gold!</p>`;
+            } else {
+                document.getElementById('upgrade-result').innerHTML = `<p style="color:var(--accent-red);">❌ Upgrade FAILED. You lost ${bet} Gold.</p>`;
+            }
 
-      database.ref(`case_battles/${battleKey}`).on('value', (snap) => {
-        const b = snap.val();
-        if (!b) return;
+            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
+            document.getElementById('user-balance').innerText = currentBalance;
+        };
 
-        document.getElementById('p1Name').innerText = b.creator;
-        document.getElementById('p2Name').innerText = b.opponent || 'Waiting for player...';
+        window.requestTopUp = async function() {
+            const amount = document.getElementById('topup-amount').value;
+            if (!amount) return alert("Enter a valid gold amount!");
 
-        if (b.status === 'in_progress' && (b.creatorId === userId || b.opponentId === 'BOT_AI')) {
-          database.ref(`case_battles/${battleKey}`).off('value');
-          runBattleAnimation(battleKey, b);
+            const reqRef = push(ref(db, 'topup_requests'));
+            await set(reqRef, {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                amount: amount,
+                listingPrice: amount,
+                pattern: Math.floor(Math.random() * 900) + 100,
+                status: 'pending_proof'
+            });
+
+            document.getElementById('topup-instructions').innerHTML = `
+                <div style="background:#111827; padding:10px; border-radius:6px; border:1px dashed var(--accent-blue);">
+                    <p><b>Required Listing Price:</b> ${amount} Gold</p>
+                    <p><b>Pattern/Float Code:</b> ${Math.floor(Math.random() * 900) + 100}</p>
+                    <p style="color:var(--accent-yellow); margin-top:8px;">Upload confirmation file/screenshot of buying the gun:</p>
+                    <input type="file" id="proof-file" style="background:var(--bg-input); padding:6px;" />
+                    <button onclick="uploadProof('${reqRef.key}')">Submit Proof to Admin</button>
+                </div>
+            `;
+        };
+
+        window.uploadProof = function(reqKey) {
+            const fileInput = document.getElementById('proof-file');
+            if (fileInput.files.length === 0) {
+                alert("Please select a file first!");
+                return;
+            }
+            
+            update(ref(db, 'topup_requests/' + reqKey), {
+                status: 'pending_admin_approval',
+                fileName: fileInput.files[0].name
+            });
+
+            alert("Proof uploaded successfully! Sent to admin for review.");
+            document.getElementById('topup-instructions').innerHTML = "<p style='color:var(--accent-green);'>Top-up request and confirmation proof submitted. Waiting for admin approval.</p>";
+        };
+
+        window.verifyAdmin = function() {
+            const code = document.getElementById('admin-passcode').value;
+            if (code !== "100200100") {
+                alert("Incorrect Admin Passcode!");
+                return;
+            }
+
+            document.getElementById('admin-panel-area').style.display = 'block';
+            loadAdminRequests();
+        };
+
+        async function loadAdminRequests() {
+            const listDiv = document.getElementById('admin-requests-list');
+            listDiv.innerHTML = "<p>Loading requests...</p>";
+
+            const snapshot = await get(ref(db, 'topup_requests'));
+            if (!snapshot.exists()) {
+                listDiv.innerHTML = "<p>No pending user requests.</p>";
+                return;
+            }
+
+            let html = "";
+            snapshot.forEach((childSnap) => {
+                const data = childSnap.val();
+                const key = childSnap.key;
+                if (data.status === 'pending_admin_approval') {
+                    html += `
+                        <div style="background:#111827; padding:12px; margin-top:10px; border-radius:6px; border: 1px solid var(--border-color);">
+                            <p style="margin:4px 0;"><b>User Email:</b> <span style="color:var(--accent-blue);">${data.email}</span></p>
+                            <p style="margin:4px 0;"><b>Gold Amount:</b> ${data.amount}</p>
+                            <p style="margin:4px 0;"><b>Uploaded Proof File:</b> ${data.fileName}</p>
+                            <div style="margin-top:10px; display:flex; gap:10px;">
+                                <button onclick="adminAction('${key}', 'approved', ${data.amount}, '${data.uid}')" style="background:var(--accent-green); margin-top:0;">Confirm</button>
+                                <button onclick="adminAction('${key}', 'declined', 0, '${data.uid}')" style="background:var(--accent-red); color:white; margin-top:0;">Decline</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            listDiv.innerHTML = html || "<p>No pending user requests.</p>";
         }
-      });
-    }
 
-    async function runBattleAnimation(battleKey, battle) {
-      const p1Box = document.getElementById('p1Drops'), p2Box = document.getElementById('p2Drops');
-      const p1Open = document.getElementById('p1Opening'), p2Open = document.getElementById('p2Opening');
-      p1Box.innerHTML = ''; p2Box.innerHTML = '';
-
-      let p1Total = 0, p2Total = 0;
-      let myWonSkins = [];
-      const caseObj = cases[battle.caseIdx];
-
-      for (let r = 1; r <= battle.caseCount; r++) {
-        p1Open.style.display = 'block'; p2Open.style.display = 'block';
-        await new Promise(res => setTimeout(res, 2500));
-
-        let d1 = getRandomItemFromCase(caseObj);
-        let d2 = getRandomItemFromCase(caseObj);
-
-        p1Total += d1.value; p2Total += d2.value;
-
-        if (battle.creatorId === userId) myWonSkins.push(d1);
-        else if (battle.opponentId === userId) myWonSkins.push(d2);
-
-        p1Box.innerHTML += `<div class="battle-drop-card ${d1.class}"><strong>${d1.name}</strong><br>+${d1.value.toFixed(2)} G</div>`;
-        p2Box.innerHTML += `<div class="battle-drop-card ${d2.class}"><strong>${d2.name}</strong><br>+${d2.value.toFixed(2)} G</div>`;
-
-        document.getElementById('p1Total').innerText = p1Total.toFixed(2) + ' G';
-        document.getElementById('p2Total').innerText = p2Total.toFixed(2) + ' G';
-      }
-
-      p1Open.style.display = 'none'; p2Open.style.display = 'none';
-
-      const winnerId = p1Total >= p2Total ? battle.creatorId : battle.opponentId;
-      const grandPot = p1Total + p2Total;
-
-      addXP(caseObj.xpReward * battle.caseCount);
-
-      if (winnerId === userId) {
-        document.getElementById('battleStatusTitle').innerText = `🏆 YOU WON THE POT! +${grandPot.toFixed(2)} G`;
-        document.getElementById('battleStatusTitle').style.color = '#10b981';
-        balance += grandPot;
-        myWonSkins.forEach(skin => inventory.push(skin));
-      } else {
-        document.getElementById('battleStatusTitle').innerText = '❌ OPPONENT WON THE POT!';
-        document.getElementById('battleStatusTitle').style.color = '#ef4444';
-      }
-      updateUI();
-    }
-
-    // WITHDRAWAL REQUESTS
-    function submitWithdrawal() {
-      const amt = parseFloat(document.getElementById('withdrawAmount').value);
-      const profileFile = document.getElementById('withdrawProfileImg').files[0];
-
-      if (!amt || amt <= 0 || amt > balance) return alert('Invalid or insufficient balance.');
-      if (!profileFile) return alert('Please upload a photo of your profile proof!');
-
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        balance -= amt;
-        updateUI();
-
-        database.ref('withdrawals').push({
-          userId, userEmail, amount: amt, profileImg: e.target.result, timestamp: new Date().toLocaleTimeString()
-        });
-
-        alert('Withdrawal request submitted successfully!');
-        closeModal('profileModal');
-      };
-      reader.readAsDataURL(profileFile);
-    }
-
-    // ADMIN SECURITY & PORTAL
-    function verifyAdminPin() {
-      const pin = document.getElementById('adminPinInput').value;
-      if (pin === '7777') {
-        closeModal('adminPinModal');
-        openModal('adminPortalModal');
-        loadAdminPortalData();
-      } else {
-        alert('Incorrect Security PIN!');
-      }
-    }
-
-    function loadAdminPortalData() {
-      // Pending Top-Ups
-      database.ref('topup_requests').on('value', (snap) => {
-        const container = document.getElementById('adminTopupList');
-        container.innerHTML = '';
-        if (!snap.exists()) return container.innerHTML = '<p style="color:#9ca3af; font-size:11px;">No pending top-ups.</p>';
-
-        Object.entries(snap.val()).forEach(([id, req]) => {
-          if (req.status === 'pending') {
-            container.innerHTML += `
-              <div style="background:#07090e; padding:8px; margin-bottom:6px; border-radius:6px; font-size:11px; border:1px solid #1a233a;">
-                <p>User: <strong>${req.userEmail}</strong> | Request: <strong>${req.amount} G</strong></p>
-                <input type="text" id="price_${id}" placeholder="Listing Price (e.g. 120 Gold)" style="margin:2px 0; padding:4px;">
-                <input type="text" id="pattern_${id}" placeholder="Pattern ID / Float (e.g. #709)" style="margin:2px 0; padding:4px;">
-                <button class="btn btn-topup" style="width:100%; font-size:10px; margin-top:4px;" onclick="approveTopUpRequest('${id}', '${req.userEmail}', ${req.amount})">Approve & Assign Instructions</button>
-              </div>`;
-          }
-        });
-      });
-
-      // Pending Withdrawals
-      database.ref('withdrawals').on('value', (snap) => {
-        const reqBox = document.getElementById('adminWithdrawalRequests');
-        reqBox.innerHTML = '';
-        if (!snap.exists()) return reqBox.innerHTML = '<p style="color:#9ca3af;">No pending requests.</p>';
-
-        Object.entries(snap.val()).forEach(([id, req]) => {
-          reqBox.innerHTML += `
-            <div style="background:#131b2e; padding:10px; border-radius:6px; margin-bottom:10px; border:1px solid #1a233a;">
-              <p>User: <strong>${req.userId}</strong> (${req.userEmail || 'No email'}) | Amount: <strong>${req.amount} G</strong></p>
-              <div style="margin:8px 0;">
-                <img src="${req.profileImg}" style="width:100%; height:120px; object-fit:cover; border-radius:4px; border:1px solid #6366f1;">
-              </div>
-              <button class="btn btn-topup" style="width:100%; font-size:10px;" onclick="approveWithdrawal('${id}')">Approve Withdrawal</button>
-            </div>`;
-        });
-      });
-    }
-
-    function approveTopUpRequest(reqId, targetEmail, amount) {
-      const price = document.getElementById(`price_${reqId}`).value;
-      const pattern = document.getElementById(`pattern_${reqId}`).value;
-
-      if (!price || !pattern) return alert("Please specify both price and pattern ID!");
-
-      database.ref(`topup_requests/${reqId}`).update({
-        status: 'approved', price, pattern
-      });
-
-      const userKey = encodeEmailKey(targetEmail);
-      database.ref(`users/${userKey}/balance`).transaction((curr) => (curr || 0) + amount);
-
-      alert("Top-Up approved! Pattern assigned and balance credited to user.");
-    }
-
-    function approveWithdrawal(id) {
-      database.ref(`withdrawals/${id}`).remove();
-      alert('Withdrawal marked completed!');
-    }
-
-    initCases();
-    calculateUpgradeChance();
-    if (userEmail) attachCloudSync();
-  </script>
+        window.adminAction = async function(key, status, amount, uid) {
+            await update(ref(db, 'topup_requests/' + key), { status: status });
+            if (status === 'approved') {
+                const userRef = ref(db, 'users/' + uid);
+                const userSnap = await get(userRef);
+                if (userSnap.exists()) {
+                    let bal = userSnap.val().balance || 0;
+                    await update(userRef, { balance: bal + parseInt(amount) });
+                }
+            }
+            alert(`Request marked as ${status}!`);
+            loadAdminRequests();
+        };
+    </script>
 </body>
 </html>
