@@ -321,7 +321,7 @@
             document.getElementById('app-wrapper').classList.add('hidden');
         });
 
-        // AUTHENTICATION CONTROLLER
+        // AUTHENTICATION CONTROLLER (Mobile Safe Version)
         function handleAuth(type) {
             const emailElem = document.getElementById('auth-email');
             const passwordElem = document.getElementById('auth-password');
@@ -350,20 +350,43 @@
                     return;
                 }
 
+                let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>";
+
                 if (!avatarInput.files || !avatarInput.files[0]) {
-                    let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>";
                     finalizeRegistration(email, password, defaultAvatar, state);
                     return;
                 }
 
+                // Mobile-safe file reader with timeout fallback
                 let reader = new FileReader();
+                let readerFinished = false;
+
                 reader.onload = function(e) {
+                    if (readerFinished) return;
+                    readerFinished = true;
                     finalizeRegistration(email, password, e.target.result, state);
                 };
+                
                 reader.onerror = function() {
-                    errorBox.innerText = "Failed to process profile image. Try another file.";
+                    if (readerFinished) return;
+                    readerFinished = true;
+                    finalizeRegistration(email, password, defaultAvatar, state);
                 };
-                reader.readAsDataURL(avatarInput.files[0]);
+
+                try {
+                    reader.readAsDataURL(avatarInput.files[0]);
+                    
+                    // Fallback timer in case mobile OS hangs on large image file streams
+                    setTimeout(() => {
+                        if (!readerFinished) {
+                            readerFinished = true;
+                            finalizeRegistration(email, password, defaultAvatar, state);
+                        }
+                    }, 1200);
+                } catch (err) {
+                    finalizeRegistration(email, password, defaultAvatar, state);
+                }
+
             } else {
                 if (!state.users[email] || state.users[email].password !== password) {
                     errorBox.innerText = "Invalid credentials or account does not exist.";
