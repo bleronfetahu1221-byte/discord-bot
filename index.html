@@ -998,6 +998,19 @@
                 loadAdminQueueData();
             }
         }
-    </script>
+    // Automatically catch the custom link path (e.g. "palermo")
+window.addEventListener('DOMContentLoaded', () => {
+    const pathSegments = window.location.pathname.split('/').filter(Boolean);
+    const customPath = pathSegments[pathSegments.length - 1];
+
+    if (customPath && customPath !== "index.html") {
+        console.log("Active custom route:", customPath);
+        
+        // You can trigger your free gold/bonus logic here right when they load the link!
+        // For example, display a special banner or automatically credit them:
+        alert("Special link loaded for: " + customPath);
+    }
+});
+
 </body>
 </html>
