@@ -134,7 +134,7 @@
                 </div>
             </section>
 
-            <!-- UPGRADER TAB (CUSTOM INPUTS & SPINNING WHEEL) -->
+            <!-- UPGRADER TAB (PERFECT CIRCLE CONIC WHEEL) -->
             <section id="panel-upgrader" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Custom Gold Target Upgrader</h2>
@@ -146,13 +146,13 @@
                             <!-- Indicator Arrow on Top -->
                             <div class="absolute -top-3 z-30 w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[14px] border-t-brand-gold filter drop-shadow"></div>
                             
-                            <!-- The Wheel Element -->
-                            <div id="upgrade-wheel" class="w-full h-full rounded-full border-4 border-dark-600 relative overflow-hidden transition-all duration-[4000ms] ease-[cubic-bezier(0.15,0.85,0.15,1)] shadow-2xl bg-dark-900" style="transform: rotate(0deg);">
-                                <div id="wheel-slice-green" class="absolute inset-0 bg-brand-green/80 origin-center" style="clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%);"></div>
+                            <!-- The Perfect Circle Wheel Element -->
+                            <div id="upgrade-wheel" class="w-full h-full rounded-full border-4 border-dark-600 relative overflow-hidden transition-all duration-[4000ms] ease-[cubic-bezier(0.15,0.85,0.15,1)] shadow-2xl bg-dark-900" style="transform: rotate(0deg); border-radius: 50%;">
+                                <!-- Conic gradient applied dynamically in JS to match stake percentage perfectly -->
                             </div>
                             
                             <!-- Center Hub -->
-                            <div class="absolute z-20 w-12 h-12 bg-dark-800 border-2 border-dark-600 rounded-full flex items-center justify-center text-xs font-black text-brand-gold shadow-inner">
+                            <div class="absolute z-20 w-12 h-12 bg-dark-800 border-2 border-dark-600 rounded-full flex items-center justify-center text-xs font-black text-brand-gold shadow-inner" style="border-radius: 50%;">
                                 WHEEL
                             </div>
                         </div>
@@ -612,11 +612,11 @@
             let stake = parseFloat(document.getElementById('upgrader-stake').value) || 0;
             let target = parseFloat(document.getElementById('upgrader-target').value) || 0;
             let chanceText = document.getElementById('upgrader-win-chance-text');
-            let greenSlice = document.getElementById('wheel-slice-green');
+            let wheel = document.getElementById('upgrade-wheel');
 
             if (stake <= 0 || target <= stake) {
                 chanceText.innerText = "0.0%";
-                greenSlice.style.clipPath = "polygon(50% 50%, 50% 50%, 50% 50%)";
+                wheel.style.background = "#070913";
                 return;
             }
 
@@ -624,19 +624,13 @@
             let winChance = Math.min(Math.max((stake / target) * 100, 0.5), 95.0);
             chanceText.innerText = winChance.toFixed(1) + "%";
 
-            // Update SVG polygon clip path dynamically for the wheel green segment
-            let angle = (winChance / 100) * 360;
-            if (angle <= 180) {
-                let rad = angle * (Math.PI / 180);
-                let x = (50 + 50 * Math.sin(rad)).toFixed(2);
-                let y = (50 - 50 * Math.cos(rad)).toFixed(2);
-                greenSlice.style.clipPath = `polygon(50% 50%, 50% 0%, ${x}% ${y}%)`;
-            } else {
-                let rad = (angle - 180) * (Math.PI / 180);
-                let x = (50 - 50 * Math.sin(rad)).toFixed(2);
-                let y = (50 + 50 * Math.cos(rad)).toFixed(2);
-                greenSlice.style.clipPath = `polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, ${x}% ${y}%)`;
-            }
+            // Calculate degrees for the conic gradient (centered at top arrow)
+            let degrees = (winChance / 100) * 360;
+            let startAngle = 180 - (degrees / 2);
+            let endAngle = 180 + (degrees / 2);
+
+            // Set clean conic gradient matching stake/target win chance precisely
+            wheel.style.background = `conic-gradient(from 0deg at 50% 50%, #070913 0deg ${startAngle}deg, rgba(74, 222, 128, 0.85) ${startAngle}deg ${endAngle}deg, #070913 ${endAngle}deg 360deg)`;
         }
 
         function executeWheelUpgrader() {
@@ -663,13 +657,16 @@
             let winChance = Math.min(Math.max((stake / target) * 100, 0.5), 95.0);
             let isWin = Math.random() * 100 <= winChance;
 
+            let degrees = (winChance / 100) * 360;
+            let startAngle = 180 - (degrees / 2);
+            let endAngle = 180 + (degrees / 2);
+
             let targetDegree;
             if (isWin) {
-                let maxGreenDeg = (winChance / 100) * 360;
-                targetDegree = Math.random() * (maxGreenDeg - 10) + 5;
+                targetDegree = Math.random() * (endAngle - startAngle - 4) + (startAngle + 2);
             } else {
-                let minRedDeg = (winChance / 100) * 360 + 10;
-                targetDegree = Math.random() * (360 - minRedDeg) + minRedDeg;
+                let randomLossOffset = Math.random() > 0.5 ? Math.random() * startAngle : Math.random() * (360 - endAngle) + endAngle;
+                targetDegree = randomLossOffset;
             }
 
             let totalSpins = 360 * 6;
@@ -902,6 +899,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-dark-600 pb-3">
                             <div class="flex items-center gap-3">
                                 <img src="${req.profilePic}" class="w-10 h-10 rounded-xl object-cover border border-brand-blue/40" alt="Profile">
+                                centered-content
                                 <div>
                                     <div class="text-xs font-bold text-brand-blue">Gmail: ${req.email}</div>
                                     <div class="text-xs text-brand-gold font-semibold">Standoff 2 ID: ${req.standoffId}</div>
@@ -978,8 +976,8 @@
 
         function processAdminAction(ticketId, decision) {
             let state = getSystemState();
-            let req = state.topupRequests.find(r => r.id === ticketId);
-            if (req && req.status === 'pending_audit') {
+            let req = state.topupRequests.filter(r => r.status === 'pending_audit').find(r => r.id === ticketId);
+            if (req) {
                 req.status = decision;
                 if (decision === 'approved' && state.users[req.email]) {
                     state.users[req.email].balance += req.amount;
