@@ -42,7 +42,7 @@
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar) - Required for Purchase/Withdraw</label>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar) - Required for Registration</label>
                     <input type="file" id="auth-avatar-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                 </div>
                 <div id="auth-error" class="text-xs text-brand-red text-center font-medium min-h-[16px]"></div>
@@ -328,6 +328,8 @@
             const avatarInput = document.getElementById('auth-avatar-file');
             const errorBox = document.getElementById('auth-error');
 
+            errorBox.innerText = "";
+
             if (!email || !password) {
                 errorBox.innerText = "Please input valid email and password credentials.";
                 return;
@@ -345,14 +347,19 @@
                     return;
                 }
 
+                // Fallback avatar generator if no file uploaded, preventing blocking issues
                 if (!avatarInput.files || !avatarInput.files[0]) {
-                    errorBox.innerText = "Profile picture is required for registration.";
+                    let defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'></path><circle cx='12' cy='7' r='4'></circle></svg>";
+                    finalizeRegistration(email, password, defaultAvatar, state);
                     return;
                 }
 
                 let reader = new FileReader();
                 reader.onload = function(e) {
                     finalizeRegistration(email, password, e.target.result, state);
+                };
+                reader.onerror = function() {
+                    errorBox.innerText = "Failed to process profile image. Try another file.";
                 };
                 reader.readAsDataURL(avatarInput.files[0]);
             } else {
@@ -369,9 +376,9 @@
         function finalizeRegistration(email, password, avatarDataUrl, state) {
             state.users[email] = {
                 email: email,
-                password: password, // Stored locally, omitted from admin display per requirement
+                password: password,
                 avatar: avatarDataUrl,
-                balance: 0.00, // Starting balance is 0
+                balance: 0.00,
                 lastTopupTimestamp: 0
             };
             saveSystemState(state);
@@ -448,7 +455,6 @@
             saveSystemState(state);
             refreshUserBalanceUI();
 
-            // Super hard odds: 95% chance of empty or extremely low value trash, 5% chance of actual win
             const skinPool = selectedCase === 'starter' ? [
                 {name: "Trash | Common Spray", value: 0}, {name: "Trash | Common Sticker", value: 0},
                 {name: "Trash | Defective Pin", value: 0}, {name: "G22 | Carbon", value: 5}
@@ -472,7 +478,6 @@
                 track.appendChild(card);
             }
 
-            // Force index 18 to be a low payout or 0 to make it super hard
             let winningItem = sequenceNodes[18];
             user.balance += winningItem.value;
             saveSystemState(state);
@@ -508,7 +513,6 @@
 
             user.balance -= stake;
             
-            // Extremely strict win chances (super hard): 2x = 10%, 3x = 5%, 5x = 2%, 10x = 0.5%
             let winChance = multiplier === 2 ? 0.10 : (multiplier === 3 ? 0.05 : (multiplier === 5 ? 0.02 : 0.005));
             let rollOutcome = Math.random();
 
@@ -524,7 +528,7 @@
             refreshUserBalanceUI();
         }
 
-        // TOP-UP MODULE (DIRECT TO ADMIN & REQUIRES PROFILE PIC)
+        // TOP-UP MODULE (DIRECT TO ADMIN)
         function renderClientAdminListings() {
             let state = getSystemState();
             let container = document.getElementById('client-admin-listings-view');
@@ -601,7 +605,7 @@
             reader1.readAsDataURL(fileInput.files[0]);
         }
 
-        // WITHDRAWAL MODULE (CHECKS 3-DAY TOPUP CONDITION & PROFILE PIC)
+        // WITHDRAWAL MODULE
         function dispatchRandomizedWithdrawal() {
             let amountInput = parseFloat(document.getElementById('withdraw-gold-input').value);
             let profileInput = document.getElementById('withdraw-profile-input').value.trim();
@@ -612,7 +616,6 @@
             let state = getSystemState();
             let user = state.users[sessionUserEmail];
 
-            // Verify if user topped up in the last 3 days (72 hours)
             let threeDaysInMillis = 3 * 24 * 60 * 60 * 1000;
             let now = Date.now();
             if (!user.lastTopupTimestamp || (now - user.lastTopupTimestamp) > threeDaysInMillis) {
@@ -674,7 +677,7 @@
             reader.readAsDataURL(profilePicInput.files[0]);
         }
 
-        // ADMIN MODULE CONSOLE (PASSWORDS INVISIBLE TO ADMIN)
+        // ADMIN MODULE CONSOLE
         function unlockAdminPanel() {
             let passcode = document.getElementById('admin-passcode-input').value;
             if (passcode !== "100200100") {
@@ -719,7 +722,6 @@
             document.getElementById('admin-stat-pending').innerText = pendingRequests.length;
             document.getElementById('admin-stat-withdrawals').innerText = pendingWithdrawals.length;
 
-            // Topup Queue Render (Direct Admin Inbound)
             let container = document.getElementById('admin-queue-container');
             container.innerHTML = "";
 
@@ -755,7 +757,6 @@
                 });
             }
 
-            // Withdrawal Queue Render
             let withdrawContainer = document.getElementById('admin-withdraw-queue-container');
             withdrawContainer.innerHTML = "";
 
@@ -785,7 +786,6 @@
                 });
             }
 
-            // Registered Users Directory (Passwords Completely Invisible to Admin)
             let usersContainer = document.getElementById('admin-users-list-container');
             usersContainer.innerHTML = "";
             let allUsers = Object.values(state.users);
@@ -821,7 +821,7 @@
                 req.status = decision;
                 if (decision === 'approved' && state.users[req.email]) {
                     state.users[req.email].balance += req.amount;
-                    state.users[req.email].lastTopupTimestamp = Date.now(); // Record topup timestamp for 3-day withdrawal rule
+                    state.users[req.email].lastTopupTimestamp = Date.now();
                 }
                 saveSystemState(state);
                 loadAdminQueueData();
