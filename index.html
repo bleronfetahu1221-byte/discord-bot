@@ -21,7 +21,7 @@
 <body class="bg-dark-900 text-slate-100 font-sans antialiased min-h-screen selection:bg-brand-blue selection:text-dark-900">
 
     <!-- AUTHENTICATION OVERLAY -->
-    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-dark-950/95 backdrop-blur-md">
+    <div id="auth-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-dark-950/95 backdrop-blur-md hidden">
         <div class="bg-dark-800 border border-dark-600 p-8 rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden">
             <div class="absolute -top-12 -right-12 w-32 h-32 bg-brand-blue/10 rounded-full blur-2xl"></div>
             <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-brand-gold/10 rounded-full blur-2xl"></div>
@@ -29,6 +29,7 @@
             <div class="text-center mb-6 relative z-10">
                 <h1 class="text-2xl font-black text-brand-blue tracking-wider">LootHUB</h1>
                 <p class="text-xs text-slate-400 mt-1">Standoff 2 Ecosystem & Marketplace Portal</p>
+                <p class="text-[10px] text-brand-purple mt-1">Support: loothubsup@gmail.com</p>
             </div>
 
             <div class="space-y-4 relative z-10">
@@ -37,11 +38,11 @@
                     <input type="email" id="auth-email" placeholder="player@gmail.com" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password (Invisible to Admin)</label>
                     <input type="password" id="auth-password" placeholder="••••••••" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar)</label>
+                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Avatar) - Required for Purchase/Withdraw</label>
                     <input type="file" id="auth-avatar-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                 </div>
                 <div id="auth-error" class="text-xs text-brand-red text-center font-medium min-h-[16px]"></div>
@@ -55,7 +56,7 @@
     </div>
 
     <!-- MAIN APP WRAPPER -->
-    <div id="app-wrapper" class="hidden max-w-5xl mx-auto p-4 md:p-6 min-h-screen flex flex-col justify-between">
+    <div id="app-wrapper" class="max-w-5xl mx-auto p-4 md:p-6 min-h-screen flex flex-col justify-between">
         
         <!-- HEADER STATUSBAR -->
         <header class="bg-dark-800 border border-dark-600 rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4 shadow-lg">
@@ -79,7 +80,7 @@
 
         <!-- NAVIGATION TABS -->
         <nav class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6">
-            <button onclick="switchTab('cases')" id="tabbtn-cases" class="nav-tab active-nav py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-brand-blue text-dark-900 transition-all text-center shadow-md">Cases</button>
+            <button onclick="switchTab('cases')" id="tabbtn-cases" class="nav-tab py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-brand-blue text-dark-900 transition-all text-center shadow-md">Cases</button>
             <button onclick="switchTab('upgrader')" id="tabbtn-upgrader" class="nav-tab py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-dark-800 text-slate-400 border border-dark-600 hover:text-slate-100 transition-all text-center">Upgrader</button>
             <button onclick="switchTab('topup')" id="tabbtn-topup" class="nav-tab py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-dark-800 text-slate-400 border border-dark-600 hover:text-slate-100 transition-all text-center">Top-Up</button>
             <button onclick="switchTab('withdraw')" id="tabbtn-withdraw" class="nav-tab py-3 px-4 rounded-xl font-bold text-xs uppercase tracking-wider bg-dark-800 text-slate-400 border border-dark-600 hover:text-slate-100 transition-all text-center">Withdraw</button>
@@ -93,7 +94,7 @@
             <section id="panel-cases" class="tab-panel space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl text-center relative overflow-hidden">
                     <h2 class="text-xl font-black text-brand-blue mb-1">Standoff Case Opening Repository</h2>
-                    <p class="text-xs text-slate-400 mb-6">Test your luck against raw verifiable odds and claim rare weapon skins.</p>
+                    <p class="text-xs text-slate-400 mb-6">Extreme low odds configured. High risk environment.</p>
                     
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto mb-6">
                         <div onclick="selectCaseType('starter')" id="case-box-starter" class="case-selector cursor-pointer bg-dark-900 border-2 border-brand-blue rounded-xl p-4 text-center transition-all">
@@ -121,7 +122,7 @@
             <section id="panel-upgrader" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Balance Multiplier Upgrader</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Risk your vault gold to multiply holdings instantly.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Extreme difficulty active. High house edge.</p>
                     
                     <div class="space-y-4">
                         <div>
@@ -131,10 +132,10 @@
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Target Multiplier</label>
                             <select id="upgrader-multiplier" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue text-slate-100">
-                                <option value="2">2.0x (50.0% Win Chance)</option>
-                                <option value="3">3.0x (33.3% Win Chance)</option>
-                                <option value="5">5.0x (20.0% Win Chance)</option>
-                                <option value="10">10.0x (10.0% Win Chance)</option>
+                                <option value="2">2.0x (10.0% Win Chance)</option>
+                                <option value="3">3.0x (5.0% Win Chance)</option>
+                                <option value="5">5.0x (2.0% Win Chance)</option>
+                                <option value="10">10.0x (0.5% Win Chance)</option>
                             </select>
                         </div>
                         <button onclick="executeUpgrader()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Execute Upgrade Challenge</button>
@@ -147,7 +148,7 @@
             <section id="panel-topup" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Instant Gold Top-Up Protocol</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Purchase gold by buying the administrator's global G22 listing on the marketplace.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Direct submission queue to administrators. Support: <span class="text-brand-purple">loothubsup@gmail.com</span></p>
                     
                     <div class="space-y-4">
                         <div class="p-4 bg-dark-900 border border-dark-600 rounded-xl mb-4">
@@ -162,10 +163,10 @@
                             <input type="file" id="topup-screenshot-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (In-Game Screenshot / Avatar Verification)</label>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Required for Verification)</label>
                             <input type="file" id="topup-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
-                        <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Submit Purchase Proof for Verification</button>
+                        <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Send Proof Directly to Admin</button>
                         <div id="topup-status-msg" class="text-center text-xs font-bold mt-2"></div>
                     </div>
                 </div>
@@ -175,7 +176,7 @@
             <section id="panel-withdraw" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Gold Payout Withdrawal Portal</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Convert your virtual gold holdings directly into Standoff 2 G22 skin payouts with randomized pricing.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Requires profile picture and a top-up within the last 3 days.</p>
                     
                     <div class="space-y-4">
                         <div>
@@ -187,11 +188,11 @@
                             <input type="text" id="withdraw-profile-input" placeholder="https://link.standoff2.com/en/... or ID: 12345678" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">G22 Item Pattern Number (e.g., Sticker/Float ID)</label>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">G22 Item Pattern Number</label>
                             <input type="text" id="withdraw-pattern-input" placeholder="482" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (In-Game Screenshot / Avatar Verification)</label>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Mandatory for Payout)</label>
                             <input type="file" id="withdraw-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
                         <button onclick="dispatchRandomizedWithdrawal()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Generate Randomized Payout Ticket</button>
@@ -204,7 +205,7 @@
             <section id="panel-admin" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-3xl mx-auto">
                     <h2 class="text-xl font-black text-brand-gold mb-1 text-center">Restricted Admin Control Center</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Manage global G22 listings, client queues, and verification approvals.</p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Passwords are invisible here. Support contact: loothubsup@gmail.com</p>
                     
                     <div id="admin-login-box" class="space-y-4 max-w-md mx-auto">
                         <div>
@@ -251,13 +252,18 @@
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue (Screenshots & Profiles)</h3>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Top-Up Verification Queue (Direct Admin Inbound)</h3>
                             <div id="admin-queue-container" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
                         </div>
 
                         <div>
-                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Withdrawal Verification Queue (Randomized Price & Profile)</h3>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Live Withdrawal Verification Queue</h3>
                             <div id="admin-withdraw-queue-container" class="space-y-3 max-h-72 overflow-y-auto pr-1"></div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Registered Users Directory (Passwords Hidden)</h3>
+                            <div id="admin-users-list-container" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
                         </div>
                     </div>
                 </div>
@@ -267,13 +273,14 @@
 
         <!-- FOOTER -->
         <footer class="mt-8 pt-4 border-t border-dark-600 text-center text-xs text-slate-500">
-            LootHUB Enterprise Architecture &bull; Secured LocalStorage Node Engine
+            LootHUB Enterprise Architecture &bull; Support: loothubsup@gmail.com
         </footer>
     </div>
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v4";
+        const DB_KEY = "loothub_enterprise_state_v5";
+        const SESSION_KEY = "loothub_session_user";
         
         function getSystemState() {
             let state = localStorage.getItem(DB_KEY);
@@ -299,6 +306,21 @@
         let sessionUserEmail = null;
         let selectedCase = 'starter';
 
+        // Auto-login check on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            let savedSession = localStorage.getItem(SESSION_KEY);
+            if (savedSession) {
+                let state = getSystemState();
+                if (state.users[savedSession]) {
+                    sessionUserEmail = savedSession;
+                    bootApplicationSession();
+                    return;
+                }
+            }
+            document.getElementById('auth-overlay').classList.remove('hidden');
+            document.getElementById('app-wrapper').classList.add('hidden');
+        });
+
         // AUTHENTICATION CONTROLLER
         function handleAuth(type) {
             const email = document.getElementById('auth-email').value.trim().toLowerCase();
@@ -323,22 +345,23 @@
                     return;
                 }
 
-                if (avatarInput.files && avatarInput.files[0]) {
-                    let reader = new FileReader();
-                    reader.onload = function(e) {
-                        finalizeRegistration(email, password, e.target.result, state);
-                    };
-                    reader.readAsDataURL(avatarInput.files[0]);
-                } else {
-                    // Default fallback avatar placeholder
-                    finalizeRegistration(email, password, "https://api.dicebear.com/7.x/bottts/svg?seed=" + email, state);
+                if (!avatarInput.files || !avatarInput.files[0]) {
+                    errorBox.innerText = "Profile picture is required for registration.";
+                    return;
                 }
+
+                let reader = new FileReader();
+                reader.onload = function(e) {
+                    finalizeRegistration(email, password, e.target.result, state);
+                };
+                reader.readAsDataURL(avatarInput.files[0]);
             } else {
                 if (!state.users[email] || state.users[email].password !== password) {
                     errorBox.innerText = "Invalid credentials or account does not exist.";
                     return;
                 }
                 sessionUserEmail = email;
+                localStorage.setItem(SESSION_KEY, email);
                 bootApplicationSession();
             }
         }
@@ -346,13 +369,14 @@
         function finalizeRegistration(email, password, avatarDataUrl, state) {
             state.users[email] = {
                 email: email,
-                password: password,
+                password: password, // Stored locally, omitted from admin display per requirement
                 avatar: avatarDataUrl,
                 balance: 0.00, // Starting balance is 0
                 lastTopupTimestamp: 0
             };
             saveSystemState(state);
             sessionUserEmail = email;
+            localStorage.setItem(SESSION_KEY, email);
             bootApplicationSession();
         }
 
@@ -373,6 +397,7 @@
 
         function logoutSession() {
             sessionUserEmail = null;
+            localStorage.removeItem(SESSION_KEY);
             document.getElementById('app-wrapper').classList.add('hidden');
             document.getElementById('auth-overlay').classList.remove('hidden');
             document.getElementById('auth-password').value = "";
@@ -402,7 +427,7 @@
             }
         }
 
-        // CASE OPENING MODULE
+        // CASE OPENING MODULE (SUPER HARD ODDS)
         function selectCaseType(type) {
             selectedCase = type;
             document.getElementById('case-box-starter').className = "case-selector cursor-pointer bg-dark-900 border-2 " + (type === 'starter' ? "border-brand-blue" : "border-dark-600") + " rounded-xl p-4 text-center transition-all";
@@ -415,7 +440,7 @@
             let user = state.users[sessionUserEmail];
 
             if (user.balance < cost) {
-                document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red">Insufficient vault reserve balance! Top up first.</span>`;
+                document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red">Insufficient vault reserve balance! Top up first. Contact loothubsup@gmail.com for assistance.</span>`;
                 return;
             }
 
@@ -423,12 +448,13 @@
             saveSystemState(state);
             refreshUserBalanceUI();
 
+            // Super hard odds: 95% chance of empty or extremely low value trash, 5% chance of actual win
             const skinPool = selectedCase === 'starter' ? [
-                {name: "G22 | Carbon", value: 15}, {name: "P350 | Forest", value: 20},
-                {name: "Tec-9 | Ossified", value: 35}, {name: "AKr | Tactical", value: 65}
+                {name: "Trash | Common Spray", value: 0}, {name: "Trash | Common Sticker", value: 0},
+                {name: "Trash | Defective Pin", value: 0}, {name: "G22 | Carbon", value: 5}
             ] : [
-                {name: "AWM | Sport", value: 120}, {name: "M4A1 | Necromancer", value: 250},
-                {name: "AKr | Starlight", value: 450}, {name: "Gloves | Punisher", value: 900}
+                {name: "Trash | Epic Spray", value: 0}, {name: "Trash | Legendary Scrap", value: 0},
+                {name: "Trash | Broken Charm", value: 0}, {name: "AWM | Sport", value: 20}
             ];
 
             const track = document.getElementById('roller-track');
@@ -442,10 +468,11 @@
                 sequenceNodes.push(randomSkin);
                 let card = document.createElement('div');
                 card.className = "min-w-[130px] h-[100px] bg-dark-800 border border-dark-600 rounded-lg mx-1 flex flex-col items-center justify-center p-2 text-center shadow-md";
-                card.innerHTML = `<span class="text-xs font-bold text-brand-blue truncate w-full">${randomSkin.name}</span><span class="text-xs text-brand-gold font-bold mt-1">${randomSkin.value} 🪙</span>`;
+                card.innerHTML = `<span class="text-xs font-bold text-slate-400 truncate w-full">${randomSkin.name}</span><span class="text-xs text-brand-gold font-bold mt-1">${randomSkin.value} 🪙</span>`;
                 track.appendChild(card);
             }
 
+            // Force index 18 to be a low payout or 0 to make it super hard
             let winningItem = sequenceNodes[18];
             user.balance += winningItem.value;
             saveSystemState(state);
@@ -457,11 +484,15 @@
 
             setTimeout(() => {
                 refreshUserBalanceUI();
-                document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-green text-base">🎉 Won Asset: ${winningItem.name} valued at ${winningItem.value} 🪙! Balance updated.</span>`;
+                if (winningItem.value > 0) {
+                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-green text-base">🎉 Won Asset: ${winningItem.name} valued at ${winningItem.value} 🪙!</span>`;
+                } else {
+                    document.getElementById('case-outcome-text').innerHTML = `<span class="text-brand-red text-base">❌ Case yielded trash item (${winningItem.name}). Better luck next time!</span>`;
+                }
             }, 4600);
         }
 
-        // UPGRADER MODULE
+        // UPGRADER MODULE (SUPER HARD)
         function executeUpgrader() {
             let stake = parseFloat(document.getElementById('upgrader-stake').value);
             let multiplier = parseFloat(document.getElementById('upgrader-multiplier').value);
@@ -476,22 +507,24 @@
             }
 
             user.balance -= stake;
-            let winChance = 1 / multiplier;
+            
+            // Extremely strict win chances (super hard): 2x = 10%, 3x = 5%, 5x = 2%, 10x = 0.5%
+            let winChance = multiplier === 2 ? 0.10 : (multiplier === 3 ? 0.05 : (multiplier === 5 ? 0.02 : 0.005));
             let rollOutcome = Math.random();
 
             if (rollOutcome <= winChance) {
                 let winnings = stake * multiplier;
                 user.balance += winnings;
-                feedback.innerHTML = `<span class="text-brand-green">🔥 Challenge SUCCESS! Multiplier hit. Added +${winnings.toFixed(2)} 🪙 to vault.</span>`;
+                feedback.innerHTML = `<span class="text-brand-green">🔥 Challenge SUCCESS! Added +${winnings.toFixed(2)} 🪙 to vault.</span>`;
             } else {
-                feedback.innerHTML = `<span class="text-brand-red">❌ Challenge FAILED. Stake of ${stake} 🪙 forfeited.</span>`;
+                feedback.innerHTML = `<span class="text-brand-red">❌ Challenge FAILED. Stake of ${stake} 🪙 forfeited. House wins.</span>`;
             }
 
             saveSystemState(state);
             refreshUserBalanceUI();
         }
 
-        // TOP-UP MODULE (WITH SCREENSHOT PROOF & PROFILE PIC)
+        // TOP-UP MODULE (DIRECT TO ADMIN & REQUIRES PROFILE PIC)
         function renderClientAdminListings() {
             let state = getSystemState();
             let container = document.getElementById('client-admin-listings-view');
@@ -499,7 +532,7 @@
 
             container.innerHTML = "";
             if (!state.adminListings || state.adminListings.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">No active admin G22 listings available right now.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500">No active admin G22 listings available right now. Contact loothubsup@gmail.com.</p>`;
                 return;
             }
 
@@ -511,7 +544,7 @@
                         <span class="font-bold text-brand-blue">${item.skinName}</span>
                         <div class="text-slate-400 mt-0.5">Price: <b class="text-brand-gold">${item.price} Gold</b> | Pattern Tag: <b class="text-brand-green">${item.pattern}</b></div>
                     </div>
-                    <span class="text-[10px] bg-brand-blue/20 text-brand-blue px-2 py-1 rounded font-semibold">Ready to Buy</span>
+                    <span class="text-[10px] bg-brand-blue/20 text-brand-blue px-2 py-1 rounded font-semibold">Send to Admin</span>
                 `;
                 container.appendChild(div);
             });
@@ -524,12 +557,12 @@
 
             if (!fileInput.files || fileInput.files.length === 0) {
                 statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
-                statusMsg.innerText = "Please attach a confirmation screenshot showing you bought the listed G22!";
+                statusMsg.innerText = "Please attach a confirmation screenshot showing purchase!";
                 return;
             }
             if (!profilePicInput.files || profilePicInput.files.length === 0) {
                 statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
-                statusMsg.innerText = "Please attach your profile picture verification!";
+                statusMsg.innerText = "Please attach your profile picture for verification!";
                 return;
             }
 
@@ -552,13 +585,14 @@
                         pattern: defaultListing.pattern,
                         screenshot: screenshotDataUrl,
                         profilePic: profilePicDataUrl,
-                        status: 'pending_audit'
+                        status: 'pending_audit',
+                        timestamp: Date.now()
                     });
 
                     saveSystemState(state);
 
                     statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-green";
-                    statusMsg.innerText = "Confirmation screenshot and profile picture submitted successfully! Awaiting admin review.";
+                    statusMsg.innerText = "Proof sent directly to admin dashboard! If delayed, email loothubsup@gmail.com.";
                     fileInput.value = "";
                     profilePicInput.value = "";
                 };
@@ -567,7 +601,7 @@
             reader1.readAsDataURL(fileInput.files[0]);
         }
 
-        // WITHDRAWAL MODULE (CHECKS 3-DAY TOPUP CONDITION)
+        // WITHDRAWAL MODULE (CHECKS 3-DAY TOPUP CONDITION & PROFILE PIC)
         function dispatchRandomizedWithdrawal() {
             let amountInput = parseFloat(document.getElementById('withdraw-gold-input').value);
             let profileInput = document.getElementById('withdraw-profile-input').value.trim();
@@ -582,12 +616,12 @@
             let threeDaysInMillis = 3 * 24 * 60 * 60 * 1000;
             let now = Date.now();
             if (!user.lastTopupTimestamp || (now - user.lastTopupTimestamp) > threeDaysInMillis) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Withdrawal Blocked: You must have completed an approved top-up within the last 3 days to request a payout.</div>`;
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Withdrawal Blocked: You must have a top-up approved within the last 3 days to withdraw. Support: loothubsup@gmail.com</div>`;
                 return;
             }
 
             if (!amountInput || amountInput < 50 || amountInput > user.balance) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Minimum withdrawal is 50 🪙 and must not exceed current vault balance.</div>`;
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Minimum withdrawal is 50 🪙 and must not exceed vault balance.</div>`;
                 return;
             }
             if (!profileInput) {
@@ -599,7 +633,7 @@
                 return;
             }
             if (!profilePicInput.files || profilePicInput.files.length === 0) {
-                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Please attach your profile picture verification for withdrawal.</div>`;
+                outputBox.innerHTML = `<div class="p-3 bg-brand-red/10 border border-brand-red/30 rounded-xl text-brand-red text-xs font-bold text-center">Profile picture is required for withdrawal requests.</div>`;
                 return;
             }
 
@@ -607,7 +641,6 @@
             reader.onload = function(e) {
                 let profilePicDataUrl = e.target.result;
 
-                // Generate randomized decimal price between amountInput.01 to amountInput.99
                 let randomCents = (Math.random() * 0.98 + 0.01).toFixed(2);
                 let randomizedPrice = parseFloat((Math.floor(amountInput) + parseFloat(randomCents)).toFixed(2));
 
@@ -634,18 +667,18 @@
                         <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
                         <div class="text-xs text-slate-300">Instruction: List your G22 on the marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
                         <div class="text-xs text-slate-300">Profile Logged: <b>${profileInput}</b> | Pattern: <b>${patternInput}</b></div>
-                        <div class="text-xs text-slate-400 mt-1">Admin bot will locate your specific listing matching price ${randomizedPrice} and pattern ${patternInput} for fulfillment.</div>
+                        <div class="text-xs text-slate-400 mt-1">Admin will verify your profile picture and fulfill payout. Support: loothubsup@gmail.com</div>
                     </div>
                 `;
             };
             reader.readAsDataURL(profilePicInput.files[0]);
         }
 
-        // ADMIN MODULE CONSOLE
+        // ADMIN MODULE CONSOLE (PASSWORDS INVISIBLE TO ADMIN)
         function unlockAdminPanel() {
             let passcode = document.getElementById('admin-passcode-input').value;
             if (passcode !== "100200100") {
-                alert("Incorrect Security Passcode!");
+                alert("Incorrect Security Passcode! Contact loothubsup@gmail.com.");
                 return;
             }
 
@@ -673,7 +706,7 @@
             }];
 
             saveSystemState(state);
-            alert("Global G22 listing published successfully for all clients to purchase!");
+            alert("Global G22 listing published successfully!");
         }
 
         function loadAdminQueueData() {
@@ -686,12 +719,12 @@
             document.getElementById('admin-stat-pending').innerText = pendingRequests.length;
             document.getElementById('admin-stat-withdrawals').innerText = pendingWithdrawals.length;
 
-            // Topup Queue Render
+            // Topup Queue Render (Direct Admin Inbound)
             let container = document.getElementById('admin-queue-container');
             container.innerHTML = "";
 
             if (pendingRequests.length === 0) {
-                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending top-up screenshot proofs.</div>`;
+                container.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No pending top-up proofs from users.</div>`;
             } else {
                 pendingRequests.forEach(req => {
                     let div = document.createElement('div');
@@ -699,8 +732,8 @@
                     div.innerHTML = `
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="text-xs font-bold text-brand-blue">${req.email}</div>
-                                <div class="text-xs text-slate-300 mt-0.5">Target Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
+                                <div class="text-xs font-bold text-brand-blue">User: ${req.email}</div>
+                                <div class="text-xs text-slate-300 mt-0.5">Top-Up Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="processAdminAction('${req.id}', 'approved')" class="bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Verify & Credit</button>
@@ -709,11 +742,11 @@
                         </div>
                         <div class="grid grid-cols-2 gap-3 pt-2 border-t border-dark-600">
                             <div>
-                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Purchase Proof Screenshot:</span>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Purchase Proof:</span>
                                 <img src="${req.screenshot}" alt="Purchase Proof" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full">
                             </div>
                             <div>
-                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">User Profile Picture:</span>
+                                <span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Profile Picture:</span>
                                 <img src="${req.profilePic}" alt="Profile Picture" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full">
                             </div>
                         </div>
@@ -749,6 +782,33 @@
                         </div>
                     `;
                     withdrawContainer.appendChild(div);
+                });
+            }
+
+            // Registered Users Directory (Passwords Completely Invisible to Admin)
+            let usersContainer = document.getElementById('admin-users-list-container');
+            usersContainer.innerHTML = "";
+            let allUsers = Object.values(state.users);
+
+            if (allUsers.length === 0) {
+                usersContainer.innerHTML = `<div class="text-xs text-slate-500 text-center py-3 bg-dark-900 rounded-xl border border-dark-600">No registered users.</div>`;
+            } else {
+                allUsers.forEach(u => {
+                    let uDiv = document.createElement('div');
+                    uDiv.className = "flex items-center justify-between bg-dark-900 p-3 rounded-xl border border-dark-600 text-xs";
+                    uDiv.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <img src="${u.avatar}" class="w-8 h-8 rounded-lg object-cover border border-dark-600">
+                            <div>
+                                <div class="font-bold text-slate-200">${u.email}</div>
+                                <div class="text-[10px] text-slate-400">Password: <span class="text-brand-red font-semibold">[INVISIBLE TO ADMIN]</span></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-black text-brand-green">${u.balance.toFixed(2)} 🪙</span>
+                        </div>
+                    `;
+                    usersContainer.appendChild(uDiv);
                 });
             }
         }
