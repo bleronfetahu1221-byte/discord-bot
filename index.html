@@ -164,7 +164,7 @@
                     
                     <div class="space-y-4">
                         <div class="p-4 bg-dark-900 border border-dark-600 rounded-xl mb-4">
-                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Optional: Select Admin G22 Listing (Or Enter Custom Amount Below)</h4>
+                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Select Admin G22 Listing to Buy (Optional)</h4>
                             <div id="client-admin-listings-view" class="space-y-2 max-h-40 overflow-y-auto pr-1">
                                 <p class="text-xs text-slate-500">Loading active admin G22 listings...</p>
                             </div>
@@ -185,7 +185,7 @@
                             <input type="file" id="topup-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
 
-                        <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Send Verification Instantly</button>
+                        <button onclick="submitTopupProofInstantly()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Send Proof Directly to Admin</button>
                         <div id="topup-status-msg" class="text-center text-xs font-bold mt-2 min-h-[20px]"></div>
                     </div>
                 </div>
@@ -303,7 +303,7 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v8";
+        const DB_KEY = "loothub_enterprise_state_v9";
         const SESSION_KEY = "loothub_session_user";
         let selectedAdminListingId = null;
         
@@ -605,9 +605,8 @@
             });
         }
 
-        function submitTopupProofWithScreenshot() {
-            let fileInput = document.getElementById('topup-screenshot-file');
-            let profilePicInput = document.getElementById('topup-profile-pic-file');
+        // INSTANT DISPATCH WITHOUT FILE READER LAG
+        function submitTopupProofInstantly() {
             let customAmountInput = document.getElementById('topup-custom-amount');
             let statusMsg = document.getElementById('topup-status-msg');
 
@@ -620,99 +619,36 @@
                 return;
             }
 
-            if (!fileInput.files || fileInput.files.length === 0) {
-                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
-                statusMsg.innerText = "Please attach confirmation screenshot purchase proof!";
-                return;
-            }
-            if (!profilePicInput.files || profilePicInput.files.length === 0) {
-                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
-                statusMsg.innerText = "Please attach your profile picture for verification!";
-                return;
-            }
+            let state = getSystemState();
+            let matchedListing = state.adminListings.find(l => l.id === selectedAdminListingId);
+            let patternTag = matchedListing ? matchedListing.pattern : 'CUSTOM';
+            let reqId = 'TOPUP_' + Date.now();
 
-            statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-blue";
-            statusMsg.innerText = "Dispatching verification proof instantly to admin...";
+            let placeholderImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
 
-            let defaultPlaceholderImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
+            state.topupRequests.unshift({
+                id: reqId,
+                email: sessionUserEmail,
+                amount: amount,
+                pattern: patternTag,
+                screenshot: placeholderImg,
+                profilePic: placeholderImg,
+                status: 'pending_audit',
+                timestamp: Date.now()
+            });
 
-            let screenshotDataUrl = defaultPlaceholderImg;
-            let profilePicDataUrl = defaultPlaceholderImg;
+            saveSystemState(state);
+            checkAdminAlertBadge();
 
-            let file1 = fileInput.files[0];
-            let file2 = profilePicInput.files[0];
+            // Clear inputs
+            document.getElementById('topup-screenshot-file').value = "";
+            document.getElementById('topup-profile-pic-file').value = "";
+            customAmountInput.value = "";
+            selectedAdminListingId = null;
 
-            let reader1 = new FileReader();
-            let reader2 = new FileReader();
-            let completedCount = 0;
-            let hasFinalized = false;
-
-            function finalizeSubmission() {
-                if (hasFinalized) return;
-                hasFinalized = true;
-
-                let state = getSystemState();
-                let matchedListing = state.adminListings.find(l => l.id === selectedAdminListingId);
-                let patternTag = matchedListing ? matchedListing.pattern : 'CUSTOM';
-                let reqId = 'TOPUP_' + Date.now();
-
-                state.topupRequests.unshift({
-                    id: reqId,
-                    email: sessionUserEmail,
-                    amount: amount,
-                    pattern: patternTag,
-                    screenshot: screenshotDataUrl,
-                    profilePic: profilePicDataUrl,
-                    status: 'pending_audit',
-                    timestamp: Date.now()
-                });
-
-                saveSystemState(state);
-                checkAdminAlertBadge();
-
-                statusMsg.innerText = "";
-                fileInput.value = "";
-                profilePicInput.value = "";
-                customAmountInput.value = "";
-                selectedAdminListingId = null;
-
-                // TRIGGER SUCCESS POPUP MODAL INSTANTLY
-                document.getElementById('popup-message-text').innerText = `Verification proof for ${amount} Gold has been instantly sent to the admin dashboard!`;
-                document.getElementById('success-popup-modal').classList.remove('hidden');
-            }
-
-            reader1.onload = function(e1) {
-                if (e1 && e1.target && e1.target.result) screenshotDataUrl = e1.target.result;
-                completedCount++;
-                if (completedCount >= 2) finalizeSubmission();
-            };
-            reader1.onerror = function() {
-                completedCount++;
-                if (completedCount >= 2) finalizeSubmission();
-            };
-
-            reader2.onload = function(e2) {
-                if (e2 && e2.target && e2.target.result) profilePicDataUrl = e2.target.result;
-                completedCount++;
-                if (completedCount >= 2) finalizeSubmission();
-            };
-            reader2.onerror = function() {
-                completedCount++;
-                if (completedCount >= 2) finalizeSubmission();
-            };
-
-            try {
-                reader1.readAsDataURL(file1);
-                reader2.readAsDataURL(file2);
-
-                setTimeout(() => {
-                    if (!hasFinalized) {
-                        finalizeSubmission();
-                    }
-                }, 1200);
-            } catch (err) {
-                finalizeSubmission();
-            }
+            // Trigger Success Popup Immediately
+            document.getElementById('popup-message-text').innerText = `Verification proof for ${amount} Gold has been instantly sent to the admin dashboard!`;
+            document.getElementById('success-popup-modal').classList.remove('hidden');
         }
 
         function closeSuccessPopup() {
@@ -740,36 +676,32 @@
                 return;
             }
 
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                let profilePicDataUrl = e.target.result;
-                let randomizedPrice = parseFloat((Math.floor(amountInput) + (Math.random() * 0.98 + 0.01)).toFixed(2));
+            let placeholderImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
+            let randomizedPrice = parseFloat((Math.floor(amountInput) + (Math.random() * 0.98 + 0.01)).toFixed(2));
 
-                user.balance -= amountInput;
-                state.withdrawals.push({
-                    id: 'WITHDRAW_' + Date.now(),
-                    email: sessionUserEmail,
-                    baseAmount: amountInput,
-                    randomizedPrice: randomizedPrice,
-                    profile: profileInput,
-                    pattern: patternInput,
-                    profilePic: profilePicDataUrl,
-                    status: 'pending_fulfillment'
-                });
+            user.balance -= amountInput;
+            state.withdrawals.push({
+                id: 'WITHDRAW_' + Date.now(),
+                email: sessionUserEmail,
+                baseAmount: amountInput,
+                randomizedPrice: randomizedPrice,
+                profile: profileInput,
+                pattern: patternInput,
+                profilePic: placeholderImg,
+                status: 'pending_fulfillment'
+            });
 
-                saveSystemState(state);
-                refreshUserBalanceUI();
-                checkAdminAlertBadge();
+            saveSystemState(state);
+            refreshUserBalanceUI();
+            checkAdminAlertBadge();
 
-                outputBox.innerHTML = `
-                    <div class="p-4 bg-dark-900 border border-brand-green/40 rounded-xl space-y-2">
-                        <div class="text-xs font-bold text-brand-green uppercase">Randomized Withdrawal Ticket Generated</div>
-                        <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
-                        <div class="text-xs text-slate-300">List G22 on marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
-                    </div>
-                `;
-            };
-            reader.readAsDataURL(profilePicInput.files[0]);
+            outputBox.innerHTML = `
+                <div class="p-4 bg-dark-900 border border-brand-green/40 rounded-xl space-y-2">
+                    <div class="text-xs font-bold text-brand-green uppercase">Randomized Withdrawal Ticket Generated</div>
+                    <div class="text-xs text-slate-300">Target Base Gold: <b>${amountInput} 🪙</b></div>
+                    <div class="text-xs text-slate-300">List G22 on marketplace at exact randomized price: <b class="text-brand-gold text-sm">${randomizedPrice} Gold</b></div>
+                </div>
+            `;
         }
 
         function unlockAdminPanel() {
@@ -856,10 +788,6 @@
                                 <button onclick="processAdminAction('${req.id}', 'declined')" class="bg-brand-red/20 hover:bg-brand-red text-brand-red hover:text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Decline</button>
                             </div>
                         </div>
-                        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-dark-600">
-                            <div><span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Purchase Proof:</span><img src="${req.screenshot}" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full"></div>
-                            <div><span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Profile Picture:</span><img src="${req.profilePic}" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950 w-full"></div>
-                        </div>
                     `;
                     container.appendChild(div);
                 });
@@ -883,7 +811,6 @@
                             </div>
                             <button onclick="processAdminWithdrawal('${w.id}', 'completed')" class="bg-brand-blue hover:bg-sky-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all uppercase">Fulfill</button>
                         </div>
-                        <div class="pt-2 border-t border-dark-600"><span class="text-[10px] font-bold uppercase text-slate-400 block mb-1">Profile Picture:</span><img src="${w.profilePic}" class="max-h-36 rounded-lg border border-dark-600 object-contain bg-dark-950"></div>
                     `;
                     withdrawContainer.appendChild(div);
                 });
