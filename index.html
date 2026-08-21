@@ -94,28 +94,73 @@
             margin-top: 15px;
             border: 1px solid var(--border-color);
         }
-        /* Circular Upgrader Wheel Styling */
-        .wheel-container {
+        /* Upgrader Wheel with Fixed Pointer Container */
+        .wheel-outer-wrapper {
             position: relative;
             width: 220px;
             height: 220px;
             margin: 20px auto;
-            border-radius: 50%;
-            border: 6px solid var(--accent-gold);
-            background: conic-gradient(var(--accent-red) 0deg 360deg);
-            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1);
         }
-        .wheel-pointer-down {
+        .wheel-pointer-static {
             position: absolute;
-            top: -25px;
+            top: -15px;
             left: 50%;
             transform: translateX(-50%);
             width: 0; 
             height: 0; 
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
-            border-top: 20px solid var(--accent-gold);
-            z-index: 10;
+            border-bottom: 20px solid var(--accent-gold);
+            z-index: 20;
+        }
+        .wheel-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 6px solid var(--accent-gold);
+            background: conic-gradient(var(--accent-red) 0deg 360deg);
+            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1);
+        }
+        /* Case Opening Roll Carousel Animation */
+        .case-opening-box {
+            background: #111827;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .case-track {
+            display: flex;
+            gap: 10px;
+            transition: transform 3s cubic-bezier(0.1, 0.9, 0.2, 1);
+            will-change: transform;
+        }
+        .case-item-card {
+            min-width: 130px;
+            height: 110px;
+            background: #1e293b;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .case-pointer-line {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 3px;
+            background: var(--accent-gold);
+            transform: translateX(-50%);
+            z-index: 5;
         }
         /* Miner Grid Styling */
         .miner-grid {
@@ -221,19 +266,27 @@
                 <div id="case-detail-view" style="display:none;">
                     <button onclick="backToCasesList()" style="width:auto; padding:6px 12px; background:var(--border-color); color:#fff; margin-bottom:10px;">← Back to Cases</button>
                     <h3 id="selected-case-title">Case Opening</h3>
+                    
+                    <!-- Case Opening Animation Carousel -->
+                    <div class="case-opening-box">
+                        <div class="case-pointer-line"></div>
+                        <div class="case-track" id="case-track"></div>
+                    </div>
+
                     <div id="case-items-preview" style="font-size:13px; background:#111827; padding:12px; border-radius:6px; margin-bottom:15px;"></div>
                     <button id="spin-case-btn" onclick="executeCaseOpen()" style="background:var(--accent-green); color:#000;">Open Case</button>
                     <div id="case-result" style="text-align: center; margin-top: 15px; font-size: 16px; font-weight:bold;"></div>
                 </div>
             </div>
 
-            <!-- CUSTOM TARGET CIRCULAR UPGRADER TAB -->
+            <!-- CIRCULAR UPGRADER TAB -->
             <div id="content-upgrader" class="tab-content" style="display:none;">
                 <h3>Circular Target Upgrader</h3>
-                <p style="text-align:center; font-size:13px; color:var(--accent-yellow);">Set your bet and target return! Green wedge size updates automatically.</p>
+                <p style="text-align:center; font-size:13px; color:var(--accent-yellow);">Set your bet and target return! Wheel and pointer spin together.</p>
                 
-                <div class="wheel-container" id="upgrade-wheel">
-                    <div class="wheel-pointer-down"></div>
+                <div class="wheel-outer-wrapper">
+                    <div class="wheel-pointer-static"></div>
+                    <div class="wheel-container" id="upgrade-wheel"></div>
                 </div>
 
                 <input type="number" id="upgrader-bet" placeholder="Bet Amount (Gold)" oninput="updateWheelCalc()" />
@@ -243,12 +296,15 @@
                 <div id="upgrader-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
             </div>
 
-            <!-- MINER TAB (Persistent accumulator until cashout) -->
+            <!-- MINER TAB (Custom Red Count Selection) -->
             <div id="content-miner" class="tab-content" style="display:none;">
-                <h3>Miner Game (SO2 Risk Grid)</h3>
-                <p style="text-align:center; font-size:13px;">Uncover safe tiles (22 gold / 3 bombs). Cash out anytime before hitting a bomb!</p>
-                <div id="miner-setup-area">
+                <h3>Miner Game (Custom Hardness)</h3>
+                <p style="text-align:center; font-size:13px;">Pick how many red bombs you want (1 to 24 out of 25 tiles). More reds = higher multiplier per safe tile!</p>
+                
+                <div id="miner-setup-area" style="background:#111827; padding:12px; border-radius:8px; margin-bottom:10px;">
                     <input type="number" id="miner-bet" placeholder="Bet amount in Gold" />
+                    <label style="font-size:12px; display:block; margin-top:6px;">Number of Red Bombs (1 - 24):</label>
+                    <input type="number" id="miner-reds-count" placeholder="e.g. 3" min="1" max="24" value="3" />
                     <button onclick="startMinerGame()">Start Game</button>
                 </div>
                 
@@ -394,7 +450,7 @@
             document.getElementById('tab-' + tabName).classList.add('active-tab');
         };
 
-        // --- SO2 CASES DATA & WIKI VIEW ---
+        // --- SO2 CASES WITH ROLL ANIMATION ---
         const casesData = {
             'free': { name: 'Starter Case', cost: 0, items: [{name:'P350 | Forest', odds:'60%'}, {name:'SM1014 | Carbon', odds:'30%'}, {name:'AKR | Railgun', odds:'10%'}] },
             'standoff': { name: 'Standoff Box', cost: 50, items: [{name:'G22 | Carbon', odds:'50%'}, {name:'P90 | Death', odds:'35%'}, {name:'M4 | Necromancer', odds:'15%'}] },
@@ -418,7 +474,19 @@
             });
             document.getElementById('case-items-preview').innerHTML = html;
             document.getElementById('case-result').innerHTML = "";
+            renderCaseTrack(c.items);
         };
+
+        function renderCaseTrack(items) {
+            const track = document.getElementById('case-track');
+            let html = "";
+            for (let i = 0; i < 30; i++) {
+                const randItem = items[Math.floor(Math.random() * items.length)];
+                html += `<div class="case-item-card"><span style="font-size:12px; color:var(--accent-yellow);">${randItem.name}</span></div>`;
+            }
+            track.innerHTML = html;
+            track.style.transform = `translateX(0px)`;
+        }
 
         window.backToCasesList = function() {
             document.getElementById('cases-home').style.display = 'block';
@@ -436,11 +504,21 @@
             await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
             document.getElementById('user-balance').innerText = currentBalance;
 
-            const wonItem = c.items[Math.floor(Math.random() * c.items.length)].name;
-            document.getElementById('case-result').innerHTML = `<span style="color:var(--accent-green);">🎉 You won: ${wonItem}! Added to inventory.</span>`;
+            const wonObj = c.items[Math.floor(Math.random() * c.items.length)];
+            
+            // Animate Track Roll
+            const track = document.getElementById('case-track');
+            renderCaseTrack(c.items);
+            // Place winning item roughly around index 20
+            track.children[20].innerHTML = `<span style="font-size:12px; color:var(--accent-green); font-weight:bold;">${wonObj.name}</span>`;
+            track.style.transform = `translateX(-${20 * 140 - 70}px)`;
+
+            setTimeout(async () => {
+                document.getElementById('case-result').innerHTML = `<span style="color:var(--accent-green);">🎉 Roll complete! You hit and won: ${wonObj.name}!</span>`;
+            }, 3100);
         };
 
-        // --- CUSTOM UPGRADER (Downward Pointer & Percentage Calculation) ---
+        // --- UPGRADER (Wheel and Pointer Spin Together) ---
         window.updateWheelCalc = function() {
             const bet = parseFloat(document.getElementById('upgrader-bet').value) || 0;
             const target = parseFloat(document.getElementById('upgrader-target').value) || 0;
@@ -459,7 +537,6 @@
             info.innerText = `Win Chance: ${percentage.toFixed(2)}%`;
 
             winAngleDegrees = (percentage / 100) * 360;
-            // Green slice centered at top or starting from 0 to winAngleDegrees
             wheel.style.background = `conic-gradient(var(--accent-green) 0deg ${winAngleDegrees}deg, var(--accent-red) ${winAngleDegrees}deg 360deg)`;
         };
 
@@ -478,12 +555,13 @@
             document.getElementById('user-balance').innerText = currentBalance;
 
             let percentage = (bet / target) * 100;
-            let randomLanding = Math.random() * 360;
-            let isWin = randomLanding <= winAngleDegrees;
+            let isWin = Math.random() * 100 <= percentage;
 
             let extraSpins = 360 * 6;
-            // Since pointer is at the top (0 deg/360 deg), target rotation aligns randomLanding with the top pointer
-            currentWheelRotation += extraSpins + (360 - randomLanding);
+            let landingAngle = isWin ? (Math.random() * (winAngleDegrees - 2)) + 1 : winAngleDegrees + (Math.random() * (360 - winAngleDegrees - 2)) + 1;
+            
+            // Because the pointer is fixed at top (0 deg), rotate wheel backwards to land landingAngle under top pointer
+            currentWheelRotation += extraSpins + (360 - landingAngle);
 
             const wheel = document.getElementById('upgrade-wheel');
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
@@ -500,18 +578,26 @@
             }, 3100);
         };
 
-        // --- MINER GAME (Persistent Pot until cashout) ---
+        // --- MINER GAME WITH CUSTOM REDS & DYNAMIC MULTIPLIER ---
         let minerActive = false;
         let minerTiles = [];
         let minerCurrentPot = 0;
         let minerBetAmount = 0;
+        let minerSafeCountTotal = 22;
 
         window.startMinerGame = async function() {
             const bet = parseFloat(document.getElementById('miner-bet').value);
+            const reds = parseInt(document.getElementById('miner-reds-count').value) || 3;
+
             if (!bet || bet <= 0 || bet > currentBalance) {
                 alert("Enter a valid bet amount!");
                 return;
             }
+            if (reds < 1 || reds > 24) {
+                alert("Red bombs must be between 1 and 24.");
+                return;
+            }
+
             minerBetAmount = bet;
             minerCurrentPot = bet;
             currentBalance -= bet;
@@ -519,12 +605,13 @@
             document.getElementById('user-balance').innerText = currentBalance;
 
             minerActive = true;
+            minerSafeCountTotal = 25 - reds;
             document.getElementById('miner-cashout-btn').style.display = 'block';
             document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
             document.getElementById('miner-current-multiplier').innerText = "Multiplier: 1.00x";
-            document.getElementById('miner-status').innerHTML = "Game Live! Pick tiles carefully.";
+            document.getElementById('miner-status').innerHTML = `Game Live (${reds} Bombs)! Pick tiles.`;
             
-            minerTiles = Array(22).fill('gold').concat(Array(3).fill('bomb'));
+            minerTiles = Array(minerSafeCountTotal).fill('gold').concat(Array(reds).fill('bomb'));
             minerTiles.sort(() => Math.random() - 0.5);
 
             const grid = document.getElementById('miner-grid');
@@ -551,7 +638,9 @@
             } else {
                 element.className = 'tile revealed-gold';
                 element.innerText = "🪙";
-                minerCurrentPot *= 1.15; // 15% increase per safe tile
+                // Scaling multiplier calculation based on risk (red count)
+                let riskFactor = 1 + ((25 - minerSafeCountTotal) / 10);
+                minerCurrentPot *= riskFactor; 
                 let mult = (minerCurrentPot / minerBetAmount).toFixed(2);
                 document.getElementById('miner-pot').innerText = minerCurrentPot.toFixed(2);
                 document.getElementById('miner-current-multiplier').innerText = `Multiplier: ${mult}x`;
@@ -569,13 +658,13 @@
             document.getElementById('miner-cashout-btn').style.display = 'none';
         };
 
-        // --- REAL-TIME GLOBAL LISTENING FOR ADMIN LISTING ---
+        // --- REAL-TIME GLOBAL LISTENING FOR TOP-UP LISTINGS ---
         function listenToGlobalListing() {
             onValue(ref(db, 'admin_listing'), (snapshot) => {
                 const box = document.getElementById('global-topup-info');
                 if (snapshot.exists()) {
                     const val = snapshot.val();
-                    box.innerHTML = `<b>Active Item:</b> ${val.item} | <b>Price:</b> ${val.price} Gold | <b>Pattern Code:</b> <span style="color:var(--accent-gold);">${val.pattern}</span>`;
+                    box.innerHTML = `<b>Active Item:</b> ${val.item} | <b>Price:</b> <span style="color:var(--accent-green);">${val.price} Gold</span> | <b>Pattern Code:</b> <span style="color:var(--accent-gold);">${val.pattern}</span>`;
                 } else {
                     box.innerHTML = "No active top-up listing set by admin yet.";
                 }
@@ -585,17 +674,24 @@
         window.submitTopUpClaim = async function() {
             const pfp = document.getElementById('topup-pfp').files[0]?.name || "default_pfp.png";
             const proof = document.getElementById('topup-proof').files[0]?.name || "default_proof.png";
+            
+            const listingSnap = await get(ref(db, 'admin_listing'));
+            let goldAmount = 100;
+            if (listingSnap.exists()) {
+                goldAmount = parseFloat(listingSnap.val().price) || 100;
+            }
 
             const reqRef = push(ref(db, 'topup_claims'));
             await set(reqRef, {
                 uid: currentUser.uid,
                 email: currentUser.email,
+                goldAmount: goldAmount,
                 pfp: pfp,
                 proof: proof,
                 status: 'pending'
             });
 
-            document.getElementById('topup-status-msg').innerHTML = "<span style='color:var(--accent-green);'>Claim submitted successfully! Awaiting admin review.</span>";
+            document.getElementById('topup-status-msg').innerHTML = "<span style='color:var(--accent-green);'>Claim submitted successfully! Admin notification sent.</span>";
         };
 
         // --- WITHDRAWAL LOGIC ---
@@ -675,7 +771,7 @@
 
         async function loadAdminData() {
             const topupSnap = await get(ref(db, 'topup_claims'));
-            let topupHtml = "<h4>Pending Top-Up Claims</h4>";
+            let topupHtml = "<h4>Pending Top-Up Claims (Player Purchases)</h4>";
             if (topupSnap.exists()) {
                 topupSnap.forEach(child => {
                     const d = child.val();
@@ -683,15 +779,16 @@
                     if(d.status === 'pending') {
                         topupHtml += `
                             <div style="background:#111827; padding:10px; margin-top:8px; border-radius:6px; border:1px solid var(--border-color);">
-                                <p><b>User:</b> ${d.email}</p>
+                                <p><b>User:</b> <span style="color:var(--accent-blue);">${d.email}</span></p>
+                                <p><b>Claimed Gold Amount:</b> <span style="color:var(--accent-gold);">${d.goldAmount} G</span></p>
                                 <p><b>Files:</b> PFP: ${d.pfp} | Proof: ${d.proof}</p>
-                                <button onclick="actionTopUp('${k}', '${d.uid}', 'approved')" style="background:var(--accent-green);">Approve & Log 3-Day Window</button>
-                                <button onclick="actionTopUp('${k}', '${d.uid}', 'declined')" style="background:var(--accent-red); color:white;">Decline</button>
+                                <button onclick="actionTopUp('${k}', '${d.uid}', ${d.goldAmount}, 'approved')" style="background:var(--accent-green);">Confirm & Grant Gold</button>
+                                <button onclick="actionTopUp('${k}', '${d.uid}', ${d.goldAmount}, 'declined')" style="background:var(--accent-red); color:white;">Decline</button>
                             </div>
                         `;
                     }
                 });
-            } else { topupHtml += "<p>No pending claims.</p>"; }
+            } else { topupHtml += "<p>No pending top-up claims.</p>"; }
             document.getElementById('admin-list-topups').innerHTML = topupHtml;
 
             const withSnap = await get(ref(db, 'withdrawal_requests'));
@@ -715,10 +812,15 @@
             document.getElementById('admin-list-withdrawals').innerHTML = withHtml;
         }
 
-        window.actionTopUp = async function(key, uid, status) {
+        window.actionTopUp = async function(key, uid, goldAmount, status) {
             await update(ref(db, 'topup_claims/' + key), { status });
             if(status === 'approved') {
-                await update(ref(db, 'users/' + uid), { lastTopUp: Date.now() });
+                const userRef = ref(db, 'users/' + uid);
+                const userSnap = await get(userRef);
+                if(userSnap.exists()) {
+                    let bal = userSnap.val().balance || 0;
+                    await update(userRef, { balance: bal + goldAmount, lastTopUp: Date.now() });
+                }
             }
             alert(`Top-up claim ${status}!`);
             loadAdminData();
