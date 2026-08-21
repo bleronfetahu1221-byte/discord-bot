@@ -27,7 +27,7 @@
                 <span class="text-brand-green text-2xl">✓</span>
             </div>
             <h3 class="text-lg font-black text-slate-100 mb-1">Verification Sent!</h3>
-            <p id="popup-message-text" class="text-xs text-slate-400 mb-6">Your purchase proof has been dispatched directly to the admin queue.</p>
+            <p id="popup-message-text" class="text-xs text-slate-400 mb-6">Your purchase proof has been dispatched instantly to the admin queue.</p>
             <button onclick="closeSuccessPopup()" class="w-full bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold py-2.5 rounded-xl text-xs uppercase tracking-wider transition-all shadow-lg shadow-brand-green/20">Got It</button>
         </div>
     </div>
@@ -156,29 +156,36 @@
                 </div>
             </section>
 
-            <!-- TOP-UP TAB -->
+            <!-- TOP-UP TAB (SCROLLABLE CONTAINER) -->
             <section id="panel-topup" class="tab-panel hidden space-y-6">
-                <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
+                <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto max-h-[80vh] overflow-y-auto pr-2">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Instant Gold Top-Up Protocol</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Direct submission queue to administrators. Support: <span class="text-brand-purple">loothubsup@gmail.com</span></p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Direct instant dispatch queue to administrators. Support: <span class="text-brand-purple">loothubsup@gmail.com</span></p>
                     
                     <div class="space-y-4">
                         <div class="p-4 bg-dark-900 border border-dark-600 rounded-xl mb-4">
-                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Select Admin G22 Listing to Buy</h4>
-                            <div id="client-admin-listings-view" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                            <h4 class="text-xs font-bold uppercase text-brand-gold tracking-wider mb-2">Optional: Select Admin G22 Listing (Or Enter Custom Amount Below)</h4>
+                            <div id="client-admin-listings-view" class="space-y-2 max-h-40 overflow-y-auto pr-1">
                                 <p class="text-xs text-slate-500">Loading active admin G22 listings...</p>
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Custom Top-Up Gold Amount Desired</label>
+                            <input type="number" id="topup-custom-amount" placeholder="100" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue text-slate-100">
                         </div>
 
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Upload Confirmation Screenshot (Purchase Proof)</label>
                             <input type="file" id="topup-screenshot-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
+
                         <div>
                             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Profile Picture (Required for Verification)</label>
                             <input type="file" id="topup-profile-pic-file" accept="image/*" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-2.5 text-xs text-slate-300 focus:outline-none focus:border-brand-blue file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-dark-900 hover:file:bg-sky-400">
                         </div>
-                        <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Send Proof Directly to Admin</button>
+
+                        <button onclick="submitTopupProofWithScreenshot()" class="w-full bg-brand-gold hover:bg-amber-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-gold/20">Send Verification Instantly</button>
                         <div id="topup-status-msg" class="text-center text-xs font-bold mt-2 min-h-[20px]"></div>
                     </div>
                 </div>
@@ -296,7 +303,7 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v7";
+        const DB_KEY = "loothub_enterprise_state_v8";
         const SESSION_KEY = "loothub_session_user";
         let selectedAdminListingId = null;
         
@@ -574,28 +581,25 @@
 
             container.innerHTML = "";
             if (!state.adminListings || state.adminListings.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-500">No active admin G22 listings available right now. Contact loothubsup@gmail.com</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-500">No active admin listings right now. You can enter a custom amount below freely.</p>`;
                 return;
-            }
-
-            if (!selectedAdminListingId && state.adminListings.length > 0) {
-                selectedAdminListingId = state.adminListings[0].id;
             }
 
             state.adminListings.forEach(item => {
                 let isSelected = (selectedAdminListingId === item.id);
                 let div = document.createElement('div');
-                div.className = `flex items-center justify-between p-3 rounded-lg border text-xs cursor-pointer transition-all ${isSelected ? 'bg-dark-800 border-brand-blue shadow-md' : 'bg-dark-900 border-dark-600 opacity-80 hover:opacity-100'}`;
+                div.className = `flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${isSelected ? 'bg-dark-800 border-brand-blue shadow-md' : 'bg-dark-900 border-dark-600 opacity-80 hover:opacity-100'}`;
                 div.onclick = () => {
                     selectedAdminListingId = item.id;
+                    document.getElementById('topup-custom-amount').value = item.price;
                     renderClientAdminListings();
                 };
                 div.innerHTML = `
                     <div>
                         <span class="font-bold text-brand-blue">${item.skinName}</span>
-                        <div class="text-slate-400 mt-0.5">Price: <b class="text-brand-gold">${item.price} Gold</b> | Pattern Tag: <b class="text-brand-green">${item.pattern}</b></div>
+                        <div class="text-slate-400 mt-0.5">Price: <b class="text-brand-gold">${item.price} Gold</b> | Pattern: <b class="text-brand-green">${item.pattern}</b></div>
                     </div>
-                    <span class="text-[10px] ${isSelected ? 'bg-brand-blue text-dark-900 font-bold' : 'bg-dark-700 text-slate-300'} px-2.5 py-1.5 rounded-lg transition-all">${isSelected ? 'Selected ✓' : 'Select Offer'}</span>
+                    <span class="text-[10px] ${isSelected ? 'bg-brand-blue text-dark-900 font-bold' : 'bg-dark-700 text-slate-300'} px-2 py-1 rounded-lg transition-all">${isSelected ? 'Selected ✓' : 'Use This'}</span>
                 `;
                 container.appendChild(div);
             });
@@ -604,9 +608,17 @@
         function submitTopupProofWithScreenshot() {
             let fileInput = document.getElementById('topup-screenshot-file');
             let profilePicInput = document.getElementById('topup-profile-pic-file');
+            let customAmountInput = document.getElementById('topup-custom-amount');
             let statusMsg = document.getElementById('topup-status-msg');
 
             statusMsg.innerText = "";
+
+            let amount = parseFloat(customAmountInput.value);
+            if (!amount || amount <= 0) {
+                statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
+                statusMsg.innerText = "Please specify a valid top-up gold amount or choose an admin listing!";
+                return;
+            }
 
             if (!fileInput.files || fileInput.files.length === 0) {
                 statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-red";
@@ -620,7 +632,7 @@
             }
 
             statusMsg.className = "text-center text-xs font-bold mt-2 text-brand-blue";
-            statusMsg.innerText = "Processing images and sending proof to admin...";
+            statusMsg.innerText = "Dispatching verification proof instantly to admin...";
 
             let defaultPlaceholderImg = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%2338bdf8' stroke-width='2'><rect x='3' y='3' width='18' height='18' rx='2'/><circle cx='8.5' cy='8.5' r='1.5'/><polyline points='21 15 16 10 5 21'/></svg>";
 
@@ -640,14 +652,15 @@
                 hasFinalized = true;
 
                 let state = getSystemState();
-                let chosenListing = state.adminListings.find(l => l.id === selectedAdminListingId) || state.adminListings[0] || { price: 100, pattern: '542' };
+                let matchedListing = state.adminListings.find(l => l.id === selectedAdminListingId);
+                let patternTag = matchedListing ? matchedListing.pattern : 'CUSTOM';
                 let reqId = 'TOPUP_' + Date.now();
 
                 state.topupRequests.unshift({
                     id: reqId,
                     email: sessionUserEmail,
-                    amount: chosenListing.price,
-                    pattern: chosenListing.pattern,
+                    amount: amount,
+                    pattern: patternTag,
                     screenshot: screenshotDataUrl,
                     profilePic: profilePicDataUrl,
                     status: 'pending_audit',
@@ -660,9 +673,11 @@
                 statusMsg.innerText = "";
                 fileInput.value = "";
                 profilePicInput.value = "";
+                customAmountInput.value = "";
+                selectedAdminListingId = null;
 
-                // TRIGGER SUCCESS POPUP MODAL
-                document.getElementById('popup-message-text').innerText = `Purchase proof for ${chosenListing.price} Gold has been successfully dispatched to the admin queue.`;
+                // TRIGGER SUCCESS POPUP MODAL INSTANTLY
+                document.getElementById('popup-message-text').innerText = `Verification proof for ${amount} Gold has been instantly sent to the admin dashboard!`;
                 document.getElementById('success-popup-modal').classList.remove('hidden');
             }
 
@@ -834,7 +849,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="text-xs font-bold text-brand-blue">User: ${req.email}</div>
-                                <div class="text-xs text-slate-300 mt-0.5">Top-Up Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern: <b class="text-brand-green">${req.pattern}</b></div>
+                                <div class="text-xs text-slate-300 mt-0.5">Top-Up Value: <b class="text-brand-gold">${req.amount} 🪙</b> | Pattern Tag: <b class="text-brand-green">${req.pattern}</b></div>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="processAdminAction('${req.id}', 'approved')" class="bg-brand-green hover:bg-emerald-400 text-dark-900 font-bold px-3 py-1.5 rounded-lg text-xs transition-all">Verify & Credit</button>
