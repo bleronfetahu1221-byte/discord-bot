@@ -134,11 +134,11 @@
                 </div>
             </section>
 
-            <!-- UPGRADER TAB (SPINNING WHEEL) -->
+            <!-- UPGRADER TAB (CUSTOM INPUTS & SPINNING WHEEL) -->
             <section id="panel-upgrader" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto">
-                    <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Gold Multiplier Spinner Upgrader</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Land the green sector on the top arrow to win your target payout!</p>
+                    <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Custom Gold Target Upgrader</h2>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Set your own stake and custom target win. Land the green zone on top to win!</p>
                     
                     <div class="space-y-6">
                         <!-- Spinning Wheel Container -->
@@ -153,37 +153,37 @@
                             
                             <!-- Center Hub -->
                             <div class="absolute z-20 w-12 h-12 bg-dark-800 border-2 border-dark-600 rounded-full flex items-center justify-center text-xs font-black text-brand-gold shadow-inner">
-                                SPINS
+                                WHEEL
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Stake Amount (🪙)</label>
-                                <input type="number" id="upgrader-stake" placeholder="50" oninput="updateWheelCalculation()" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Your Stake (🪙)</label>
+                                <input type="number" id="upgrader-stake" placeholder="20" value="20" oninput="updateWheelCalculation()" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Desired Return (🪙)</label>
-                                <input type="number" id="upgrader-target" placeholder="100" oninput="updateWheelCalculation()" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
+                                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Custom Target Win (🪙)</label>
+                                <input type="number" id="upgrader-target" placeholder="55" value="55" oninput="updateWheelCalculation()" class="w-full bg-dark-900 border border-dark-600 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-brand-blue">
                             </div>
                         </div>
 
                         <div class="bg-dark-900 border border-dark-600 p-3 rounded-xl flex items-center justify-between text-xs">
                             <span class="text-slate-400">Calculated Win Chance:</span>
-                            <span id="upgrader-win-chance-text" class="font-black text-brand-gold text-sm">50.0%</span>
+                            <span id="upgrader-win-chance-text" class="font-black text-brand-gold text-sm">36.4%</span>
                         </div>
 
-                        <button onclick="executeWheelUpgrader()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Spin Wheel Upgrader</button>
+                        <button onclick="executeWheelUpgrader()" class="w-full bg-brand-blue hover:bg-sky-400 text-dark-900 font-black py-4 rounded-xl text-sm transition-all uppercase tracking-wider shadow-lg shadow-brand-blue/20">Spin Custom Upgrader</button>
                         <div id="upgrader-feedback" class="text-center font-bold text-sm mt-2 min-h-[24px]"></div>
                     </div>
                 </div>
             </section>
 
-            <!-- TOP-UP TAB (SCROLLABLE CONTAINER) -->
+            <!-- TOP-UP TAB -->
             <section id="panel-topup" class="tab-panel hidden space-y-6">
                 <div class="bg-dark-800 border border-dark-600 rounded-2xl p-6 shadow-xl max-w-xl mx-auto max-h-[80vh] overflow-y-auto pr-2">
                     <h2 class="text-xl font-black text-brand-blue mb-1 text-center">Instant Gold Top-Up Protocol</h2>
-                    <p class="text-xs text-slate-400 mb-6 text-center">Direct instant dispatch queue to administrators. Support: <span class="text-brand-purple">loothubsup@gmail.com</span></p>
+                    <p class="text-xs text-slate-400 mb-6 text-center">Direct dispatch queue to administrators. Support: <span class="text-brand-purple">loothubsup@gmail.com</span></p>
                     
                     <div class="space-y-4">
                         <div class="p-4 bg-dark-900 border border-dark-600 rounded-xl mb-4">
@@ -326,7 +326,7 @@
 
     <!-- APPLICATION SCRIPT LOGIC -->
     <script>
-        const DB_KEY = "loothub_enterprise_state_v11";
+        const DB_KEY = "loothub_enterprise_state_v12";
         const SESSION_KEY = "loothub_session_user";
         let selectedAdminListingId = null;
         let currentWheelRotation = 0;
@@ -546,7 +546,6 @@
             saveSystemState(state);
             refreshUserBalanceUI();
 
-            // Standoff 2 Skin pool with 0.1% Knife chance and hard odds
             const starterPool = [
                 {name: "G22 | Carbon", value: 5, color: "text-slate-300"},
                 {name: "P350 | Cyber", value: 8, color: "text-slate-300"},
@@ -621,11 +620,11 @@
                 return;
             }
 
-            // Calculate percentage based on stake vs target payout (hard odds)
+            // Real-time calculated win chance formula (stake / target) * 100
             let winChance = Math.min(Math.max((stake / target) * 100, 0.5), 95.0);
             chanceText.innerText = winChance.toFixed(1) + "%";
 
-            // Update CSS clip-path for the circular green slice based on percentage
+            // Update SVG polygon clip path dynamically for the wheel green segment
             let angle = (winChance / 100) * 360;
             if (angle <= 180) {
                 let rad = angle * (Math.PI / 180);
@@ -649,11 +648,11 @@
             let user = state.users[sessionUserEmail];
 
             if (!stake || stake <= 0 || stake > user.balance) {
-                feedback.innerHTML = `<span class="text-brand-red">Invalid stake amount specified.</span>`;
+                feedback.innerHTML = `<span class="text-brand-red">Invalid stake amount or insufficient balance.</span>`;
                 return;
             }
             if (!target || target <= stake) {
-                feedback.innerHTML = `<span class="text-brand-red">Target return must be greater than your stake.</span>`;
+                feedback.innerHTML = `<span class="text-brand-red">Desired return target must be greater than your stake.</span>`;
                 return;
             }
 
@@ -664,19 +663,16 @@
             let winChance = Math.min(Math.max((stake / target) * 100, 0.5), 95.0);
             let isWin = Math.random() * 100 <= winChance;
 
-            // Calculate target stop degree so that top arrow (0 deg) lands in green or outside
             let targetDegree;
             if (isWin) {
-                // Land safely inside the green sector (0 to winChance percentage of 360)
                 let maxGreenDeg = (winChance / 100) * 360;
                 targetDegree = Math.random() * (maxGreenDeg - 10) + 5;
             } else {
-                // Land outside the green sector
                 let minRedDeg = (winChance / 100) * 360 + 10;
                 targetDegree = Math.random() * (360 - minRedDeg) + minRedDeg;
             }
 
-            let totalSpins = 360 * 6; // 6 full rotations
+            let totalSpins = 360 * 6;
             currentWheelRotation += totalSpins + (360 - targetDegree);
 
             wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
@@ -684,9 +680,9 @@
             setTimeout(() => {
                 if (isWin) {
                     user.balance += target;
-                    feedback.innerHTML = `<span class="text-brand-green font-bold text-base">🔥 SPIN SUCCESS! Won +${target.toFixed(2)} 🪙!</span>`;
+                    feedback.innerHTML = `<span class="text-brand-green font-bold text-base">🔥 WIN! Landed on green for +${target.toFixed(2)} 🪙!</span>`;
                 } else {
-                    feedback.innerHTML = `<span class="text-brand-red font-bold text-base">❌ SPIN FAILED. Stake forfeited. Try again!</span>`;
+                    feedback.innerHTML = `<span class="text-brand-red font-bold text-base">❌ LOSS. Missed the green sector. Try again!</span>`;
                 }
                 saveSystemState(state);
                 refreshUserBalanceUI();
