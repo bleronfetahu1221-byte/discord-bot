@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LootHUB - Standoff 2 Case & Battle Platform</title>
+    <title>LootHUB - Ultimate Standoff 2 Platform</title>
     <style>
         :root {
             --bg-main: #0f172a;
@@ -17,7 +17,6 @@
             --accent-gold: #f59e0b;
             --text-main: #f8fafc;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-main);
@@ -25,18 +24,15 @@
             margin: 0;
             padding: 10px;
         }
-
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: auto;
             background: var(--bg-card);
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.6);
         }
-
         h2, h3 { color: var(--accent-blue); text-align: center; }
-
         input, select {
             width: 100%;
             padding: 12px;
@@ -47,7 +43,6 @@
             border-radius: 6px;
             box-sizing: border-box;
         }
-
         button {
             width: 100%;
             padding: 12px;
@@ -61,7 +56,6 @@
             transition: background 0.2s;
         }
         button:hover { background-color: #0ea5e9; }
-
         .notice {
             font-size: 13px;
             color: var(--accent-yellow);
@@ -73,10 +67,8 @@
             border-radius: 6px;
             border: 1px dashed var(--accent-yellow);
         }
-
         .section { display: none; }
         .active { display: block; }
-
         .nav-bar {
             display: flex;
             gap: 5px;
@@ -95,7 +87,6 @@
             background: var(--accent-blue);
             color: var(--bg-main);
         }
-
         .card-box {
             background: var(--bg-input);
             padding: 15px;
@@ -103,22 +94,52 @@
             margin-top: 15px;
             border: 1px solid var(--border-color);
         }
-
-        .item-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
-            margin-top: 10px;
+        /* Circular Upgrader Wheel Styling */
+        .wheel-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 20px auto;
+            border-radius: 50%;
+            border: 6px solid var(--accent-gold);
+            background: conic-gradient(var(--accent-green) 0deg 180deg, var(--accent-red) 180deg 360deg);
+            transition: transform 3s cubic-bezier(0.15, 0.9, 0.2, 1);
         }
-        .item-card {
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0; 
+            height: 0; 
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid white;
+            z-index: 10;
+        }
+        /* Miner Grid Styling */
+        .miner-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            max-width: 350px;
+            margin: 15px auto;
+        }
+        .tile {
+            aspect-ratio: 1;
             background: #111827;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
             cursor: pointer;
+            font-weight: bold;
         }
-        .item-card:hover { border-color: var(--accent-blue); }
+        .tile:hover { border-color: var(--accent-blue); }
+        .tile.revealed-gold { background: rgba(74, 222, 128, 0.2); color: var(--accent-green); border-color: var(--accent-green); }
+        .tile.revealed-bomb { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); border-color: var(--accent-red); }
     </style>
 </head>
 <body>
@@ -129,11 +150,12 @@
         <!-- AUTH SECTION -->
         <div id="auth-section" class="section active">
             <h3>Account Sign In / Register</h3>
-            <p class="notice">⚠️ <strong>Important:</strong> Please use your real email address! Withdrawal information and payout instructions will be sent directly to your email so you can receive your items.</p>
+            <p class="notice">⚠️ <strong>Important:</strong> Please use your real email address! Withdrawal information and payout instructions will be sent directly to your email.</p>
             <input type="email" id="email" placeholder="Enter your real email" />
             <input type="password" id="password" placeholder="Enter password" />
             <button onclick="loginUser()">Sign In / Register</button>
             <div id="auth-status" style="margin-top: 10px; text-align: center; color: var(--accent-red);"></div>
+            <p style="text-align: center; margin-top: 15px; font-size: 13px;">Need help? Contact us at <a href="mailto:loothubsup@gmail.com" style="color:var(--accent-blue);">loothubsup@gmail.com</a></p>
         </div>
 
         <!-- MAIN DASHBOARD -->
@@ -145,57 +167,96 @@
 
             <!-- Navigation Tabs -->
             <div class="nav-bar" style="margin-top: 15px;">
-                <button onclick="switchTab('cases')" id="tab-cases" class="active-tab">Cases</button>
-                <button onclick="switchTab('upgrader')" id="tab-upgrader">Upgrader</button>
+                <button onclick="switchTab('upgrader')" id="tab-upgrader" class="active-tab">Upgrader</button>
+                <button onclick="switchTab('miner')" id="tab-miner">Miner Game</button>
                 <button onclick="switchTab('topup')" id="tab-topup">Top-Up</button>
+                <button onclick="switchTab('withdraw')" id="tab-withdraw">Withdraw</button>
                 <button onclick="switchTab('admin')" id="tab-admin">Admin Panel</button>
             </div>
 
-            <!-- CASES TAB -->
-            <div id="content-cases" class="tab-content">
-                <h3>Case Opening</h3>
-                <div class="item-grid">
-                    <div class="item-card" onclick="openCase(50)">
-                        <h4>Standoff Box</h4>
-                        <p style="color:var(--accent-yellow);">Cost: 50 G</p>
-                    </div>
-                    <div class="item-card" onclick="openCase(150)">
-                        <h4>Dragon Case</h4>
-                        <p style="color:var(--accent-yellow);">Cost: 150 G</p>
-                    </div>
+            <!-- CIRCULAR UPGRADER TAB -->
+            <div id="content-upgrader" class="tab-content">
+                <h3>Circular Wheel Upgrader</h3>
+                <p style="text-align:center; font-size:13px; color:var(--accent-yellow);">Green section = Win! Pick your stake and multiplier.</p>
+                
+                <div class="wheel-container" id="upgrade-wheel">
+                    <div class="wheel-pointer"></div>
                 </div>
-                <div id="case-result" style="text-align: center; margin-top: 20px; font-size: 16px;"></div>
+
+                <input type="number" id="upgrader-bet" placeholder="Gold amount to risk" />
+                <select id="upgrader-multiplier">
+                    <option value="2">2x Multiplier (50% Win Chance)</option>
+                    <option value="3">3x Multiplier (33% Win Chance)</option>
+                    <option value="5">5x Multiplier (20% Win Chance)</option>
+                </select>
+                <button onclick="spinWheel()">Spin Wheel</button>
+                <div id="upgrader-result" style="text-align: center; margin-top: 15px; font-weight: bold;"></div>
             </div>
 
-            <!-- UPGRADER TAB -->
-            <div id="content-upgrader" class="tab-content" style="display:none;">
-                <h3>Item Upgrader</h3>
-                <p>Multiply your balance risk style!</p>
-                <input type="number" id="upgrade-bet" placeholder="Gold amount to risk" />
-                <button onclick="runUpgrade()">Attempt Upgrade (50% Win Rate)</button>
-                <div id="upgrade-result" style="text-align: center; margin-top: 15px;"></div>
+            <!-- MINER TAB -->
+            <div id="content-miner" class="tab-content" style="display:none;">
+                <h3>Miner Game (25 Tiles)</h3>
+                <p style="text-align:center; font-size:13px;">Find Gold (22 Safe Tiles) and avoid the 3 Bombs!</p>
+                <input type="number" id="miner-bet" placeholder="Bet amount in Gold" />
+                <button onclick="startMinerGame()">Start Game / Reset</button>
+                
+                <div class="miner-grid" id="miner-grid"></div>
+                <div id="miner-status" style="text-align: center; margin-top: 10px; font-weight: bold;"></div>
             </div>
 
             <!-- TOP UP TAB -->
             <div id="content-topup" class="tab-content" style="display:none;">
                 <div class="card-box" style="margin-top:0;">
-                    <h4>Request Gold Top-Up</h4>
-                    <input type="number" id="topup-amount" placeholder="Gold Amount to Buy" />
-                    <button onclick="requestTopUp()">Request Top-Up</button>
-                    <div id="topup-instructions" style="margin-top:10px;"></div>
+                    <h4>Live Top-Up Market</h4>
+                    <div id="global-topup-info" class="notice">Loading active admin listing...</div>
+                    
+                    <div style="margin-top:15px;">
+                        <label style="font-size:13px;">Upload Profile Picture:</label>
+                        <input type="file" id="topup-pfp" />
+                        <label style="font-size:13px; margin-top:8px; display:block;">Upload Purchase Screenshot Proof:</label>
+                        <input type="file" id="topup-proof" />
+                        <button onclick="submitTopUpClaim()" style="background:var(--accent-green); color:#000;">I Have Purchased - Submit Claim</button>
+                    </div>
+                    <div id="topup-status-msg" style="margin-top:10px; text-align:center;"></div>
+                </div>
+            </div>
+
+            <!-- WITHDRAW TAB -->
+            <div id="content-withdraw" class="tab-content" style="display:none;">
+                <div class="card-box" style="margin-top:0;">
+                    <h4>Gold Withdrawal Portal</h4>
+                    <p style="font-size:12px; color:var(--accent-yellow);">Requirement: Minimum 20 Gold, and you must have completed a verified top-up within the last 3 days.</p>
+                    <input type="number" id="withdraw-amount" placeholder="Amount to Withdraw (Min 20 G)" />
+                    <button onclick="requestWithdrawal()">Request Payout</button>
+                    <div id="withdraw-instructions" style="margin-top:10px;"></div>
                 </div>
             </div>
 
             <!-- ADMIN TAB -->
             <div id="content-admin" class="tab-content" style="display:none;">
-                <div class="card-box" style="margin-top:0;">
-                    <h4 style="color: var(--accent-gold);">Admin Access Control</h4>
+                <div id="admin-login-box" class="card-box" style="margin-top:0;">
+                    <h4 style="color: var(--accent-gold);">Admin Secure Access</h4>
                     <input type="password" id="admin-passcode" placeholder="Enter Admin Passcode" />
-                    <button onclick="verifyAdmin()" style="background-color: var(--accent-gold);">Unlock Admin Panel</button>
+                    <button onclick="verifyAdmin()" style="background-color: var(--accent-gold);">Unlock Panel</button>
                 </div>
-                <div id="admin-panel-area" style="display:none; margin-top: 15px;">
-                    <h3 style="color: var(--accent-gold);">Pending Customer Requests</h3>
-                    <div id="admin-requests-list"></div>
+
+                <div id="admin-dashboard" style="display:none;">
+                    <div style="background:#111827; padding:10px; border-radius:6px; margin-bottom:15px;">
+                        <h4 style="color:var(--accent-gold); margin:0 0 10px 0;">Configure Global Top-Up Listing</h4>
+                        <input type="text" id="admin-set-item" placeholder="Item Name (e.g., G22 Glock)" />
+                        <input type="number" id="admin-set-price" placeholder="Price in Gold" />
+                        <input type="text" id="admin-set-pattern" placeholder="Specific Pattern Code" />
+                        <button onclick="saveAdminListing()" style="background:var(--accent-gold);">Update Live Listing</button>
+                    </div>
+
+                    <!-- Split Sub-tabs for Topups vs Withdrawals -->
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <button onclick="switchAdminSubTab('topups')" id="admin-sub-topups" style="background:var(--accent-blue);">Top-Up Claims</button>
+                        <button onclick="switchAdminSubTab('withdrawals')" id="admin-sub-withdrawals" style="background:var(--border-color);">Withdrawal Requests</button>
+                    </div>
+
+                    <div id="admin-list-topups" class="admin-sub-content"></div>
+                    <div id="admin-list-withdrawals" class="admin-sub-content" style="display:none;"></div>
                 </div>
             </div>
 
@@ -208,7 +269,6 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // YOUR CORRECT REAL FIREBASE CONFIGURATION
         const firebaseConfig = {
             apiKey: "AIzaSyDqmHsE2CUxmbtT1BxqvvJlP52rOPRgIho",
             authDomain: "loothub-c9693.firebaseapp.com",
@@ -226,16 +286,14 @@
 
         let currentUser = null;
         let currentBalance = 100;
+        let currentWheelRotation = 0;
 
         window.loginUser = async function() {
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
             const status = document.getElementById('auth-status');
 
-            if (!email || !password) {
-                status.innerText = "Please fill in all fields.";
-                return;
-            }
+            if (!email || !password) return status.innerText = "Please fill in all fields.";
 
             try {
                 let userCred;
@@ -251,7 +309,7 @@
                 if (snap.exists()) {
                     currentBalance = snap.val().balance || 100;
                 } else {
-                    await set(userRef, { email: currentUser.email, balance: 100 });
+                    await set(userRef, { email: currentUser.email, balance: 100, lastTopUp: 0 });
                     currentBalance = 100;
                 }
 
@@ -259,148 +317,287 @@
                 document.getElementById('dashboard-section').classList.add('active');
                 document.getElementById('user-email-display').innerText = currentUser.email;
                 document.getElementById('user-balance').innerText = currentBalance;
+                fetchGlobalListing();
             } catch (err) {
                 status.innerText = "Error: " + err.message;
             }
         };
 
         window.switchTab = function(tabName) {
-            ['cases', 'upgrader', 'topup', 'admin'].forEach(t => {
+            ['upgrader', 'miner', 'topup', 'withdraw', 'admin'].forEach(t => {
                 document.getElementById('content-' + t).style.display = (t === tabName) ? 'block' : 'none';
                 document.getElementById('tab-' + t).classList.remove('active-tab');
             });
             document.getElementById('tab-' + tabName).classList.add('active-tab');
         };
 
-        window.openCase = async function(cost) {
-            if (currentBalance < cost) {
-                alert("Insufficient gold balance!");
-                return;
-            }
-            currentBalance -= cost;
-            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
-            document.getElementById('user-balance').innerText = currentBalance;
+        // --- CIRCULAR UPGRADER LOGIC ---
+        window.spinWheel = async function() {
+            const bet = parseInt(document.getElementById('upgrader-bet').value);
+            const multiplier = parseFloat(document.getElementById('upgrader-multiplier').value);
+            const resultDiv = document.getElementById('upgrader-result');
 
-            const rewards = ["M4A1 | Necromancer", "AKr | Starlight", "AWM | Sport", "Glove | Punisher"];
-            const won = rewards[Math.floor(Math.random() * rewards.length)];
-            document.getElementById('case-result').innerHTML = `<p style="color:var(--accent-green);">🎉 You opened and won: <b>${won}</b>!</p>`;
-        };
-
-        window.runUpgrade = async function() {
-            const bet = parseInt(document.getElementById('upgrade-bet').value);
             if (!bet || bet <= 0 || bet > currentBalance) {
                 alert("Invalid bet amount!");
                 return;
             }
 
             currentBalance -= bet;
-            const win = Math.random() < 0.5;
-            if (win) {
-                currentBalance += (bet * 2);
-                document.getElementById('upgrade-result').innerHTML = `<p style="color:var(--accent-green);">🔥 Upgrade SUCCESS! You won ${bet * 2} Gold!</p>`;
-            } else {
-                document.getElementById('upgrade-result').innerHTML = `<p style="color:var(--accent-red);">❌ Upgrade FAILED. You lost ${bet} Gold.</p>`;
-            }
-
             await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
             document.getElementById('user-balance').innerText = currentBalance;
+
+            let winChance = 1 / multiplier;
+            let isWin = Math.random() < winChance;
+
+            // Adjust wheel graphic degrees
+            let extraSpins = 360 * 5;
+            let targetAngle = isWin ? 90 : 270; 
+            currentWheelRotation += extraSpins + targetAngle;
+            
+            const wheel = document.getElementById('upgrade-wheel');
+            wheel.style.transform = `rotate(${currentWheelRotation}deg)`;
+
+            setTimeout(async () => {
+                if (isWin) {
+                    let payout = Math.floor(bet * multiplier);
+                    currentBalance += payout;
+                    resultDiv.innerHTML = `<span style="color:var(--accent-green);">🎉 Wheel landed on GREEN! You won ${payout} Gold!</span>`;
+                } else {
+                    resultDiv.innerHTML = `<span style="color:var(--accent-red);">❌ Wheel landed on RED. You lost ${bet} Gold.</span>`;
+                }
+                await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
+                document.getElementById('user-balance').innerText = currentBalance;
+            }, 3100);
         };
 
-        window.requestTopUp = async function() {
-            const amount = document.getElementById('topup-amount').value;
-            if (!amount) return alert("Enter a valid gold amount!");
+        // --- MINER GAME LOGIC ---
+        let minerActive = false;
+        let minerTiles = [];
+        let minerBetAmount = 0;
 
-            const reqRef = push(ref(db, 'topup_requests'));
+        window.startMinerGame = async function() {
+            const bet = parseInt(document.getElementById('miner-bet').value);
+            if (!bet || bet <= 0 || bet > currentBalance) {
+                alert("Enter a valid bet amount!");
+                return;
+            }
+            minerBetAmount = bet;
+            currentBalance -= bet;
+            await update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
+            document.getElementById('user-balance').innerText = currentBalance;
+
+            minerActive = true;
+            document.getElementById('miner-status').innerHTML = "Game Started! Pick a tile.";
+            
+            // Setup 25 tiles (22 gold, 3 bombs)
+            minerTiles = Array(22).fill('gold').concat(Array(3).fill('bomb'));
+            minerTiles.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('miner-grid');
+            grid.innerHTML = "";
+            for(let i=0; i<25; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                tile.innerText = "?";
+                tile.onclick = () => revealTile(i, tile);
+                grid.appendChild(tile);
+            }
+        };
+
+        function revealTile(index, element) {
+            if (!minerActive) return;
+            if (element.classList.contains('revealed-gold') || element.classList.contains('revealed-bomb')) return;
+
+            if (minerTiles[index] === 'bomb') {
+                element.className = 'tile revealed-bomb';
+                element.innerText = "💣";
+                document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-red);">💥 Boom! You hit a bomb and lost ${minerBetAmount} Gold.</span>`;
+                minerActive = false;
+            } else {
+                element.className = 'tile revealed-gold';
+                element.innerText = "🪙";
+                let winMultiplier = 1.2;
+                let reward = Math.floor(minerBetAmount * winMultiplier);
+                currentBalance += reward;
+                document.getElementById('user-balance').innerText = currentBalance;
+                update(ref(db, 'users/' + currentUser.uid), { balance: currentBalance });
+                document.getElementById('miner-status').innerHTML = `<span style="color:var(--accent-green);">Safe! Won ${reward} Gold. Keep going or restart!</span>`;
+            }
+        }
+
+        // --- TOP-UP & GLOBAL LISTING ---
+        async function fetchGlobalListing() {
+            const snap = await get(ref(db, 'admin_listing'));
+            const box = document.getElementById('global-topup-info');
+            if (snap.exists()) {
+                const val = snap.val();
+                box.innerHTML = `<b>Active Item:</b> ${val.item} | <b>Price:</b> ${val.price} Gold | <b>Pattern Code:</b> <span style="color:var(--accent-gold);">${val.pattern}</span>`;
+            } else {
+                box.innerHTML = "No active top-up listing set by admin yet.";
+            }
+        }
+
+        window.submitTopUpClaim = async function() {
+            const pfp = document.getElementById('topup-pfp').files[0]?.name || "default_pfp.png";
+            const proof = document.getElementById('topup-proof').files[0]?.name || "default_proof.png";
+
+            const reqRef = push(ref(db, 'topup_claims'));
             await set(reqRef, {
                 uid: currentUser.uid,
                 email: currentUser.email,
-                amount: amount,
-                listingPrice: amount,
-                pattern: Math.floor(Math.random() * 900) + 100,
-                status: 'pending_proof'
+                pfp: pfp,
+                proof: proof,
+                status: 'pending'
             });
 
-            document.getElementById('topup-instructions').innerHTML = `
+            document.getElementById('topup-status-msg').innerHTML = "<span style='color:var(--accent-green);'>Claim submitted successfully! Awaiting admin review.</span>";
+        };
+
+        // --- WITHDRAWAL LOGIC ---
+        window.requestWithdrawal = async function() {
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            const instructions = document.getElementById('withdraw-instructions');
+
+            if (!amount || amount < 20) {
+                alert("Minimum withdrawal is 20 Gold.");
+                return;
+            }
+            if (amount > currentBalance) {
+                alert("Insufficient balance.");
+                return;
+            }
+
+            // Check 3-day top-up rule
+            const userSnap = await get(ref(db, 'users/' + currentUser.uid));
+            const lastTopUp = userSnap.val().lastTopUp || 0;
+            const threeDaysAgo = Date.now() - (3 * 24 * 60 * 60 * 1000);
+
+            if (lastTopUp < threeDaysAgo) {
+                instructions.innerHTML = `<span style="color:var(--accent-red);">❌ Withdrawal denied: You must have completed a top-up within the last 3 days to withdraw.</span>`;
+                return;
+            }
+
+            // Generate precise random decimal matching amount (e.g., 200.35)
+            const randomDecimal = amount + (Math.floor(Math.random() * 90) + 10) / 100;
+            const uniquePattern = Math.floor(Math.random() * 900) + 100;
+
+            const reqRef = push(ref(db, 'withdrawal_requests'));
+            await set(reqRef, {
+                uid: currentUser.uid,
+                email: currentUser.email,
+                requestedGold: amount,
+                exactPrice: randomDecimal.toFixed(2),
+                pattern: uniquePattern,
+                status: 'pending'
+            });
+
+            instructions.innerHTML = `
                 <div style="background:#111827; padding:10px; border-radius:6px; border:1px dashed var(--accent-blue);">
-                    <p><b>Required Listing Price:</b> ${amount} Gold</p>
-                    <p><b>Pattern/Float Code:</b> ${Math.floor(Math.random() * 900) + 100}</p>
-                    <p style="color:var(--accent-yellow); margin-top:8px;">Upload confirmation file/screenshot of buying the gun:</p>
-                    <input type="file" id="proof-file" style="background:var(--bg-input); padding:6px;" />
-                    <button onclick="uploadProof('${reqRef.key}')">Submit Proof to Admin</button>
+                    <p style="color:var(--accent-green);"><b>Withdrawal Generated!</b></p>
+                    <p>List your Standoff 2 item precisely for: <b>${randomDecimal.toFixed(2)} Gold</b></p>
+                    <p>Pattern/Float identifier: <b>${uniquePattern}</b></p>
+                    <p style="font-size:12px; color:var(--accent-yellow);">An email notification will be sent to ${currentUser.email} once confirmed.</p>
                 </div>
             `;
         };
 
-        window.uploadProof = function(reqKey) {
-            const fileInput = document.getElementById('proof-file');
-            if (fileInput.files.length === 0) {
-                alert("Please select a file first!");
-                return;
-            }
-            
-            update(ref(db, 'topup_requests/' + reqKey), {
-                status: 'pending_admin_approval',
-                fileName: fileInput.files[0].name
-            });
-
-            alert("Proof uploaded successfully! Sent to admin for review.");
-            document.getElementById('topup-instructions').innerHTML = "<p style='color:var(--accent-green);'>Top-up request and confirmation proof submitted. Waiting for admin approval.</p>";
-        };
-
+        // --- ADMIN PANEL CONTROLS ---
         window.verifyAdmin = function() {
             const code = document.getElementById('admin-passcode').value;
             if (code !== "100200100") {
                 alert("Incorrect Admin Passcode!");
                 return;
             }
-
-            document.getElementById('admin-panel-area').style.display = 'block';
-            loadAdminRequests();
+            document.getElementById('admin-login-box').style.display = 'none';
+            document.getElementById('admin-dashboard').style.display = 'block';
+            loadAdminData();
         };
 
-        async function loadAdminRequests() {
-            const listDiv = document.getElementById('admin-requests-list');
-            listDiv.innerHTML = "<p>Loading requests...</p>";
+        window.switchAdminSubTab = function(sub) {
+            document.getElementById('admin-list-topups').style.display = (sub === 'topups') ? 'block' : 'none';
+            document.getElementById('admin-list-withdrawals').style.display = (sub === 'withdrawals') ? 'block' : 'none';
+            document.getElementById('admin-sub-topups').style.background = (sub === 'topups') ? 'var(--accent-blue)' : 'var(--border-color)';
+            document.getElementById('admin-sub-withdrawals').style.background = (sub === 'withdrawals') ? 'var(--accent-blue)' : 'var(--border-color)';
+        };
 
-            const snapshot = await get(ref(db, 'topup_requests'));
-            if (!snapshot.exists()) {
-                listDiv.innerHTML = "<p>No pending user requests.</p>";
-                return;
-            }
+        window.saveAdminListing = async function() {
+            const item = document.getElementById('admin-set-item').value;
+            const price = document.getElementById('admin-set-price').value;
+            const pattern = document.getElementById('admin-set-pattern').value;
 
-            let html = "";
-            snapshot.forEach((childSnap) => {
-                const data = childSnap.val();
-                const key = childSnap.key;
-                if (data.status === 'pending_admin_approval') {
-                    html += `
-                        <div style="background:#111827; padding:12px; margin-top:10px; border-radius:6px; border: 1px solid var(--border-color);">
-                            <p style="margin:4px 0;"><b>User Email:</b> <span style="color:var(--accent-blue);">${data.email}</span></p>
-                            <p style="margin:4px 0;"><b>Gold Amount:</b> ${data.amount}</p>
-                            <p style="margin:4px 0;"><b>Uploaded Proof File:</b> ${data.fileName}</p>
-                            <div style="margin-top:10px; display:flex; gap:10px;">
-                                <button onclick="adminAction('${key}', 'approved', ${data.amount}, '${data.uid}')" style="background:var(--accent-green); margin-top:0;">Confirm</button>
-                                <button onclick="adminAction('${key}', 'declined', 0, '${data.uid}')" style="background:var(--accent-red); color:white; margin-top:0;">Decline</button>
+            if (!item || !price || !pattern) return alert("Fill out all listing fields!");
+
+            await set(ref(db, 'admin_listing'), { item, price, pattern });
+            alert("Global listing updated successfully!");
+        };
+
+        async function loadAdminData() {
+            // Load Top-up claims
+            const topupSnap = await get(ref(db, 'topup_claims'));
+            let topupHtml = "<h4>Pending Top-Up Claims</h4>";
+            if (topupSnap.exists()) {
+                topupSnap.forEach(child => {
+                    const d = child.val();
+                    const k = child.key;
+                    if(d.status === 'pending') {
+                        topupHtml += `
+                            <div style="background:#111827; padding:10px; margin-top:8px; border-radius:6px; border:1px solid var(--border-color);">
+                                <p><b>User:</b> ${d.email}</p>
+                                <p><b>Files:</b> PFP: ${d.pfp} | Proof: ${d.proof}</p>
+                                <button onclick="actionTopUp('${k}', '${d.uid}', 'approved')" style="background:var(--accent-green);">Approve & Log 3-Day Window</button>
+                                <button onclick="actionTopUp('${k}', '${d.uid}', 'declined')" style="background:var(--accent-red); color:white;">Decline</button>
                             </div>
-                        </div>
-                    `;
-                }
-            });
-            listDiv.innerHTML = html || "<p>No pending user requests.</p>";
+                        `;
+                    }
+                });
+            } else { topupHtml += "<p>No pending claims.</p>"; }
+            document.getElementById('admin-list-topups').innerHTML = topupHtml;
+
+            // Load Withdrawal requests
+            const withSnap = await get(ref(db, 'withdrawal_requests'));
+            let withHtml = "<h4>Pending Withdrawal Requests</h4>";
+            if (withSnap.exists()) {
+                withSnap.forEach(child => {
+                    const d = child.val();
+                    const k = child.key;
+                    if(d.status === 'pending') {
+                        withHtml += `
+                            <div style="background:#111827; padding:10px; margin-top:8px; border-radius:6px; border:1px solid var(--border-color);">
+                                <p><b>User:</b> ${d.email}</p>
+                                <p><b>Requested:</b> ${d.requestedGold} G | <b>Exact Target Price:</b> <span style="color:var(--accent-gold);">${d.exactPrice}</span> | <b>Pattern:</b> ${d.pattern}</p>
+                                <button onclick="actionWithdraw('${k}', '${d.uid}', ${d.requestedGold}, 'approved')" style="background:var(--accent-green);">Approve Payout</button>
+                                <button onclick="actionWithdraw('${k}', '${d.uid}', ${d.requestedGold}, 'declined')" style="background:var(--accent-red); color:white;">Decline</button>
+                            </div>
+                        `;
+                    }
+                });
+            } else { withHtml += "<p>No pending withdrawals.</p>"; }
+            document.getElementById('admin-list-withdrawals').innerHTML = withHtml;
         }
 
-        window.adminAction = async function(key, status, amount, uid) {
-            await update(ref(db, 'topup_requests/' + key), { status: status });
-            if (status === 'approved') {
+        window.actionTopUp = async function(key, uid, status) {
+            await update(ref(db, 'topup_claims/' + key), { status });
+            if(status === 'approved') {
+                // Update user's lastTopUp timestamp to enable withdrawals
+                await update(ref(db, 'users/' + uid), { lastTopUp: Date.now() });
+                // Also give default top up reward bonus or handled manually
+            }
+            alert(`Top-up claim ${status}!`);
+            loadAdminData();
+        };
+
+        window.actionWithdraw = async function(key, uid, amount, status) {
+            await update(ref(db, 'withdrawal_requests/' + key), { status });
+            if(status === 'approved') {
                 const userRef = ref(db, 'users/' + uid);
-                const userSnap = await get(userRef);
-                if (userSnap.exists()) {
-                    let bal = userSnap.val().balance || 0;
-                    await update(userRef, { balance: bal + parseInt(amount) });
+                const snap = await get(userRef);
+                if(snap.exists()) {
+                    let bal = snap.val().balance || 0;
+                    await update(userRef, { balance: Math.max(0, bal - amount) });
                 }
             }
-            alert(`Request marked as ${status}!`);
-            loadAdminRequests();
+            alert(`Withdrawal request ${status}!`);
+            loadAdminData();
         };
     </script>
 </body>
