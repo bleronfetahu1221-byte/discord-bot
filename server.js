@@ -1,4 +1,3 @@
-/**
  * ============================================================================
  * LOOTHUB ENTERPRISE BACKEND SERVER - STANDOFF 2 PLATFORM
  * ============================================================================
@@ -281,11 +280,7 @@ app.post('/api/games/upgrader/play', verifyUserSession, (req, res) => {
 // ----------------------------------------------------------------------------
 app.post('/api/admin/set-topup', (req, res) => {
     try {
-        const passcode = req.body.passcode;
-        const item = req.body.item;
-        const price = req.body.price;
-        const pattern = req.body.pattern;
-
+        const { passcode, item, price, pattern } = req.body;
         if (passcode !== ADMIN_PASSCODE) {
             return res.status(403).json({ success: false, message: "Unauthorized: Invalid Admin Passcode." });
         }
@@ -312,7 +307,7 @@ app.post('/api/admin/set-topup', (req, res) => {
 
 app.post('/api/admin/queues', (req, res) => {
     try {
-        const passcode = req.body.passcode;
+        const { passcode } = req.body;
         if (passcode !== ADMIN_PASSCODE) {
             return res.status(403).json({ success: false, message: "Unauthorized: Invalid Admin Passcode." });
         }
@@ -328,7 +323,7 @@ app.post('/api/admin/queues', (req, res) => {
     }
 });
 
-// Fallback routing for any sub-path (like /palermo) to correctly load index.html
+// Fallback routing
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
